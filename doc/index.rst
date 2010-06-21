@@ -3,18 +3,31 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Mi pequeño Sistema Operativo's documentation!
-========================================================
+Documentación de Zafio
+======================
 
-Contents:
+.. image:: _static/zeta.png
+    :width: 70pt
+    :align: right
+
+Zafio es un sistema operativo extremadamente básico y poco sofisticado.
+Sólo el tiempo podrá decir si será capaz de superar su tosquedad y
+falta de tacto.
+
+Los objetivos iniciales de este proyecto son:
+
+* crear un sistema operativo
+    * simple en su diseño,
+    * con funcionalidades mínimas,
+    * con una base de código comprensible,
+    * con capacidad de extensión
+* aprender en el camino y documentar lo que se considere necesario
+
+A continuación, la tabla de contenidos de la documentación:
 
 .. toctree::
    :maxdepth: 2
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   background
+   design
 
