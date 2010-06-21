@@ -31,3 +31,7 @@ A continuación, la tabla de contenidos de la documentación:
    background
    design
 
+----
+
+La imagen de la letra zeta fue creada por `WebHamster
+<http://http://commons.wikimedia.org/wiki/User:WebHamster>`_.
