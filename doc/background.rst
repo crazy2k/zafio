@@ -60,8 +60,8 @@ La arquitectura IA-32 tiene los siguientes modos de operación:
   resuelven a partir de un registro de `segmento` y un `offset` a través
   del siguiente cálculo: `(segmento \cdot 16) + offset`. Es decir, los
   registros de segmento sólo contienen información acerca del comienzo
-  de un segmento, pero no imponen un límite. (CHEQUEAR) El espacio de
-  direcciones en modo real es entonces de `2^{20}` direcciones.
+  de un segmento, pero no imponen un límite ni permisos. El espacio de
+  direcciones en modo real es de `2^{20}` direcciones.
 
 * **Modo protegido**: El modo protegido es "el modo de operación nativo
   del procesador" de la arquitectura IA-32, según los manuales de
