@@ -3,13 +3,48 @@
 Un poco de *background*
 =======================
 
-A continuación, una breve reseña de algunas de las características de
-la arquitectura IA-32. Como este proyecto se va a basar en dicha
-arquitectura, voy a omitir cualquier detalle relacionado con
-arquitecturas de 64 bits.
+La idea de este documento no es brindar explicaciones exhaustivas ni
+servir de referencia absoluta de ninguno de los temas necesarios para
+poder encarar un proyecto como este. Se pretende, simplemente, ofrecer
+un material de apoyo a otros documentos orientado a las necesidades de
+este proyecto.
+
+En consecuencia, se asume que el lector tiene conocimientos previos
+acerca de la arquitectura IA-32, que ha tenido cierta experiencia
+previa programando en algún dialecto de *assembly* para dicha
+arquitectura y que está dispuesto a buscar en otros textos lo que no
+pueda encontrar aquí.
+
+La arquitectura en la que se basará este proyecto es la arquitectura
+IA-32 de Intel, por lo que todos los detalles de bajo nivel se
+orientarán a esta.
+
+La secuencia de arranque
+------------------------
+
+En las computadoras compatibles con IBM PC, luego de encender la
+máquina, tiene lugar la carga y ejecución de un programa, que reside en
+una memoria especial de la computadora, llamado BIOS (*Basic
+Input/Output System*). Generalmente, el BIOS realiza chequeos y/o
+inicializaciones en el hardware y, si todo va bien, busca un
+dispositivo del que pueda arrancar, siguiendo un orden de arranque que
+especifica con qué dispositivo debe intentarse arrancar primero.
+
+Para decidir si puede arrancar de un dispositivo [1]_, el BIOS verifica si
+los últimos dos bytes del primer sector del dispositivo contienen la
+firma ``0xAA55``. Si encontró un dispositivo del que puede arrancar,
+entonces copia el primer sector de este a la memoria principal, en la
+dirección física ``0x7C00``, y comienza a ejecutar desde esa dirección.
+
+.. [1] En realidad, esta explicación es válida para dispositivos como
+    discos floppy o discós rígidos. Los CDs tienen otra estructura para
+    los sectores de arranque, y esta explicación no los contempla.
+
+La arquitectura
+---------------
 
 Modos de operación
-------------------
+~~~~~~~~~~~~~~~~~~
 
 La arquitectura IA-32 tiene los siguientes modos de operación:
 
