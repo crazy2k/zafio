@@ -89,7 +89,7 @@ de pasar de uno a otro:
 
 .. graphviz::
 
-    digraph foo {
+    digraph modos {
         "Modo real" -> "Modo protegido" [label="PE=1"];
         "Modo real" -> "Modo de 'gestión del sistema'" [label="SMI#"];
         "Modo protegido" -> "Modo real" [label="Reset o PE=0"];
