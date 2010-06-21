@@ -100,3 +100,125 @@ de pasar de uno a otro:
         "Modo de 'gestión del sistema'" -> "Modo protegido"
             [label="RSM"]
     }
+
+Administración de memoria
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Segmentación
+~~~~~~~~~~~~
+
+.. La administración de memoria mediante segmentación se implementó desde
+.. hace mucho tiempo atrás en la familia de procesadores de Intel. En los
+.. 8086 de Intel (que vieron el mercado en 1978), la segmentación, no
+.. obstante, fue implementada de una manera rudimentaria, únicamente con
+.. los fines de acceder a posiciones de memoria cuya dirección no cabía en
+.. los registros del procesador. Por esos tiempos, en la arquitectura de
+.. Intel, no se utilizaba la segmentación como un mecanismo para proteger
+.. espacios de memoria.
+
+.. Con la aparición del procesador 80286 (1982) --- inclusión del modo
+.. protegido --- se hizo posible la definición de los tamaños y
+.. privilegios asignados a cada uno de los segmentos. Así, la segmentación
+.. pudo utilizarse para realizar protección de memoria, es decir,
+.. restringir el acceso de determinadas tareas a ciertos sectores de la
+.. memoria, logrando así, por ejemplo, que las aplicaciones no puedan
+.. acceder o modificar datos pertenecientes al sistema operativo.
+
+.. Sin embargo, en una gran cantidad de sistemas operativos modernos
+.. (también es el caso de JOS), la segmentación fue dejada de lado como
+.. mecanismo de protección de memoria. Se utiliza, para esto, únicamente
+.. la paginación.
+
+.. No obstante, la segmentación no puede ser desactivada en la
+.. arquitectura IA-32, en ninguno de sus modos. ¿Cómo hacen entonces los
+.. sistemas operativos modernos (que no precisan de la segmentación) para
+.. desactivarla? En realidad, no la desactivan. Utilizan algo llamado
+.. “Modelo flat de segmentación”, que consiste en ubicar a todos los
+.. segmentos ocupando todo el espacio que se pretende direccionar, desde
+.. la dirección cero. De este modo, la dirección (la parte del offset,
+.. específicamente) virtual (la utilizada en el código) coincide con la
+.. dirección lineal (la que toma como entrada el módulo de paginación).
+
+Paginación
+~~~~~~~~~~
+
+.. La verdadera protección de memoria en JOS (y en muchos sistemas
+.. operativos modernos) se da gracias al mecanismo de paginación. La
+.. paginación se caracteriza por organizar la memoria física en bloques de
+.. tamaño fijo, no solapados, llamados marcos de página.
+
+.. Observemos las distintas etapas por las cuales pasa una dirección
+.. virtual hasta que se convierte en una dirección física:
+
+.. .. graphviz::
+
+..     digraph direcciones {
+..         "dirección virtual" [shape=box] -> "dirección lineal"
+..             [label="unidad de segmentación"];
+..         "dirección lineal" -> "dirección física"
+..             [label="unidad de paginación"];
+..     }
+
+.. La primer traducción la realiza la unidad de segmentación, mientras
+.. que la segunda traducción es realizada por la unidad de paginación.
+
+.. En la arquitectura IA-32 la paginación puede activarse una vez hecho el
+.. cambio a modo protegido. Cuando se encuentra activada, y se utilizan
+.. páginas de 4KB, la dirección lineal es dividida en tres partes por la
+.. unidad de paginación:
+
+.. +------------------------------------+-------------------------------+---------+
+.. | índice en el directorio de páginas | índice en la tabla de páginas | offset  |
+.. +====================================+===============================+=========+
+.. | (10 bits)                          | (10 bits)                     | 12 bits |
+.. +------------------------------------+-------------------------------+---------+
+
+.. El primero de los tres campos representa un índice en el directorio de
+.. páginas. El directorio de páginas es una tabla que contiene 2^{10}
+.. entradas (una por cada índice posible). Cada entrada, además de varios
+.. atributos, contiene la dirección física de una tabla de páginas. El
+.. sistema de paginación utiliza el primer campo para seleccionar una de
+.. las entradas en el directorio de páginas (PDEs). Consecuentemente, se
+.. obtendrá la dirección física de la tabla de páginas asociada a dicha
+.. entrada.
+
+.. El segundo campo es utilizado, entonces, para elegir una de las
+.. `2^{10}` entradas de la tabla de páginas mencionada. Las entradas en
+.. la tabla de páginas (PTEs) contienen, además de varios atributos, la
+.. dirección física de una página en memoria. El offset es utilizado para
+.. seleccionar uno de los bytes en dicha página.
+
+Referencia de NASM
+------------------
+
+Directivas del preprocesador
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. describe:: define A x
+              define f(x1, x2, ...) y
+
+    Permite definir macros en una sola línea. Funciona de manera
+    similar a las macros de C, por lo que también posibilita crear
+    macros con "parámetros".
+
+
+Directivas del ensamblador
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. describe:: BITS m
+
+    Indica que el código a continuación de la directiva debe generarse
+    para procesadores operando en modo de ``m`` bits, donde ``m``
+    puede ser 16, 32 o 64.
+
+    Para el modo de salida ``bin``, que es el que usamos para el
+    *bootloader*, se puede asumir por omisión que ``m`` es 16. Sin
+    embargo, siempre es buena práctica ser explícitos con esto, en
+    lugar de asumir valores por omisión.
+
+.. describe:: ORG addr
+
+    Hace que NASM asuma que la dirección de memoria ``addr`` es la
+    dirección en la que ha sido cargado el programa. NASM utiliza esta
+    dirección como base para todas las referencias internas en una
+    sección de código.
