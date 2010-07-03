@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>Un poco de background &mdash; Mi pequeño Sistema Operativo v0.1 documentation</title>
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '#',
@@ -17,8 +17,8 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <script type="text/javascript" src="_static/translations.js"></script>
     <link rel="top" title="Mi pequeño Sistema Operativo v0.1 documentation" href="index.html" />
     <link rel="next" title="Decisiones de diseño" href="design.html" />
@@ -97,11 +97,11 @@ el modo en el cual arranca cualquier máquina de esta arquitectura.</p>
 son <tt class="docutils literal"><span class="pre">AX</span></tt>, <tt class="docutils literal"><span class="pre">BX</span></tt>, <tt class="docutils literal"><span class="pre">CX</span></tt>, <tt class="docutils literal"><span class="pre">DX</span></tt>, <tt class="docutils literal"><span class="pre">BP</span></tt>, <tt class="docutils literal"><span class="pre">SI</span></tt>, <tt class="docutils literal"><span class="pre">DI</span></tt> y <tt class="docutils literal"><span class="pre">SP</span></tt>,
 todos de 16 bits.</p>
 <p>Para el acceso a memoria, se utiliza segmentación. Las direcciones se
-resuelven a partir de un registro de <img class="math" src="_images/math/bda4b1a823ab94c43132c1f9be5b627d346d1a60.png" alt="segmento"/> y un <img class="math" src="_images/math/7b1e0e7525cf41a63d86e97a71e329e9d647f1bc.png" alt="offset"/> a través
-del siguiente cálculo: <img class="math" src="_images/math/0b081b113753419883b7c448e755ba59e3a4ce69.png" alt="(segmento \cdot 16) + offset"/>. Es decir, los
+resuelven a partir de un registro de <img class="math" src="images/math/bda4b1a823ab94c43132c1f9be5b627d346d1a60.png" alt="segmento"/> y un <img class="math" src="images/math/7b1e0e7525cf41a63d86e97a71e329e9d647f1bc.png" alt="offset"/> a través
+del siguiente cálculo: <img class="math" src="images/math/0b081b113753419883b7c448e755ba59e3a4ce69.png" alt="(segmento \cdot 16) + offset"/>. Es decir, los
 registros de segmento sólo contienen información acerca del comienzo
 de un segmento, pero no imponen un límite ni permisos. El espacio de
-direcciones en modo real es de <img class="math" src="_images/math/f6f4fb515f1d3a096a15a3bdce0db5aab3c5503f.png" alt="2^{20}"/> direcciones.</p>
+direcciones en modo real es de <img class="math" src="images/math/f6f4fb515f1d3a096a15a3bdce0db5aab3c5503f.png" alt="2^{20}"/> direcciones.</p>
 </li>
 <li><p class="first"><strong>Modo protegido</strong>: El modo protegido es &#8220;el modo de operación nativo
 del procesador&#8221; de la arquitectura IA-32, según los manuales de
@@ -125,7 +125,7 @@ que el sistema avisa a través de interrupciones.</p>
 <p>El siguiente gráfico muestra, para los modos mencionados, las maneras
 de pasar de uno a otro:</p>
 <p class="graphviz">
-<img src="_images/graphviz-799b8a3df95dde7a2dc82262b2767846fc1e776e.png" alt="digraph modos {
+<img src="images/graphviz-799b8a3df95dde7a2dc82262b2767846fc1e776e.png" alt="digraph modos {
     &quot;Modo real&quot; -&gt; &quot;Modo protegido&quot; [label=&quot;PE=1&quot;];
     &quot;Modo real&quot; -&gt; &quot;Modo de 'gestión del sistema'&quot; [label=&quot;SMI#&quot;];
     &quot;Modo protegido&quot; -&gt; &quot;Modo real&quot; [label=&quot;Reset o PE=0&quot;];
@@ -222,7 +222,7 @@ sección de código.</dd></dl>
                                   title="Próximo capítulo">Decisiones de diseño</a></p>
             <h3>Esta página</h3>
             <ul class="this-page-menu">
-              <li><a href="_sources/background.txt"
+              <li><a href="sources/background.txt"
                      rel="nofollow">Enseñar el código</a></li>
             </ul>
           <div id="searchbox" style="display: none">
