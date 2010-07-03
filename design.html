@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Decisiones de diseño &mdash; Mi pequeño Sistema Operativo v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Mi pequeño Sistema Operativo v0.1 documentation" href="index.html" />
+    <link rel="prev" title="Un poco de background" href="background.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navegación</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="Índice General"
+             accesskey="I">índice</a></li>
+        <li class="right" >
+          <a href="background.html" title="Un poco de background"
+             accesskey="P">anterior</a> |</li>
+        <li><a href="index.html">Mi pequeño Sistema Operativo v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="decisiones-de-diseno">
+<h1>Decisiones de diseño<a class="headerlink" href="#decisiones-de-diseno" title="Enlazar permanentemente con este título">¶</a></h1>
+<div class="section" id="arranque">
+<h2>Arranque<a class="headerlink" href="#arranque" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Como se explica en el documento <a class="reference external" href="background.html"><em>Un poco de background</em></a>, generalmente los
+BIOS de las IBM PC se encargan de cargar el primer sector de nuestro
+dispositivo a partir de una cierta dirección. El primer sector de un
+disco floppy o un disco rígido equivale a 512 bytes.</p>
+<p>512 bytes (510, en realidad, porque los últimos 2 bytes son ocupados
+por la marca <tt class="docutils literal"><span class="pre">0x55AA</span></tt>) no alcanzan si se quiere hacer un sistema
+operativo con un mínimo de funcionalidad, por mucho que uno quiera.
+Por lo tanto, la alternativa más sensata parece ser que esos 512 bytes
+lean de nuestro dispositivo y se encarguen de cargar el resto de
+nuestro sistema operativo en memoria.</p>
+<p>Para poder hacer lo anterior, esos 512 bytes tienen que saber
+interpretar el sistema de archivos del dispositivo, que en el caso
+de los discos floppy es comúnmente algún FAT.</p>
+<p>Como nuestro foco principal es el sistema operativo en sí, vamos a
+utilizar, de momento, una imagen de disco floppy cuyo sector de
+arranque realiza lo siguiente:</p>
+<ol class="arabic simple">
+<li>Copiar el sector de arranque a la dirección <tt class="docutils literal"><span class="pre">0x1000</span></tt> de
+la memoria principal.</li>
+<li>Buscar en el mismo disco, que utiliza el sistema de archivos
+FAT12 de DOS, un archivo llamado <tt class="docutils literal"><span class="pre">KERNEL.BIN</span></tt>.</li>
+<li>Copiar el contenido del archivo <tt class="docutils literal"><span class="pre">KERNEL.BIN</span></tt> a la memoria
+principal a partir de la dirección <tt class="docutils literal"><span class="pre">0x1200</span></tt>.</li>
+<li>Saltar a la posición de memoria <tt class="docutils literal"><span class="pre">0x1200</span></tt>.</li>
+</ol>
+<p>Por ahora, con los 1.44MB de esta imagen de disco, podemos arreglarnos
+para tener un sistema operativo minimal.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Contenidos</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Decisiones de diseño</a><ul>
+<li><a class="reference external" href="#arranque">Arranque</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Tema anterior</h4>
+            <p class="topless"><a href="background.html"
+                                  title="Capítulo anterior">Un poco de <em>background</em></a></p>
+            <h3>Esta página</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/design.txt"
+                     rel="nofollow">Enseñar el código</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Búsqueda rápida</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Ir a" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Introduzca los términos de búsqueda o un módulo, clase o nombre de función.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navegación</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="Índice General"
+             >índice</a></li>
+        <li class="right" >
+          <a href="background.html" title="Un poco de background"
+             >anterior</a> |</li>
+        <li><a href="index.html">Mi pequeño Sistema Operativo v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Pablo Antonio.
+      Creado con <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+    </div>
+  </body>
+</html>
