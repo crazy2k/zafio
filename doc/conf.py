@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Mi pequeño Sistema Operativo documentation build configuration file, created by
+# Zafio documentation build configuration file, created by
 # sphinx-quickstart on Wed Jun 16 05:28:42 2010.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -22,7 +22,8 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.todo', 'sphinx.ext.pngmath', 'sphinx.ext.graphviz']
+extensions = ['sphinx.ext.todo', 'sphinx.ext.pngmath', 'sphinx.ext.graphviz',
+    'sphinxtogithub']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -37,7 +38,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Mi pequeño Sistema Operativo'
+project = u'Zafio'
 copyright = u'2010, Pablo Antonio'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -158,7 +159,7 @@ html_static_path = ['_static']
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'MipequeoSistemaOperativodoc'
+htmlhelp_basename = 'Zafiodoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -172,7 +173,7 @@ htmlhelp_basename = 'MipequeoSistemaOperativodoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'MipequeoSistemaOperativo.tex', u'Mi pequeño Sistema Operativo Documentation',
+  ('index', 'Zafio.tex', u'Zafio Documentation',
    u'Pablo Antonio', 'manual'),
 ]
 

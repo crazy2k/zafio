@@ -61,9 +61,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/MipequeoSistemaOperativo.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/Zafio.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/MipequeoSistemaOperativo.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/Zafio.qhc"
 
 latex:
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
