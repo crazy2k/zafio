@@ -2,8 +2,6 @@
 
 (set -e
 
-cd ..
-
 TEMPDIR=`mktemp -d`
 OLDBRANCH=`git branch | egrep '^\*' | awk '{print $2}'`
 
@@ -16,6 +14,4 @@ git commit -m "Documentación actualizada"
 #git push github gh-pages
 echo "pusheando"
 git checkout $OLDBRANCH
-git stash pop --index
-
-cd doc)
+git stash pop --index)
