@@ -97,11 +97,11 @@ el modo en el cual arranca cualquier máquina de esta arquitectura.</p>
 son <tt class="docutils literal"><span class="pre">AX</span></tt>, <tt class="docutils literal"><span class="pre">BX</span></tt>, <tt class="docutils literal"><span class="pre">CX</span></tt>, <tt class="docutils literal"><span class="pre">DX</span></tt>, <tt class="docutils literal"><span class="pre">BP</span></tt>, <tt class="docutils literal"><span class="pre">SI</span></tt>, <tt class="docutils literal"><span class="pre">DI</span></tt> y <tt class="docutils literal"><span class="pre">SP</span></tt>,
 todos de 16 bits.</p>
 <p>Para el acceso a memoria, se utiliza segmentación. Las direcciones se
-resuelven a partir de un registro de <img class="math" src="images/math/bda4b1a823ab94c43132c1f9be5b627d346d1a60.png" alt="segmento"/> y un <img class="math" src="images/math/7b1e0e7525cf41a63d86e97a71e329e9d647f1bc.png" alt="offset"/> a través
-del siguiente cálculo: <img class="math" src="images/math/0b081b113753419883b7c448e755ba59e3a4ce69.png" alt="(segmento \cdot 16) + offset"/>. Es decir, los
+resuelven a partir de un registro de <span class="math">segmento</span> y un <span class="math">offset</span> a través
+del siguiente cálculo: <span class="math">(segmento \cdot 16) + offset</span>. Es decir, los
 registros de segmento sólo contienen información acerca del comienzo
 de un segmento, pero no imponen un límite ni permisos. El espacio de
-direcciones en modo real es de <img class="math" src="images/math/f6f4fb515f1d3a096a15a3bdce0db5aab3c5503f.png" alt="2^{20}"/> direcciones.</p>
+direcciones en modo real es de <span class="math">2^{20}</span> direcciones.</p>
 </li>
 <li><p class="first"><strong>Modo protegido</strong>: El modo protegido es &#8220;el modo de operación nativo
 del procesador&#8221; de la arquitectura IA-32, según los manuales de
