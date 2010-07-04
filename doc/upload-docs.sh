@@ -11,10 +11,11 @@ cp -r ./doc/_build/html/* "${TEMPDIR}/"
 git stash
 git checkout gh-pages
 cp -rf "${TEMPDIR}"/* ./
-#git add .
-#git commit -m "Documentación actualizada"
+git add .
+git commit -m "Documentación actualizada"
 #git push github gh-pages
-#git checkout $OLDBRANCH
-#git stash pop --index
+echo "pusheando"
+git checkout $OLDBRANCH
+git stash pop --index
 
 cd doc)
