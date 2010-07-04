@@ -5,7 +5,7 @@ set -e
 TEMPDIR=`mktemp -d`
 OLDBRANCH=`git branch | egrep '^\*' | awk '{print $2}'`
 
-cp -r ./doc/_build/html/* "${TEMPDIR}/"
+mv ./doc/_build/html/* "${TEMPDIR}/"
 git stash
 git checkout gh-pages
 cp -rf "${TEMPDIR}"/* ./
