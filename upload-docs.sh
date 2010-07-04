@@ -11,7 +11,6 @@ git checkout gh-pages
 cp -rf "${TEMPDIR}"/* ./
 git add .
 git commit -m "Documentación actualizada"
-git push github gh-pages
-echo "pusheando"
+git push origin gh-pages
 git checkout $OLDBRANCH
 git stash pop --index
