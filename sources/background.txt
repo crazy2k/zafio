@@ -30,15 +30,64 @@ inicializaciones en el hardware y, si todo va bien, busca un
 dispositivo del que pueda arrancar, siguiendo un orden de arranque que
 especifica con qué dispositivo debe intentarse arrancar primero.
 
-Para decidir si puede arrancar de un dispositivo [1]_, el BIOS verifica si
-los últimos dos bytes del primer sector del dispositivo contienen la
-firma ``0xAA55``. Si encontró un dispositivo del que puede arrancar,
-entonces copia el primer sector de este a la memoria principal, en la
-dirección física ``0x7C00``, y comienza a ejecutar desde esa dirección.
+La forma que tiene el BIOS de verificar si puede arrancar de un cierto
+dispositivo depende del estándar adoptado por este último. Para el
+caso de los discos floppy o discos rígidos, la manera que tiene el BIOS
+de saber si puede arrancar de ellos es verificando si los últimos dos
+bytes del primer sector del dispositivo contienen la firma ``0xAA55``.
+[1]_
 
-.. [1] En realidad, esta explicación es válida para dispositivos como
-    discos floppy o discós rígidos. Los CDs tienen otra estructura para
-    los sectores de arranque, y esta explicación no los contempla.
+Cuando encuentra que puede arrancar de uno de los dispositivos, entonces
+copia desde él alguna pieza de código a memoria y comienza a ejecutarla.
+En el caso de los discos floppy o rígidos, lo que se copia es el primer
+sector, que suele tener un tamaño de 512 bytes, y se lo ubica a partir
+de la dirección física ``0x7C00``.
+
+.. [1] Para el caso de los CDs, por ejemplo, la especificación que se
+       sigue es otra. 
+
+El *bootloader*
+~~~~~~~~~~~~~~~
+
+En casi cualquier caso, el código y los datos que carga el BIOS desde
+el dispositivo suele ser escaso. Por ejemplo, los 512 bytes que se
+cargan de un disco floppy o rígido no alcanzan para albergar un sistema
+operativo con un mínimo de funcionalidad, por mucho que uno quiera.
+
+Lo que suele ocurrir, entonces, es que esa pieza de código, de algún
+modo, se ocupa de cargar el resto del sistema operativo en memoria.
+Eso se puede lograr en un paso, siendo ese primer código el responsable
+directo de la carga del resto del sistema operativo, o, más comúnmente,
+en dos o más pasos encadenados, haciendo que el primer código cargue
+otra pieza de código que sí se ocupe de cargar el sistema operativo o
+cargue otra pieza de código que continúe con la cadena. A las piezas
+de código que se ocupan de cargar el sistema operativo se las llama
+*bootloader*.
+
+El *bootloader* puede hacerse tan sofisticado como se quiera: desde una
+pieza de código sencilla que copia una pieza fija de código del
+dispositivo a memoria, a un cargador complejo, en varias etapas, capaz
+de entender varios sistemas de archivos, preparar un entorno inicial
+para el sistema, permitir elegir entre varios sistemas operativos
+existentes para arrancar, etc.
+
+Existe una cantidad de  *bootloaders* disponibles, cada uno de ellos
+con características propias. Es común, entonces, utilizar uno de los
+ya existentes, en lugar de escribir el propio, cuando alguno de ellos
+se adapta a las necesidades del desarrollador.
+
+GRUB
+++++
+
+Uno de los *bootloaders* más populares es GRUB. Las versiones de GRUB
+suelen dividirse en las categorías "Legacy" (hasta 0.97) y GRUB 2. En
+la actualidad, las versiones de GRUB más usadas, y sobre las que existe
+más documentación, son las "Legacy".
+
+GRUB sigue una especificación llamada *Multiboot* [Multiboot]_. Esta
+especificación deja en claro, entre otras cosas, cuál es el estado de
+la máquina una vez cargado el sistema operativo y qué información puede
+pedirle este último al *bootloader* acerca del hardware.
 
 La arquitectura
 ---------------
@@ -222,3 +271,10 @@ Directivas del ensamblador
     dirección en la que ha sido cargado el programa. NASM utiliza esta
     dirección como base para todas las referencias internas en una
     sección de código.
+
+
+Referencias
+-----------
+
+.. [Multiboot]
+    http://www.gnu.org/software/grub/manual/multiboot/multiboot.html

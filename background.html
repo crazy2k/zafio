@@ -70,19 +70,61 @@ Input/Output System</em>). Generalmente, el BIOS realiza chequeos y/o
 inicializaciones en el hardware y, si todo va bien, busca un
 dispositivo del que pueda arrancar, siguiendo un orden de arranque que
 especifica con qué dispositivo debe intentarse arrancar primero.</p>
-<p>Para decidir si puede arrancar de un dispositivo <a class="footnote-reference" href="#id2" id="id1">[1]</a>, el BIOS verifica si
-los últimos dos bytes del primer sector del dispositivo contienen la
-firma <tt class="docutils literal"><span class="pre">0xAA55</span></tt>. Si encontró un dispositivo del que puede arrancar,
-entonces copia el primer sector de este a la memoria principal, en la
-dirección física <tt class="docutils literal"><span class="pre">0x7C00</span></tt>, y comienza a ejecutar desde esa dirección.</p>
+<p>La forma que tiene el BIOS de verificar si puede arrancar de un cierto
+dispositivo depende del estándar adoptado por este último. Para el
+caso de los discos floppy o discos rígidos, la manera que tiene el BIOS
+de saber si puede arrancar de ellos es verificando si los últimos dos
+bytes del primer sector del dispositivo contienen la firma <tt class="docutils literal"><span class="pre">0xAA55</span></tt>.
+<a class="footnote-reference" href="#id2" id="id1">[1]</a></p>
+<p>Cuando encuentra que puede arrancar de uno de los dispositivos, entonces
+copia desde él alguna pieza de código a memoria y comienza a ejecutarla.
+En el caso de los discos floppy o rígidos, lo que se copia es el primer
+sector, que suele tener un tamaño de 512 bytes, y se lo ubica a partir
+de la dirección física <tt class="docutils literal"><span class="pre">0x7C00</span></tt>.</p>
 <table class="docutils footnote" frame="void" id="id2" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>En realidad, esta explicación es válida para dispositivos como
-discos floppy o discós rígidos. Los CDs tienen otra estructura para
-los sectores de arranque, y esta explicación no los contempla.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Para el caso de los CDs, por ejemplo, la especificación que se
+sigue es otra.</td></tr>
 </tbody>
 </table>
+<div class="section" id="el-bootloader">
+<h3>El <em>bootloader</em><a class="headerlink" href="#el-bootloader" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>En casi cualquier caso, el código y los datos que carga el BIOS desde
+el dispositivo suele ser escaso. Por ejemplo, los 512 bytes que se
+cargan de un disco floppy o rígido no alcanzan para albergar un sistema
+operativo con un mínimo de funcionalidad, por mucho que uno quiera.</p>
+<p>Lo que suele ocurrir, entonces, es que esa pieza de código, de algún
+modo, se ocupa de cargar el resto del sistema operativo en memoria.
+Eso se puede lograr en un paso, siendo ese primer código el responsable
+directo de la carga del resto del sistema operativo, o, más comúnmente,
+en dos o más pasos encadenados, haciendo que el primer código cargue
+otra pieza de código que sí se ocupe de cargar el sistema operativo o
+cargue otra pieza de código que continúe con la cadena. A las piezas
+de código que se ocupan de cargar el sistema operativo se las llama
+<em>bootloader</em>.</p>
+<p>El <em>bootloader</em> puede hacerse tan sofisticado como se quiera: desde una
+pieza de código sencilla que copia una pieza fija de código del
+dispositivo a memoria, a un cargador complejo, en varias etapas, capaz
+de entender varios sistemas de archivos, preparar un entorno inicial
+para el sistema, permitir elegir entre varios sistemas operativos
+existentes para arrancar, etc.</p>
+<p>Existe una cantidad de  <em>bootloaders</em> disponibles, cada uno de ellos
+con características propias. Es común, entonces, utilizar uno de los
+ya existentes, en lugar de escribir el propio, cuando alguno de ellos
+se adapta a las necesidades del desarrollador.</p>
+<div class="section" id="grub">
+<h4>GRUB<a class="headerlink" href="#grub" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Uno de los <em>bootloaders</em> más populares es GRUB. Las versiones de GRUB
+suelen dividirse en las categorías &#8220;Legacy&#8221; (hasta 0.97) y GRUB 2. En
+la actualidad, las versiones de GRUB más usadas, y sobre las que existe
+más documentación, son las &#8220;Legacy&#8221;.</p>
+<p>GRUB sigue una especificación llamada <em>Multiboot</em> <a class="reference internal" href="#multiboot">[Multiboot]</a>. Esta
+especificación deja en claro, entre otras cosas, cuál es el estado de
+la máquina una vez cargado el sistema operativo y qué información puede
+pedirle este último al <em>bootloader</em> acerca del hardware.</p>
+</div>
+</div>
 </div>
 <div class="section" id="la-arquitectura">
 <h2>La arquitectura<a class="headerlink" href="#la-arquitectura" title="Enlazar permanentemente con este título">¶</a></h2>
@@ -97,11 +139,11 @@ el modo en el cual arranca cualquier máquina de esta arquitectura.</p>
 son <tt class="docutils literal"><span class="pre">AX</span></tt>, <tt class="docutils literal"><span class="pre">BX</span></tt>, <tt class="docutils literal"><span class="pre">CX</span></tt>, <tt class="docutils literal"><span class="pre">DX</span></tt>, <tt class="docutils literal"><span class="pre">BP</span></tt>, <tt class="docutils literal"><span class="pre">SI</span></tt>, <tt class="docutils literal"><span class="pre">DI</span></tt> y <tt class="docutils literal"><span class="pre">SP</span></tt>,
 todos de 16 bits.</p>
 <p>Para el acceso a memoria, se utiliza segmentación. Las direcciones se
-resuelven a partir de un registro de <span class="math">segmento</span> y un <span class="math">offset</span> a través
-del siguiente cálculo: <span class="math">(segmento \cdot 16) + offset</span>. Es decir, los
+resuelven a partir de un registro de <img class="math" src="images/math/bda4b1a823ab94c43132c1f9be5b627d346d1a60.png" alt="segmento"/> y un <img class="math" src="images/math/7b1e0e7525cf41a63d86e97a71e329e9d647f1bc.png" alt="offset"/> a través
+del siguiente cálculo: <img class="math" src="images/math/0b081b113753419883b7c448e755ba59e3a4ce69.png" alt="(segmento \cdot 16) + offset"/>. Es decir, los
 registros de segmento sólo contienen información acerca del comienzo
 de un segmento, pero no imponen un límite ni permisos. El espacio de
-direcciones en modo real es de <span class="math">2^{20}</span> direcciones.</p>
+direcciones en modo real es de <img class="math" src="images/math/f6f4fb515f1d3a096a15a3bdce0db5aab3c5503f.png" alt="2^{20}"/> direcciones.</p>
 </li>
 <li><p class="first"><strong>Modo protegido</strong>: El modo protegido es &#8220;el modo de operación nativo
 del procesador&#8221; de la arquitectura IA-32, según los manuales de
@@ -186,6 +228,15 @@ sección de código.</dd></dl>
 
 </div>
 </div>
+<div class="section" id="referencias">
+<h2>Referencias<a class="headerlink" href="#referencias" title="Enlazar permanentemente con este título">¶</a></h2>
+<table class="docutils citation" frame="void" id="multiboot" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[Multiboot]</a></td><td><a class="reference external" href="http://www.gnu.org/software/grub/manual/multiboot/multiboot.html">http://www.gnu.org/software/grub/manual/multiboot/multiboot.html</a></td></tr>
+</tbody>
+</table>
+</div>
 </div>
 
 
@@ -197,7 +248,13 @@ sección de código.</dd></dl>
             <h3><a href="index.html">Contenidos</a></h3>
             <ul>
 <li><a class="reference external" href="#">Un poco de <em>background</em></a><ul>
-<li><a class="reference external" href="#la-secuencia-de-arranque">La secuencia de arranque</a></li>
+<li><a class="reference external" href="#la-secuencia-de-arranque">La secuencia de arranque</a><ul>
+<li><a class="reference external" href="#el-bootloader">El <em>bootloader</em></a><ul>
+<li><a class="reference external" href="#grub">GRUB</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference external" href="#la-arquitectura">La arquitectura</a><ul>
 <li><a class="reference external" href="#modos-de-operacion">Modos de operación</a></li>
 <li><a class="reference external" href="#administracion-de-memoria">Administración de memoria</a></li>
@@ -210,6 +267,7 @@ sección de código.</dd></dl>
 <li><a class="reference external" href="#directivas-del-ensamblador">Directivas del ensamblador</a></li>
 </ul>
 </li>
+<li><a class="reference external" href="#referencias">Referencias</a></li>
 </ul>
 </li>
 </ul>

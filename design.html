@@ -44,35 +44,17 @@
             
   <div class="section" id="decisiones-de-diseno">
 <h1>Decisiones de diseño<a class="headerlink" href="#decisiones-de-diseno" title="Enlazar permanentemente con este título">¶</a></h1>
-<div class="section" id="arranque">
-<h2>Arranque<a class="headerlink" href="#arranque" title="Enlazar permanentemente con este título">¶</a></h2>
-<p>Como se explica en el documento <a class="reference external" href="background.html"><em>Un poco de background</em></a>, generalmente los
-BIOS de las IBM PC se encargan de cargar el primer sector de nuestro
-dispositivo a partir de una cierta dirección. El primer sector de un
-disco floppy o un disco rígido equivale a 512 bytes.</p>
-<p>512 bytes (510, en realidad, porque los últimos 2 bytes son ocupados
-por la marca <tt class="docutils literal"><span class="pre">0x55AA</span></tt>) no alcanzan si se quiere hacer un sistema
-operativo con un mínimo de funcionalidad, por mucho que uno quiera.
-Por lo tanto, la alternativa más sensata parece ser que esos 512 bytes
-lean de nuestro dispositivo y se encarguen de cargar el resto de
-nuestro sistema operativo en memoria.</p>
-<p>Para poder hacer lo anterior, esos 512 bytes tienen que saber
-interpretar el sistema de archivos del dispositivo, que en el caso
-de los discos floppy es comúnmente algún FAT.</p>
-<p>Como nuestro foco principal es el sistema operativo en sí, vamos a
-utilizar, de momento, una imagen de disco floppy cuyo sector de
-arranque realiza lo siguiente:</p>
-<ol class="arabic simple">
-<li>Copiar el sector de arranque a la dirección <tt class="docutils literal"><span class="pre">0x1000</span></tt> de
-la memoria principal.</li>
-<li>Buscar en el mismo disco, que utiliza el sistema de archivos
-FAT12 de DOS, un archivo llamado <tt class="docutils literal"><span class="pre">KERNEL.BIN</span></tt>.</li>
-<li>Copiar el contenido del archivo <tt class="docutils literal"><span class="pre">KERNEL.BIN</span></tt> a la memoria
-principal a partir de la dirección <tt class="docutils literal"><span class="pre">0x1200</span></tt>.</li>
-<li>Saltar a la posición de memoria <tt class="docutils literal"><span class="pre">0x1200</span></tt>.</li>
-</ol>
-<p>Por ahora, con los 1.44MB de esta imagen de disco, podemos arreglarnos
-para tener un sistema operativo minimal.</p>
+<div class="section" id="el-bootloader">
+<h2>El <em>bootloader</em><a class="headerlink" href="#el-bootloader" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Decidimos utilizar GRUB (&#8220;Legacy&#8221;) como nuestro <em>bootloader</em> de
+referencia, aunque nuestro sistema operativo debería poder ser
+arrancado por cualquier <em>bootloader</em> que cumpla la especificación
+Multiboot <a class="reference external" href="background.html#multiboot">[Multiboot]</a>.</p>
+<p>GRUB es un <em>bootloader</em> muy completo, y la especificación Multiboot nos
+parece relativamente sencilla y razonable. Como entendemos que nuestro
+foco principal está puesto en el sistema operativo en sí, y tenemos a
+nuestro alcance una herramienta como esta, optamos por aprovecharla en
+lugar de escribir nuestro propio <em>bootloader</em> desde cero.</p>
 </div>
 </div>
 
@@ -85,7 +67,7 @@ para tener un sistema operativo minimal.</p>
             <h3><a href="index.html">Contenidos</a></h3>
             <ul>
 <li><a class="reference external" href="#">Decisiones de diseño</a><ul>
-<li><a class="reference external" href="#arranque">Arranque</a></li>
+<li><a class="reference external" href="#el-bootloader">El <em>bootloader</em></a></li>
 </ul>
 </li>
 </ul>
