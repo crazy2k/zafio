@@ -22,9 +22,9 @@ LOADER_SRC := $(SRCDIR)/kernel/loader.S
 LOADER_OBJ := $(OBJSDIR)/loader.o
 
 # Datos para el armado de la imagen de disco floppy
-GRUBDIR := reftest/grub/
+GRUBDIR := reftest/grub/boot/grub/
 STAGES := stage1 stage2
-STAGES := $(addprefix $GRUBDIR, $(STAGES))
+STAGES := $(addprefix $(GRUBDIR), $(STAGES))
 PAD := pad
 
 $(OBJSDIR):
