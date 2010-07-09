@@ -31,7 +31,7 @@ $(OBJSDIR):
 	mkdir $(OBJSDIR)
 
 deps: $(SOURCES) $(OBJSDIR)
-	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(OBJSDIR)\1/" > $@  
+	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(OBJSDIR:/=\/)\1/" > $@  
 -include deps
 
 clean:
