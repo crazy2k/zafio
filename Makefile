@@ -48,6 +48,7 @@ clean:
 	rm -f $(KERNEL)
 	rm -f $(PAD)
 	rm -f deps
+	rm -f diskette.img
 
 new: clean $(KERNEL)
 
