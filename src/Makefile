@@ -1,6 +1,6 @@
 CC=gcc
-NAMS=nasm
-NFLAGS=-f elf 
+AS=nasm
+AFLAGS=-f elf 
 CFLAGS=-Wall -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
 LDFLAGS=-T linker.ld 
@@ -17,7 +17,7 @@ $(KERNEL): $(OBJS) $(LOADER_OBJ)
 	$(LD) $(LDFLAGS) $(OBJS) $(LOADER_OBJ) -o $@
 
 $(LOADER_OBJ): $(LOADER_SRC)
-	$(NASM) $(NFLAGS) $(LOADER_SRC) -o $@
+	$(AS) $(AFLAGS) $(LOADER_SRC) -o $@
 
 deps: $(SOURCES)
 	$(CC) $(CFLAGS) -MM $(SOURCES) > $@  
