@@ -1,4 +1,5 @@
 
+/* definicion del punto de entrada */
 ENTRY (loader)
 
 SECTIONS{
