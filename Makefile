@@ -34,6 +34,7 @@ clean:
 	rm -f $(OBJSDIR)*.o
 	rm -f $(KERNEL)
 	rm -f $(PAD)
+	rm -f deps
 
 new: clean $(KERNEL)
 
