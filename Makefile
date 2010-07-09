@@ -52,9 +52,10 @@ clean:
 
 new: clean $(KERNEL)
 
-STAGESIZES := $(foreach x, $(STAGES), + $(shell stat -c %s $(x)))
+STAGESIZES := $(foreach x, $(STAGES), $(shell stat -c %s $(x)))
 SIZE := $(shell echo $(addsuffix ' +', $(STAGESIZES)) 0 | bc )
 PADSIZE := $(shell echo "512 - $(SIZE) % 512" | bc )
+PADSIZE := $(shell echo "$(PADSIZE) % 512" | bc )
 
 $(PAD):
 	dd if=/dev/zero of=$(PAD) bs=1 count=$(PADSIZE)
