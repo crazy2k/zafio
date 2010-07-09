@@ -24,7 +24,7 @@ LOADER_OBJ := $(OBJSDIR)/loader.o
 # Datos para el armado de la imagen de disco floppy
 GRUBDIR := reftest/grub/
 STAGES := stage1 stage2
-STAGES := $(addprefix $GRUBDIR, $(STAGES))
+STAGES := $(addprefix $(GRUBDIR), $(STAGES))
 PAD := pad
 
 $(OBJSDIR):
@@ -51,9 +51,14 @@ clean:
 
 new: clean $(KERNEL)
 
+STAGESIZES := $(foreach x, $(STAGES), + $(shell stat -c %s $(x)))
+SIZE=$(shell echo 512 - \( $(addsuffix '+', $(STAGESIZES)) 0 \) % 512 | bc)
+
 $(PAD):
 	dd if=/dev/zero of=$(PAD) bs=1 count=750
 
 diskette.img: $(STAGES) $(PAD) $(KERNEL) Makefile
 	cat $(STAGES) $(PAD) $(KERNEL) > $@
 
+size:
+	echo $(SIZE)
