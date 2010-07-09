@@ -16,11 +16,11 @@ OBJS := $(addprefix $OBJSDIR, $(OBJS))
 
 KERNEL := kernel.bin
 
-STAGES := stage1 stage2
-
-LOADER_OBJ := loader.o
 LOADER_SRC := loader.S
+LOADER_OBJ := loader.o
 
+# Datos para el armado de la imagen de disco floppy
+STAGES := stage1 stage2
 PAD := pad
 
 deps: $(SOURCES)
