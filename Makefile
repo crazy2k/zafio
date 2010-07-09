@@ -53,13 +53,11 @@ clean:
 new: clean $(KERNEL)
 
 STAGESIZES := $(foreach x, $(STAGES), + $(shell stat -c %s $(x)))
-SIZE=$(shell echo 512 - \( $(addsuffix '+', $(STAGESIZES)) 0 \) % 512 | bc)
+SIZE := $(shell echo $(addsuffix ' +', $(STAGESIZES)) 0 | bc )
+PADSIZE := $(shell echo "512 - $(SIZE) % 512" | bc )
 
 $(PAD):
-	dd if=/dev/zero of=$(PAD) bs=1 count=750
+	dd if=/dev/zero of=$(PAD) bs=1 count=$(PADSIZE)
 
 diskette.img: $(STAGES) $(PAD) $(KERNEL) Makefile
 	cat $(STAGES) $(PAD) $(KERNEL) > $@
-
-size:
-	echo $(SIZE)
