@@ -1,6 +1,6 @@
 CC=gcc
 AS=nasm
-AFLAGS=-f elf 
+ASFLAGS=-f elf 
 CFLAGS=-Wall -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
 LDFLAGS=-T linker.ld 
@@ -13,12 +13,6 @@ LOADER_OBJ=loader.o
 LOADER_SRC=loader.S
 PAD=pad
 
-$(KERNEL): $(OBJS) $(LOADER_OBJ)
-	$(LD) $(LDFLAGS) $(OBJS) $(LOADER_OBJ) -o $@
-
-$(LOADER_OBJ): $(LOADER_SRC)
-	$(AS) $(AFLAGS) $(LOADER_SRC) -o $@
-
 deps: $(SOURCES)
 	$(CC) $(CFLAGS) -MM $(SOURCES) > $@  
 -include deps
@@ -29,9 +23,15 @@ clean:
 
 new: clean $(KERNEL)
 
-$(PAD): 
-  dd if=/dev/zero of=pad bs=1 count=750
+$(KERNEL): $(OBJS) $(LOADER_OBJ)
+	$(LD) $(LDFLAGS) $(OBJS) $(LOADER_OBJ) -o $@
 
-diskette: $(STAGES) $(PAD) $(KERNEL) Makefile
-  cat stage1 stage2 pad kernel.bin > diskette.img
+$(LOADER_OBJ): $(LOADER_SRC)
+	$(AS) $(ASFLAGS) $(LOADER_SRC) -o $@
+
+$(PAD):
+	dd if=/dev/zero of=$(PAD) bs=1 count=750
+
+diskette.img: $(STAGES) $(PAD) $(KERNEL) Makefile
+	 cat $(STAGES) $(PAD) $(KERNEL) > $@
 
