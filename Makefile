@@ -7,7 +7,7 @@ AS := nasm
 ASFLAGS := -f elf 
 
 LD := ld
-LDFLAGS := -T $(SRCDIR)kernel/linker.ld 
+LDFLAGS := -T $(SRCDIR)/kernel/linker.ld 
 
 SOURCES := $(shell find $(SRCDIR) -name "*.c")
 HEADERS := $(shell find $(SRCDIR) -name "*.h")
@@ -18,8 +18,8 @@ OBJS := $(addprefix $(OBJSDIR), $(OBJS))
 
 KERNEL := kernel.bin
 
-LOADER_SRC := $(SRCDIR)kernel/loader.S
-LOADER_OBJ := $(SRCDIR)kernel/loader.o
+LOADER_SRC := $(SRCDIR)/kernel/loader.S
+LOADER_OBJ := $(OBJSDIR)/loader.o
 
 # Datos para el armado de la imagen de disco floppy
 GRUBDIR := reftest/grub/
