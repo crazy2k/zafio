@@ -9,9 +9,10 @@ LDFLAGS := -T linker.ld
 
 SOURCES := $(wildcard src/**/*.c)
 HEADERS := $(wildcard src/**/*.h)
+
+OBJSDIR := ./obj/
 OBJS := $(notdir $(SOURCES:.c=.o))
-OBJS := $(addprefix obj/, $(OBJS))
-OBJ_DIR := obj
+OBJS := $(addprefix $OBJSDIR, $(OBJS))
 
 KERNEL := kernel.bin
 
