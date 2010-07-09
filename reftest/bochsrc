@@ -2,8 +2,8 @@
 config_interface: textconfig
 display_library: x
 megs: 32
-romimage: file="./BIOS-bochs-latest"
-vgaromimage: file="./VGABIOS-lgpl-latest"
+romimage: file="./bios/BIOS-bochs-latest"
+vgaromimage: file="./bios/VGABIOS-lgpl-latest"
 boot: floppy
 floppy_bootsig_check: disabled=0
 floppya: type=1_44, 1_44="diskette.img", status=inserted
