@@ -7,7 +7,7 @@ AS := nasm
 ASFLAGS := -f elf 
 
 LD := ld
-LDFLAGS := -T $(SRCDIR)/kernel/linker.ld 
+LDFLAGS := -T linker.ld 
 
 SOURCES := $(shell find $(SRCDIR) -name "*.c")
 HEADERS := $(shell find $(SRCDIR) -name "*.h")
