@@ -43,6 +43,8 @@ deps: $(SOURCES) $(OBJSDIR)
 obj/%.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
+.PHONY: clean new
+
 clean:
 	rm -f $(OBJSDIR)*.o
 	rm -f $(KERNEL)
