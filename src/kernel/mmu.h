@@ -131,3 +131,4 @@ uint64 segment = GDT_BASE_ADDR(0) | GDT_LIMIT(0xFFFFF) | GDT_TYPE(STA_W) |
 
 uint32 page_table_entry = PTE_BASE_ADDR(0xC1000000) | PDE_PRESENT | PDE_ACCESSED;
 
+*/
