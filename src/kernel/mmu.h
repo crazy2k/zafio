@@ -2,6 +2,7 @@
 #define __16_23_BITS__ 0x00FF0000
 #define __24_31_BITS__ 0xFF000000
 #define __16_19_BITS__ 0x000F0000
+#define __12_31_BITS__ 0xFFFFF000
 
 // Segmentacion
 
@@ -14,8 +15,8 @@
 
 // Limit (Se interpreta segun el valor del bit G. Tener en cuenta que
 //       representa el tamanio del segmento menos 1.)	
-#define GDT_LIMIT(dir) (((__UINT64_TYPE__)(dir) & __LOW16_BITS__) | \
-	((__UINT64_TYPE__)(dir) & HIGH __16_19_BITS__) << 40)
+#define GDT_LIMIT(dir) ( ((__UINT64_TYPE__)(dir) & __LOW16_BITS__) | \
+	((__UINT64_TYPE__)(dir) & HIGH __16_19_BITS__) << 40 )
 
 
 //GDT options
@@ -75,6 +76,58 @@ uint64 segment = GDT_BASE_ADDR(0) | GDT_LIMIT(0xFFFFF) | GDT_TYPE(STA_W) |
 	GDT_GRANULARITY_LIMIT_4KB | GDT_PRESENT_SEGMENT;
 
 */
+/*----------------------------------------------------------------------------*/
 
 
 // Paginación
+
+// Page Directory Entry
+
+// PT Base   (direccion fisica de la tabla de paginas)
+#define PDE_BASE_ADDR(dir) ((__UINT32_TYPE__)(dir) & __12_31_BITS__)
+
+// AVL       (no dice nada// esta disponible para usar, si se quiere)
+
+// G         (indica si la pagina es global (1) o si no lo es (0))
+#define PDE_GLOBAL_PAGE (((__UINT32_TYPE__) 1) << 9)
+
+// PS        (indica si las paginas son de 4KB (0) o 4MB (1))
+#define PDE_PAGE_SIZE_4MB (((__UINT32_TYPE__) 1) << 8)
+
+// A         (indica si la pagina fue accedida (1) o no (0))
+#define PDE_ACCESSED (((__UINT32_TYPE__) 1) << 6)
+
+// PCD       (indica si la pagina/tabla de paginas puede ser
+//           cacheada (0) o no (1))
+#define PDE_CACHEABLE_PAGE (((__UINT32_TYPE__) 1) << 5)
+
+// PWT       (indica si se realizara write-through (1) o
+//           write-back (0) de la pagina/tabla de paginas)
+#define PDE_WRITE_THROUGH (((__UINT32_TYPE__) 1) << 4)
+
+// U/S       (indica si el nivel de privilegios asignado a la pagina
+//           es de supervisor (0) o de usuario (1)
+#define PDE_USER_PAGE (((__UINT32_TYPE__) 1) << 3)
+
+// R/W       (indica si la pagina es de solo lectura (0) o puede
+//           leerse y escribirse (1))
+#define PDE_WRITEABLE (((__UINT32_TYPE__) 1) << 2)
+
+// P         (indica si la pagina/tabla de paginas esta presente (1)
+//           en memoria o no (0))
+#define PDE_PRESENT (((__UINT32_TYPE__) 1) << 1)
+
+
+// Page Table Entry
+
+// Page Base (direccion fisica de la pagina)
+#define PTE_BASE_ADDR(dir) ((__UINT32_TYPE__)(dir) & __12_31_BITS__)
+
+// D         (indica si la pagina fue escrita (1) o no (0))
+#define PTE_DIRTY_PAGE (((__UINT32_TYPE__) 1) << 1)
+
+
+/* Ejemplo
+
+uint32 page_table_entry = PTE_BASE_ADDR(0xC1000000) | PDE_PRESENT | PDE_ACCESSED;
+
