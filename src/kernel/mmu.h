@@ -22,23 +22,21 @@
  *   tipo que representan segun el nombre que se le da en los manuales de
  *   Intel.
 
-// GDT addreses
-
 #define GDT_DESC_BASE(dir) ( ((__UINT64_TYPE__)(dir) & __LOW16_BITS__) << 16 | \
-	((__UINT64_TYPE__)(dir) & HIGH __16_23_BITS__) << 16 | \
+	((__UINT64_TYPE__)(dir) & HIGH __16_23_BITS__) << (32 - 16) | \
 	((__UINT64_TYPE__)(dir) & HIGH __24_31_BITS__) << 32 )
 
 #define GDT_DESC_LIMIT(dir) ( ((__UINT64_TYPE__)(dir) & __LOW16_BITS__) | \
-	((__UINT64_TYPE__)(dir) & HIGH __16_19_BITS__) << 40 )
+	((__UINT64_TYPE__)(dir) & HIGH __16_19_BITS__) << 32 )
 
-#define GDT_DESC_G(limit) (((__UINT64_TYPE__) limit) << 55)
-#define GDT_DESC_DB(size) (((__UINT64_TYPE__) size) << 54)
-#define GDT_DESC_L(is_64) (((__UINT64_TYPE__) is64) << 53)
-#define GDT_DESC_AVL(value) (((__UINT64_TYPE__) value) << 52)
-#define GDT_DESC_P(present) (((__UINT64_TYPE__) present) << 47)
-#define GDT_DESC_DPL(level) (((__UINT64_TYPE__) level) << 45)
-#define GDT_DESC_S(type) (((__UINT64_TYPE__) type) << 44)
-#define GDT_DESC_TYPE(type) ((__UINT64_TYPE__)(type) << 40)
+#define GDT_DESC_G(limit) (((__UINT64_TYPE__) limit) << (32 + 23))
+#define GDT_DESC_DB(size) (((__UINT64_TYPE__) size) << (32 + 22))
+#define GDT_DESC_L(is_64) (((__UINT64_TYPE__) is64) << (32 + 21))
+#define GDT_DESC_AVL(value) (((__UINT64_TYPE__) value) << (32 + 20))
+#define GDT_DESC_P(present) (((__UINT64_TYPE__) present) << (32 + 15))
+#define GDT_DESC_DPL(level) (((__UINT64_TYPE__) level) << (32 + 13))
+#define GDT_DESC_S(type) (((__UINT64_TYPE__) type) << (32 + 12))
+#define GDT_DESC_TYPE(type) ((__UINT64_TYPE__)(type) << (32 + 8))
 
 // Flags para tipos de aplicaciones
 #define GDT_F_DATA_A    0x1 // accessed
