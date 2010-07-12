@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #define __LOW16_BITS__ 0x0000FFFF
 #define __16_23_BITS__ 0x00FF0000
 #define __24_31_BITS__ 0xFF000000
@@ -22,21 +24,21 @@
  *   tipo que representan segun el nombre que se le da en los manuales de
  *   Intel.
  */
-#define GDT_DESC_BASE(dir) ( ((__UINT64_TYPE__)(dir) & __LOW16_BITS__) << 16 | \
-	((__UINT64_TYPE__)(dir) & __16_23_BITS__) << (32 - 16) | \
-	((__UINT64_TYPE__)(dir) & __24_31_BITS__) << 32 )
+#define GDT_DESC_BASE(dir) ( ((uint64_t)(dir) & __LOW16_BITS__) << 16 | \
+	((uint64_t)(dir) & __16_23_BITS__) << (32 - 16) | \
+	((uint64_t)(dir) & __24_31_BITS__) << 32 )
 
-#define GDT_DESC_LIMIT(dir) ( ((__UINT64_TYPE__)(dir) & __LOW16_BITS__) | \
-	((__UINT64_TYPE__)(dir) & __16_19_BITS__) << 32 )
+#define GDT_DESC_LIMIT(dir) ( ((uint64_t)(dir) & __LOW16_BITS__) | \
+	((uint64_t)(dir) & __16_19_BITS__) << 32 )
 
-#define GDT_DESC_G(limit) (((__UINT64_TYPE__) limit) << (32 + 23))
-#define GDT_DESC_DB(size) (((__UINT64_TYPE__) size) << (32 + 22))
-#define GDT_DESC_L(is_64) (((__UINT64_TYPE__) is64) << (32 + 21))
-#define GDT_DESC_AVL(value) (((__UINT64_TYPE__) value) << (32 + 20))
-#define GDT_DESC_P(present) (((__UINT64_TYPE__) present) << (32 + 15))
-#define GDT_DESC_DPL(level) (((__UINT64_TYPE__) level) << (32 + 13))
-#define GDT_DESC_S(type) (((__UINT64_TYPE__) type) << (32 + 12))
-#define GDT_DESC_TYPE(type) ((__UINT64_TYPE__)(type) << (32 + 8))
+#define GDT_DESC_G(limit) (((uint64_t) limit) << (32 + 23))
+#define GDT_DESC_DB(size) (((uint64_t) size) << (32 + 22))
+#define GDT_DESC_L(is_64) (((uint64_t) is64) << (32 + 21))
+#define GDT_DESC_AVL(value) (((uint64_t) value) << (32 + 20))
+#define GDT_DESC_P(present) (((uint64_t) present) << (32 + 15))
+#define GDT_DESC_DPL(level) (((uint64_t) level) << (32 + 13))
+#define GDT_DESC_S(type) (((uint64_t) type) << (32 + 12))
+#define GDT_DESC_TYPE(type) ((uint64_t)(type) << (32 + 8))
 
 // Flags para tipos de aplicaciones
 #define GDT_F_DATA_A    0x1 // accessed
@@ -60,7 +62,7 @@
 #define GDT_F_32BIG     0xE // 32-bit Interrupt Gate
 #define GDT_F_32BTG     0xF // 32-bit Trap Gate
 
-#define GDT_NULL ((__UINT64_TYPE__) 0)
+#define GDT_NULL ((uint64_t) 0)
 
 /* Paginacion
  * ==========
@@ -76,21 +78,21 @@
 
 // Page Directory Entry
 
-#define PDE_PT_BASE(addr) ((__UINT32_TYPE__)(addr) & __12_31_BITS__)
-#define PDE_PS(size) (((__UINT32_TYPE__) size) << 7)
-#define PDE_A(accessed) (((__UINT32_TYPE__) accessed) << 5)
-#define PDE_PCD(cacheable) (((__UINT32_TYPE__) cacheable) << 4)
-#define PDE_PWT(wt) (((__UINT32_TYPE__) wt) << 3)
-#define PDE_US(level) (((__UINT32_TYPE__) level) << 2)
-#define PDE_RW(writable) (((__UINT32_TYPE__) writable) << 1)
-#define PDE_P(present) (((__UINT32_TYPE__) present) << 0)
+#define PDE_PT_BASE(addr) ((uint32_t)(addr) & __12_31_BITS__)
+#define PDE_PS(size) (((uint32_t) size) << 7)
+#define PDE_A(accessed) (((uint32_t) accessed) << 5)
+#define PDE_PCD(cacheable) (((uint32_t) cacheable) << 4)
+#define PDE_PWT(wt) (((uint32_t) wt) << 3)
+#define PDE_US(level) (((uint32_t) level) << 2)
+#define PDE_RW(writable) (((uint32_t) writable) << 1)
+#define PDE_P(present) (((uint32_t) present) << 0)
 
 // Page Table Entry
 
-#define PTE_PAGE_BASE(dir) ((__UINT32_TYPE__)(dir) & __12_31_BITS__)
-#define PTE_G(global) (((__UINT32_TYPE__) global) << 8)
-#define PTE_PAT(value) (((__UINT32_TYPE__) value) << 7)
-#define PTE_D(value) ((__UINT32_TYPE__)(value) << 6)
+#define PTE_PAGE_BASE(dir) ((uint32_t)(dir) & __12_31_BITS__)
+#define PTE_G(global) (((uint32_t) global) << 8)
+#define PTE_PAT(value) (((uint32_t) value) << 7)
+#define PTE_D(value) ((uint32_t)(value) << 6)
 #define PTE_A(accessed) (PDE_A(accessed))
 #define PTE_PCD(cacheable) (PDE_PCD(cacheable)
 #define PTE_PWT(wt) (PDE_PWT(wt))
