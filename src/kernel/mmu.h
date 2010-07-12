@@ -21,7 +21,7 @@
  *   Los flags para tipos de sistema siguen con las siglas correspondientes al
  *   tipo que representan segun el nombre que se le da en los manuales de
  *   Intel.
-
+ */
 #define GDT_DESC_BASE(dir) ( ((__UINT64_TYPE__)(dir) & __LOW16_BITS__) << 16 | \
 	((__UINT64_TYPE__)(dir) & HIGH __16_23_BITS__) << (32 - 16) | \
 	((__UINT64_TYPE__)(dir) & HIGH __24_31_BITS__) << 32 )
@@ -72,7 +72,7 @@
  *   manuales de Intel a cada campo, con la salvedad de que los espacios se
  *   reemplazan por ``_``, el caracter ``/`` se omite y todas las letras van
  *   en mayuscula.
-
+ */
 
 // Page Directory Entry
 
