@@ -4,70 +4,65 @@
 #define __16_19_BITS__ 0x000F0000
 #define __12_31_BITS__ 0xFFFFF000
 
-// Segmentacion
+/* Segmentacion
+ * ============
+ * 
+ * Convenciones:
+ * - Todas las macros relacionadas con la GDT comienzan con el
+ *   prefijo ``GDT_``.
+ * - Aquellas relacionadas con descriptores en la GDT, llevan el prefijo
+ *   ``GDT_DESC_``. El resto del nombre de la macro lleva el nombre dado en
+ *   los manuales de Intel, con la salvedad de que los espacios se reemplazan
+ *   por ``_``, el caracter ``/`` se omite y todas las letras van en mayuscula.
+ * - Los flags, por comodidad, tienen solo el prefijo ``GDT_F``.
+ *   Los flags para tipos de segmentos de aplicaciones siguen con ``_DATA_X``
+ *   o ``_CODE_X`` segun sean de datos o de codigo, donde X representa el
+ *   nombre que se le da en los manuales a cada bit que compone el tipo.
+ *   Los flags para tipos de sistema siguen con las siglas correspondientes al
+ *   tipo que representan segun el nombre que se le da en los manuales de
+ *   Intel.
 
 // GDT addreses
 
-// Base
-#define GDT_BASE_ADDR(dir) ( ((__UINT64_TYPE__)(dir) & __LOW16_BITS__) << 16 | \
+#define GDT_DESC_BASE(dir) ( ((__UINT64_TYPE__)(dir) & __LOW16_BITS__) << 16 | \
 	((__UINT64_TYPE__)(dir) & HIGH __16_23_BITS__) << 16 | \
 	((__UINT64_TYPE__)(dir) & HIGH __24_31_BITS__) << 32 )
 
-// Limit (Se interpreta segun el valor del bit G. Tener en cuenta que
-//       representa el tamanio del segmento menos 1.)	
-#define GDT_LIMIT(dir) ( ((__UINT64_TYPE__)(dir) & __LOW16_BITS__) | \
+#define GDT_DESC_LIMIT(dir) ( ((__UINT64_TYPE__)(dir) & __LOW16_BITS__) | \
 	((__UINT64_TYPE__)(dir) & HIGH __16_19_BITS__) << 40 )
 
+#define GDT_DESC_G(limit) (((__UINT64_TYPE__) limit) << 55)
+#define GDT_DESC_DB(size) (((__UINT64_TYPE__) size) << 54)
+#define GDT_DESC_L(is_64) (((__UINT64_TYPE__) is64) << 53)
+#define GDT_DESC_AVL(value) (((__UINT64_TYPE__) value) << 52)
+#define GDT_DESC_P(present) (((__UINT64_TYPE__) present) << 47)
+#define GDT_DESC_DPL(level) (((__UINT64_TYPE__) level) << 45)
+#define GDT_DESC_S(type) (((__UINT64_TYPE__) type) << 44)
+#define GDT_DESC_TYPE(type) ((__UINT64_TYPE__)(type) << 40)
 
-//GDT options
+// Flags para tipos de aplicaciones
+#define GDT_F_DATA_A    0x1 // accessed
+#define GDT_F_DATA_W    0x2 // write-enable
+#define GDT_F_DATA_E    0x4 // expansion-direction
+#define GDT_F_CODE_A    0x9 // accessed
+#define GDT_F_CODE_R    0xA // read enable
+#define GDT_F_CODE_C    0xC // conforming
 
-// G     (el limite se interpreta en unidades de 1B (0) o 4KB (1))
-#define GDT_GRANULARITY_LIMIT_4KB (((__UINT64_TYPE__) 1) << 55)
+// Flags para tipos de sistema
+#define GDT_F_16BTA     0x1 // 16-bit TSS (Available)
+#define GDT_F_LDT       0x2 // LDT
+#define GDT_F_16BTB     0x3 // 16-bit TSS (Busy)
+#define GDT_F_16BCG     0x4 // 16-bite Call Gate
+#define GDT_F_TG        0x5 // Task Gate
+#define GDT_F_16BIG     0x6 // 16-bit Interrupt Gate
+#define GDT_F_16BTG     0x7 // 16-bit Trap Gate
+#define GDT_F_32BTA     0x9 // 32-bit TSS (Available)
+#define GDT_F_32BTB     0xB // 32-bit TSS (Busy)
+#define GDT_F_32BCG     0xC // 32-bit Call Gate
+#define GDT_F_32BIG     0xE // 32-bit Interrupt Gate
+#define GDT_F_32BTG     0xF // 32-bit Trap Gate
 
-// D/B   (segmentos de 16 bits (0) o 32 bits (1))
-#define GDT_32_BITS_SEGMENT (((__UINT64_TYPE__) 1) << 54)
-
-// L     (codigo que no es de 64 bits (0) o que es de 64 bits (1))
-#define GDT_64_BITS_CODE (((__UINT64_TYPE__) 1) << 53)
-
-// AVL   (no dice nada; es un bit disponible para usar, si se quiere)
-
-// P     (segmento ausente en memoria (0) o presente en memoria (1))
-#define GDT_PRESENT_SEGMENT (((__UINT64_TYPE__) 1) << 47)
-
-// DPL   (nivel de privilegio del segmento; de 0 a 3)
-#define GDT_PRIVILEGE_LEVEL(level) (((__UINT64_TYPE__) level) << 45)
-
-// S     (segmento del sistema (0) o de codigo/datos (1))
-#define GDT_APPLICATION_SEGMENT (((__UINT64_TYPE__) 1) << 44)
-
-
-//GDT type fields
-#define GDT_TYPE(type) ((__UINT64_TYPE__)(type) << 40)
-	
-// Application segment type bits
-#define STA_X           0x8         // Executable segment
-#define STA_E           0x4         // Expand down (non-executable segments)
-#define STA_C           0x4         // Conforming code segment (executable only)
-#define STA_W           0x2         // Writeable (non-executable segments)
-#define STA_R           0x2         // Readable (executable segments)
-#define STA_A           0x1         // Accessed
-
-// System segment type bits
-#define STS_T16A        0x1         // Available 16-bit TSS
-#define STS_LDT         0x2         // Local Descriptor Table
-#define STS_T16B        0x3         // Busy 16-bit TSS
-#define STS_CG16        0x4         // 16-bit Call Gate
-#define STS_TG          0x5         // Task Gate / Coum Transmitions
-#define STS_IG16        0x6         // 16-bit Interrupt Gate
-#define STS_TG16        0x7         // 16-bit Trap Gate
-#define STS_T32A        0x9         // Available 32-bit TSS
-#define STS_T32B        0xB         // Busy 32-bit TSS
-#define STS_CG32        0xC         // 32-bit Call Gate
-#define STS_IG32        0xE         // 32-bit Interrupt Gate
-#define STS_TG32        0xF         // 32-bit Trap Gate
-
-#define GDT_NULL_SEGMENT ((__UINT64_TYPE__) 0)
+#define GDT_NULL ((__UINT64_TYPE__) 0)
 
 /* Ejemplo
 
