@@ -77,9 +77,7 @@
 // Page Directory Entry
 
 #define PDE_PT_BASE(addr) ((__UINT32_TYPE__)(addr) & __12_31_BITS__)
-#define PDE_AVL(value) ((__UINT32_TYPE__)(value) << 8)
 #define PDE_PS(size) (((__UINT32_TYPE__) size) << 7)
-#define PDE_AVL(value) (((__UINT32_TYPE__) value) << 6)
 #define PDE_A(accessed) (((__UINT32_TYPE__) accessed) << 5)
 #define PDE_PCD(cacheable) (((__UINT32_TYPE__) cacheable) << 4)
 #define PDE_PWT(wt) (((__UINT32_TYPE__) wt) << 3)
@@ -90,7 +88,6 @@
 // Page Table Entry
 
 #define PTE_PAGE_BASE(dir) ((__UINT32_TYPE__)(dir) & __12_31_BITS__)
-#define PDE_AVL(value) ((__UINT32_TYPE__)(value) << 9)
 #define PTE_G(global) (((__UINT32_TYPE__) global) << 8)
 #define PTE_PAT(value) (((__UINT32_TYPE__) value) << 7)
 #define PTE_D(value) ((__UINT32_TYPE__)(value) << 6)
