@@ -23,11 +23,11 @@
  *   Intel.
  */
 #define GDT_DESC_BASE(dir) ( ((__UINT64_TYPE__)(dir) & __LOW16_BITS__) << 16 | \
-	((__UINT64_TYPE__)(dir) & HIGH __16_23_BITS__) << (32 - 16) | \
-	((__UINT64_TYPE__)(dir) & HIGH __24_31_BITS__) << 32 )
+	((__UINT64_TYPE__)(dir) & __16_23_BITS__) << (32 - 16) | \
+	((__UINT64_TYPE__)(dir) & __24_31_BITS__) << 32 )
 
 #define GDT_DESC_LIMIT(dir) ( ((__UINT64_TYPE__)(dir) & __LOW16_BITS__) | \
-	((__UINT64_TYPE__)(dir) & HIGH __16_19_BITS__) << 32 )
+	((__UINT64_TYPE__)(dir) & __16_19_BITS__) << 32 )
 
 #define GDT_DESC_G(limit) (((__UINT64_TYPE__) limit) << (32 + 23))
 #define GDT_DESC_DB(size) (((__UINT64_TYPE__) size) << (32 + 22))
