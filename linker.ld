@@ -12,9 +12,9 @@ SECTIONS{
     _kernel_virt_addr = 0xC0100000;
     _kernel_phys_addr = 0x00100000;
 
-    _kernel_addr_offset = _kernel_virt_address - _kernel_phys_address
+    _kernel_addr_offset = _kernel_virt_addr - _kernel_phys_addr;
 
-    . = _kernel_virtual_address;
+    . = _kernel_virt_addr;
 
     .text : AT(ADDR(.text) - _kernel_addr_offset) {
         *(.text)
@@ -28,7 +28,7 @@ SECTIONS{
         *(.data)
     }
 
-    .bss : AT(ADDR(.bss) - _kernel_addr_offset)  {
+    .bss : AT(ADDR(.bss) - _kernel_addr_offset) {
         sbss = .;
         *(COMMON)
         *(.bss)
