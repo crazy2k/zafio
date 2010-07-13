@@ -31,13 +31,12 @@
 #define GDT_DESC_LIMIT(dir) ( ((uint64_t)(dir) & __LOW16_BITS__) | \
 	((uint64_t)(dir) & __16_19_BITS__) << 32 )
 
-#define GDT_DESC_G(limit) (((uint64_t) limit) << (32 + 23))
-#define GDT_DESC_DB(size) (((uint64_t) size) << (32 + 22))
-#define GDT_DESC_L(is_64) (((uint64_t) is_64) << (32 + 21))
-#define GDT_DESC_AVL(value) (((uint64_t) value) << (32 + 20))
-#define GDT_DESC_P(present) (((uint64_t) present) << (32 + 15))
+#define GDT_DESC_G (((uint64_t) 1) << (32 + 23))
+#define GDT_DESC_DB (((uint64_t) 1) << (32 + 22))
+#define GDT_DESC_L (((uint64_t) 1) << (32 + 21))
+#define GDT_DESC_P (((uint64_t) 1) << (32 + 15))
 #define GDT_DESC_DPL(level) (((uint64_t) level) << (32 + 13))
-#define GDT_DESC_S(type) (((uint64_t) type) << (32 + 12))
+#define GDT_DESC_S (((uint64_t) 1) << (32 + 12))
 #define GDT_DESC_TYPE(type) ((uint64_t)(type) << (32 + 8))
 
 // Flags para tipos de aplicaciones
@@ -79,24 +78,24 @@
 // Page Directory Entry
 
 #define PDE_PT_BASE(addr) ((uint32_t)(addr) & __12_31_BITS__)
-#define PDE_PS(size) (((uint32_t) size) << 7)
-#define PDE_A(accessed) (((uint32_t) accessed) << 5)
-#define PDE_PCD(cacheable) (((uint32_t) cacheable) << 4)
-#define PDE_PWT(wt) (((uint32_t) wt) << 3)
-#define PDE_US(level) (((uint32_t) level) << 2)
-#define PDE_RW(writable) (((uint32_t) writable) << 1)
-#define PDE_P(present) (((uint32_t) present) << 0)
+#define PDE_PS (((uint32_t) 1) << 7)
+#define PDE_A (((uint32_t) 1) << 5)
+#define PDE_PCD (((uint32_t) 1) << 4)
+#define PDE_PWT (((uint32_t) 1) << 3)
+#define PDE_US (((uint32_t) 1) << 2)
+#define PDE_RW (((uint32_t) 1) << 1)
+#define PDE_P (((uint32_t) 1) << 0)
 
 // Page Table Entry
 
 #define PTE_PAGE_BASE(dir) ((uint32_t)(dir) & __12_31_BITS__)
-#define PTE_G(global) (((uint32_t) global) << 8)
-#define PTE_PAT(value) (((uint32_t) value) << 7)
-#define PTE_D(value) ((uint32_t)(value) << 6)
-#define PTE_A(accessed) (PDE_A(accessed))
-#define PTE_PCD(cacheable) (PDE_PCD(cacheable))
-#define PTE_PWT(wt) (PDE_PWT(wt))
-#define PTE_US(level) (PDE_US(level))
-#define PTE_RW(writable) (PDE_RW(writable))
-#define PTE_P(present) (PDE_P(present))
+#define PTE_G (((uint32_t) 1) << 8)
+#define PTE_PAT (((uint32_t) 1) << 7)
+#define PTE_D (((uint32_t) 1) << 6)
+#define PTE_A PDE_A
+#define PTE_PCD PDE_PCD
+#define PTE_PWT PDE_PWT
+#define PTE_US PDE_US
+#define PTE_RW PDE_RW
+#define PTE_P PDE_P
 
