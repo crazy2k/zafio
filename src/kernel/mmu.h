@@ -6,6 +6,15 @@
 #define __16_19_BITS__ 0x000F0000
 #define __12_31_BITS__ 0xFFFFF000
 
+#define __22_31_BITS__ 0xFFC00000
+#define PDI(laddr) ((laddr & __22_31_BITS__) >> 22)
+#define __12_21_BITS__ 0x003FF000
+#define PTI(laddr) ((laddr & __12_21_BITS__) >> 12)
+
+#define KERNEL_PHYS_ADDR 0x01000000
+#define KERNEL_VIRT_ADDR 0xC1000000
+
+
 /* Segmentacion
  * ============
  * 
@@ -94,7 +103,7 @@
 #define PTE_PAT(value) (((uint32_t) value) << 7)
 #define PTE_D(value) ((uint32_t)(value) << 6)
 #define PTE_A(accessed) (PDE_A(accessed))
-#define PTE_PCD(cacheable) (PDE_PCD(cacheable)
+#define PTE_PCD(cacheable) (PDE_PCD(cacheable))
 #define PTE_PWT(wt) (PDE_PWT(wt))
 #define PTE_US(level) (PDE_US(level))
 #define PTE_RW(writable) (PDE_RW(writable))
