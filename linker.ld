@@ -21,18 +21,26 @@ SECTIONS{
     }
 
     . = _kernel_virt_addr + 0x00100000;
+    
+     _pd_begin = .;
+
+    .pd ALIGN(0x400) : AT(ADDR(.pd) - _kernel_addr_offset) {
+        *(.pd)
+    }
 
     _pt_begin = .;
 
     .pt ALIGN(0x400) : AT(ADDR(.pt) - _kernel_addr_offset) {
         *(.pt)
     }
-
-    _pd_begin = .;
-
-    .pd ALIGN(0x400) : AT(ADDR(.pd) - _kernel_addr_offset) {
-        *(.pd)
+          
+    .kernelstack ALIGN(0x400) : AT(ADDR(.kernelstack) - _kernel_addr_offset) {
+        *(.kernelstack)
     }
+    
+    _stack_size = 0x400;
+    
+    . = . + _stack_size;
 
     _gdt_begin = .;
 
@@ -42,10 +50,6 @@ SECTIONS{
 
     _gdt_end = .;
     _gdt_len = _gdt_end - _gdt_begin;
-
-    .kernelstack ALIGN(0x8) : AT(ADDR(.kernelstack) - _kernel_addr_offset) {
-        *(.kernelstack)
-    }
 
     .rodata : AT(ADDR(.rodata) - _kernel_addr_offset) {
         *(.rodata)

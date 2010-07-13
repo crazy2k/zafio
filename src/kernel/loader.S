@@ -63,4 +63,3 @@ gdtr: dw _gdt_len - 1 ; se escribe sizeof(gdt) - 1
 
 section .kernelstack
 stack:
-    resb STACK_SIZE

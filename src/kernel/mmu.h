@@ -7,13 +7,14 @@
 #define __12_31_BITS__ 0xFFFFF000
 
 #define __22_31_BITS__ 0xFFC00000
-#define PDI(laddr) ((laddr & __22_31_BITS__) >> 22)
 #define __12_21_BITS__ 0x003FF000
-#define PTI(laddr) ((laddr & __12_21_BITS__) >> 12)
 
-#define KERNEL_PHYS_ADDR 0x01000000
+#define PDI(laddr) (((uint32_t)laddr & __22_31_BITS__) >> 22)
+#define PTI(laddr) (((uint32_t)laddr & __12_21_BITS__) >> 12)
+
 #define KERNEL_VIRT_ADDR 0xC1000000
-
+#define KERNEL_PHYS_ADDR 0x01000000
+#define KERNEL_PAGE_TABLE (KERNEL_PHYS_ADDR + 0x01000000)
 
 /* Segmentacion
  * ============
