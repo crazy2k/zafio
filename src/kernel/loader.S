@@ -1,6 +1,10 @@
 global loader
 
 extern cmain
+extern _gdt_begin
+extern _gdt_end
+extern _gdt_len
+extern _pd_begin
 
 
 ; Datos para usar en el header Multiboot
@@ -52,11 +56,11 @@ parar:
 
 
 section .data
-gdt_len: equ _gdt_end - _gdt_begin
-gdtr: dw gdt_len - 1 ; se escribe sizeof(gdt) - 1
+gdt_len: equ _gdt_len
+gdtr: dw _gdt_len - 1 ; se escribe sizeof(gdt) - 1
       dd _gdt_begin
 
 
-section .bss
+section .kernelstack
 stack:
     resb STACK_SIZE
