@@ -42,7 +42,7 @@
 
 #define GDT_DESC_G(limit) (((uint64_t) limit) << (32 + 23))
 #define GDT_DESC_DB(size) (((uint64_t) size) << (32 + 22))
-#define GDT_DESC_L(is_64) (((uint64_t) is64) << (32 + 21))
+#define GDT_DESC_L(is_64) (((uint64_t) is_64) << (32 + 21))
 #define GDT_DESC_AVL(value) (((uint64_t) value) << (32 + 20))
 #define GDT_DESC_P(present) (((uint64_t) present) << (32 + 15))
 #define GDT_DESC_DPL(level) (((uint64_t) level) << (32 + 13))
