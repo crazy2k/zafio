@@ -6,6 +6,15 @@
 #define __16_19_BITS__ 0x000F0000
 #define __12_31_BITS__ 0xFFFFF000
 
+#define __22_31_BITS__ 0xFFC00000
+#define PDI(laddr) ((laddr & __22_31_BITS__) >> 22)
+#define __12_21_BITS__ 0x003FF000
+#define PTI(laddr) ((laddr & __12_21_BITS__) >> 12)
+
+#define KERNEL_PHYS_ADDR 0x01000000
+#define KERNEL_VIRT_ADDR 0xC1000000
+
+
 /* Segmentacion
  * ============
  * 
