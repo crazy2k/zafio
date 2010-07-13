@@ -1,23 +1,34 @@
 
-/* definicion del punto de entrada */
+/* Definicion del punto de entrada */
 ENTRY (loader)
 
 SECTIONS{
-    . = 0x00100000;
+    /* Direccion virtual que sera asignada al kernel.
 
-    .text :{
+       El kernel se reservara las direcciones a partir de 3 GB en el
+       espacio de direcciones virtual. Por simplicidad, haremos
+       corresponder 3GB + 1MB a 1MB, por lo que la direccion de
+       reubicacion inicial sera 3GB + 1MB. */
+    _kernel_virt_addr = 0xC0100000;
+    _kernel_phys_addr = 0x00100000;
+
+    _kernel_addr_offset = _kernel_virt_address - _kernel_phys_address
+
+    . = _kernel_virtual_address;
+
+    .text : AT(ADDR(.text) - _kernel_addr_offset) {
         *(.text)
     }
 
-    .rodata ALIGN (0x1000) : {
+    .rodata : AT(ADDR(.rodata) - _kernel_addr_offset) {
         *(.rodata)
     }
 
-    .data ALIGN (0x1000) : {
+    .data : AT(ADDR(.data) - _kernel_addr_offset) {
         *(.data)
     }
 
-    .bss : {
+    .bss : AT(ADDR(.bss) - _kernel_addr_offset)  {
         sbss = .;
         *(COMMON)
         *(.bss)
