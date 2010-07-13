@@ -28,13 +28,13 @@ loader:
     lgdt [gdtr]
 
     ; indicamos ubicacion del directorio de paginas
-    mov eax, _pd_begin
-    mov cr3, eax
+    mov ecx, _pd_begin
+    mov cr3, ecx
 
     ; activamos paginacion
-    mov eax, cr0
-    or eax, 0x80000000  ; activamos el bit PG
-    mov cr0, eax
+    mov ecx, cr0
+    or ecx, 0x80000000  ; activamos el bit PG
+    mov cr0, ecx
 
     mov esp, stack + STACK_SIZE
 
