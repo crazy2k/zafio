@@ -8,7 +8,7 @@ uint32_t pd[1024] __attribute__((section (".pd"))) = {
         PTE_RW | PTE_P,
 };
 
-uint32_t pt_temp_im[1024] = {
+uint32_t pt_temp_im[1024] __attribute__((section (".pt"))) = {
     [PTI(KERNEL_PHYS_ADDR)] = PTE_PAGE_BASE(KERNEL_PHYS_ADDR) | PTE_G |
         PTE_PWT | PTE_RW | PTE_P
 };

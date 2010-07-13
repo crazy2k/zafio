@@ -20,8 +20,12 @@ SECTIONS{
         *(.text)
     }
 
-    .kernelstack ALIGN(0x8) : AT(ADDR(.kernelstack) - _kernel_addr_offset) {
-        *(.kernelstack)
+    . = _kernel_virt_addr + 0x00100000;
+
+    _pt_begin = .;
+
+    .pt ALIGN(0x400) : AT(ADDR(.pt) - _kernel_addr_offset) {
+        *(.pt)
     }
 
     _pd_begin = .;
@@ -38,6 +42,10 @@ SECTIONS{
 
     _gdt_end = .;
     _gdt_len = _gdt_end - _gdt_begin;
+
+    .kernelstack ALIGN(0x8) : AT(ADDR(.kernelstack) - _kernel_addr_offset) {
+        *(.kernelstack)
+    }
 
     .rodata : AT(ADDR(.rodata) - _kernel_addr_offset) {
         *(.rodata)
