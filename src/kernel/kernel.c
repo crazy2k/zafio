@@ -1,3 +1,8 @@
+#include "mmu.h"
+
+unsigned long long int segment = GDT_DESC_BASE(0) | GDT_DESC_LIMIT(0xFFFFF) /*| GDT_TYPE(STA_W) | 
+       GDT_PRIVILEGE_LEVEL(0) | GDT_APPLICATION_SEGMENT | GDT_32_BITS_SEGMENT |
+       GDT_GRANULARITY_LIMIT_4KB | GDT_PRESENT_SEGMENT*/;
 
 void cmain(unsigned int magic_number, void* mbinfo) {
     if (magic_number != 0x1BADB002) {
