@@ -37,7 +37,7 @@ SECTIONS{
         *(.pd)
     }
 
-    /* Stack del kernel */
+    /* Stack del kernel al comienzo de 2MB + 8K */
     .kernelstack ALIGN(0x8) : AT(ADDR(.kernelstack) - _kernel_addr_offset) {
         *(.kernelstack)
         _stack_size = 0x400;
