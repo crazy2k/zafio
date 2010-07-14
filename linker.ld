@@ -19,6 +19,20 @@ SECTIONS{
     .text : AT(ADDR(.text) - _kernel_addr_offset) {
         *(.text)
     }
+    
+    .rodata : AT(ADDR(.rodata) - _kernel_addr_offset) {
+        *(.rodata)
+    }
+
+    .data : AT(ADDR(.data) - _kernel_addr_offset) {
+        *(.data)
+    }
+
+    .bss : AT(ADDR(.bss) - _kernel_addr_offset) {
+        *(COMMON)
+        *(.bss)
+    }
+    
 
     /* Tabla de paginas inicial, ubicada 1MB despues del inicio del kernel */
     . = _kernel_virt_addr + 0x00100000;
@@ -60,19 +74,5 @@ SECTIONS{
     _gdtr_begin_phys = _gdtr_begin - _kernel_addr_offset;
     .gdtr : AT(ADDR(.gdtr) - _kernel_addr_offset) {
         *(.gdtr)
-    }
-
-
-    .rodata : AT(ADDR(.rodata) - _kernel_addr_offset) {
-        *(.rodata)
-    }
-
-    .data : AT(ADDR(.data) - _kernel_addr_offset) {
-        *(.data)
-    }
-
-    .bss : AT(ADDR(.bss) - _kernel_addr_offset) {
-        *(COMMON)
-        *(.bss)
     }
 }
