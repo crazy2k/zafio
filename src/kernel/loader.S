@@ -28,6 +28,7 @@ dd CHECKSUM
 ; si se quiere referenciar a una etiqueta X hay que hacerlo restandole el
 ; valor de la etiqueta _kernel_addr_offset.
 loader:
+    xchg bx, bx
     cli
 
     ; cargamos la GDT
