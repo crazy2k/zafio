@@ -1,10 +1,10 @@
 #include "mmu.h"
 
 uint32_t pd[1024] __attribute__((section (".pd"))) = {
-    [PDI(KERNEL_PHYS_ADDR)] = PDE_PT_BASE(0) | PTE_PWT |
+    [PDI(KERNEL_PHYS_ADDR)] = PDE_PT_BASE(KERNEL_PAGE_TABLE) | PTE_PWT |
         PTE_RW | PTE_P,
         
-    [PDI(KERNEL_VIRT_ADDR)] = PDE_PT_BASE(0) | PTE_PWT |
+    [PDI(KERNEL_VIRT_ADDR)] = PDE_PT_BASE(KERNEL_PAGE_TABLE) | PTE_PWT |
         PTE_RW | PTE_P,
 };
 

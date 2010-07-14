@@ -38,6 +38,13 @@ SECTIONS{
         *(.pd)
     }
 
+    /* Stack del kernel */
+    .kernelstack ALIGN(0x8) : AT(ADDR(.kernelstack) - _kernel_addr_offset) {
+        *(.kernelstack)
+        _stack_size = 0x400;
+        . = _stack_size;
+    }
+
     /* GDT */
     _gdt_begin = .;
     _gdt_begin_phys = _gdt_begin - _kernel_addr_offset;
@@ -56,10 +63,6 @@ SECTIONS{
         *(.gdtr)
     }
 
-    /* Stack del kernel */
-    .kernelstack ALIGN(0x8) : AT(ADDR(.kernelstack) - _kernel_addr_offset) {
-        *(.kernelstack)
-    }
 
     .rodata : AT(ADDR(.rodata) - _kernel_addr_offset) {
         *(.rodata)
