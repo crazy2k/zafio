@@ -1,4 +1,4 @@
-#include "mmu.h"
+#include "../inc/mmu.h"
 
 unsigned long long int segment = GDT_DESC_BASE(0) | GDT_DESC_LIMIT(0xFFFFF) /*| GDT_TYPE(STA_W) | 
        GDT_PRIVILEGE_LEVEL(0) | GDT_APPLICATION_SEGMENT | GDT_32_BITS_SEGMENT |
