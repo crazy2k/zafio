@@ -16,6 +16,7 @@
 #define KERNEL_PHYS_ADDR 0x00100000
 #define KERNEL_PAGE_TABLE (KERNEL_PHYS_ADDR + 0x00100000)   // kernel + 1MB
 #define KERNEL_STACK (KERNEL_PAGE_TABLE + 0x00002000)       // kernel + 1MB + 2K
+#define VIDEO_MEMORY 0x000B8000
 
 /* Segmentacion
  * ============
