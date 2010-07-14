@@ -1,10 +1,11 @@
 global loader
 
-extern cmain
-extern _gdt_begin
-extern _gdt_end
+extern _kernel_addr_offset
+extern _gdt_begin_phys
 extern _gdt_len
-extern _pd_begin
+extern _gdtr_begin_phys
+extern _pd_begin_phys
+extern cmain
 
 
 ; Datos para usar en el header Multiboot
@@ -21,14 +22,19 @@ dd MAGIC
 dd FLAGS
 dd CHECKSUM
 
+
+; NOTA: Tener en cuenta que las direcciones de reubicacion no coinciden con
+; las direcciones de carga. Hasta que se activa la paginacion de memoria,
+; si se quiere referenciar a una etiqueta X hay que hacerlo restandole el
+; valor de la etiqueta _kernel_addr_offset.
 loader:
     cli
 
     ; cargamos la GDT
-    lgdt [gdtr]
+    lgdt [_gdtr_begin_phys]
 
     ; indicamos ubicacion del directorio de paginas
-    mov ecx, _pd_begin
+    mov ecx, _pd_begin_phys
     mov cr3, ecx
 
     ; activamos paginacion
@@ -55,10 +61,9 @@ parar:
     jmp parar
 
 
-section .data
-gdt_len: equ _gdt_len
+section .gdtr
 gdtr: dw _gdt_len - 1 ; se escribe sizeof(gdt) - 1
-      dd _gdt_begin
+      dd _gdt_begin_phys
 
 
 section .kernelstack

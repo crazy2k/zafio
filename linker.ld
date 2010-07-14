@@ -16,10 +16,12 @@ SECTIONS{
 
     . = _kernel_virt_addr;
 
+    /* Codigo del kernel */
     .text : AT(ADDR(.text) - _kernel_addr_offset) {
         *(.text)
     }
 
+    /* Tabla de paginas inicial, ubicada 1MB despues del inicio del kernel */
     . = _kernel_virt_addr + 0x00100000;
 
     _pt_begin = .;
@@ -28,13 +30,17 @@ SECTIONS{
         *(.pt)
     }
 
+    /* Directorio de paginas inicial */
     _pd_begin = .;
+    _pd_begin_phys = _pd_begin - _kernel_addr_offset;
 
     .pd ALIGN(0x400) : AT(ADDR(.pd) - _kernel_addr_offset) {
         *(.pd)
     }
 
+    /* GDT */
     _gdt_begin = .;
+    _gdt_begin_phys = _gdt_begin - _kernel_addr_offset;
 
     .gdt ALIGN(0x400) : AT(ADDR(.gdt) - _kernel_addr_offset) {
         *(.gdt)
@@ -43,6 +49,14 @@ SECTIONS{
     _gdt_end = .;
     _gdt_len = _gdt_end - _gdt_begin;
 
+    /* Registro para la GDT */
+    _gdtr_begin = .;
+    _gdtr_begin_phys = _gdtr_begin - _kernel_addr_offset;
+    .gdtr : AT(ADDR(.gdtr) - _kernel_addr_offset) {
+        *(.gdtr)
+    }
+
+    /* Stack del kernel */
     .kernelstack ALIGN(0x8) : AT(ADDR(.kernelstack) - _kernel_addr_offset) {
         *(.kernelstack)
     }
