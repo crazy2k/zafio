@@ -10,8 +10,7 @@ _kernel_phys_addr = 0x00100000;
 _kernel_addr_offset = _kernel_virt_addr - _kernel_phys_addr;
 
 /* Definicion del punto de entrada */
-loader_phys = loader - _kernel_addr_offset;
-ENTRY (loader_phys)
+ENTRY (loader)
 
 SECTIONS{
     . = _kernel_virt_addr;
