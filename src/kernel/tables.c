@@ -2,11 +2,11 @@
 #include "../inc/memlayout.h"
 
 uint32_t pd[1024] __attribute__((section (".pd"))) = {
-    [PDI(KERNEL_PHYS_ADDR)] = PDE_PT_BASE(KERNEL_PAGE_TABLE) | PTE_PWT |
-        PTE_RW | PTE_P,
+    [PDI(KERNEL_PHYS_ADDR)] = PDE_PT_BASE(KPHADDR(KERNEL_PAGE_TABLE)) |
+        PTE_PWT | PTE_RW | PTE_P,
         
-    [PDI(KERNEL_VIRT_ADDR)] = PDE_PT_BASE(KERNEL_PAGE_TABLE) | PTE_PWT |
-        PTE_RW | PTE_P,
+    [PDI(KERNEL_VIRT_ADDR)] = PDE_PT_BASE(KPHADDR(KERNEL_PAGE_TABLE)) |
+        PTE_PWT | PTE_RW | PTE_P,
 };
 
 uint32_t pt_temp_im[1024] __attribute__((section (".pt"))) = {
@@ -18,7 +18,7 @@ uint32_t pt_temp_im[1024] __attribute__((section (".pt"))) = {
         
     [PTI(KERNEL_PAGE_TABLE)] = PTE_PAGE_BASE(KPHADDR(KERNEL_PAGE_TABLE)) | 
         PTE_G | PTE_PWT | PTE_RW | PTE_P,
-        
+
     [PTI(KERNEL_PAGE_DIRECTORY)] = PTE_PAGE_BASE(KPHADDR(KERNEL_PAGE_DIRECTORY)) | 
         PTE_G | PTE_PWT | PTE_RW | PTE_P,
         
