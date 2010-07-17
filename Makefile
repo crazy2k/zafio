@@ -46,7 +46,6 @@ obj/%.o:
 clean:
 	rm -f $(OBJSDIR)*.o
 	rm -f $(KERNEL)
-	rm -f $(PAD)
 	rm -f deps
 	rm -f $(REFTESTDIR)/diskette.img
 
@@ -56,4 +55,4 @@ diskette.img: $(REFTESTDIR)/diskette.img
 
 $(REFTESTDIR)/diskette.img: $(KERNEL) $(DISKETTE)
 	cp $(DISKETTE) $(REFTESTDIR)/diskette.img
-	mcopy -i $(KERNEL) $(REFTESTDIR)/diskette.img
+	mcopy -i $(REFTESTDIR)/diskette.img $(KERNEL) ::/
