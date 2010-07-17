@@ -1,4 +1,5 @@
 SRCDIR := src/
+REFTESTDIR := reftest/
 
 CC := gcc
 CFLAGS := -Wall -nostdlib -nostartfiles -nodefaultlibs 
@@ -22,10 +23,7 @@ LOADER_SRC := $(SRCDIR)/kernel/loader.S
 LOADER_OBJ := $(OBJSDIR)/loader.o
 
 # Datos para el armado de la imagen de disco floppy
-GRUBDIR := reftest/grub/boot/grub/
-STAGES := stage1 stage2
-STAGES := $(addprefix $(GRUBDIR), $(STAGES))
-PAD := pad
+DISKETTE := $(REFTESTDIR)/aux/diskette.img
 
 $(OBJSDIR):
 	mkdir $(OBJSDIR)
@@ -43,24 +41,19 @@ deps: $(SOURCES) $(OBJSDIR)
 obj/%.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
-.PHONY: clean new
+.PHONY: clean new diskette.img
 
 clean:
 	rm -f $(OBJSDIR)*.o
 	rm -f $(KERNEL)
 	rm -f $(PAD)
 	rm -f deps
-	rm -f diskette.img
+	rm -f $(REFTESTDIR)/diskette.img
 
 new: clean $(KERNEL)
 
-STAGESIZES := $(foreach x, $(STAGES), $(shell stat -c %s $(x)))
-SIZE := $(shell echo $(addsuffix ' +', $(STAGESIZES)) 0 | bc )
-PADSIZE := $(shell echo "512 - $(SIZE) % 512" | bc )
-PADSIZE := $(shell echo "$(PADSIZE) % 512" | bc )
+diskette.img: $(REFTESTDIR)/diskette.img
 
-$(PAD):
-	dd if=/dev/zero of=$(PAD) bs=1 count=$(PADSIZE)
-
-diskette.img: $(STAGES) $(PAD) $(KERNEL) Makefile
-	cat $(STAGES) $(PAD) $(KERNEL) > $@
+$(REFTESTDIR)/diskette.img: $(KERNEL) $(DISKETTE)
+	cp $(DISKETTE) $(REFTESTDIR)/diskette.img
+	mcopy -i $(KERNEL) $(REFTESTDIR)/diskette.img
