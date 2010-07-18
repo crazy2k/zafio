@@ -1,11 +1,24 @@
 #include "../inc/multiboot.h"
 #include "../inc/mmu.h"
+#include "../inc/memlayout.h"
+#include "../inc/types.h"
 
 #define IS_ALIGNED(addr) !(addr & 0xFFF)
 
+uint32_t page_align(uint32_t addr, int ceil) {
+    // Si la direccion no esta alineada,
+    if (!IS_ALIGNED(addr)) {
+        addr &= 0xFFFFF000;
+        if (ceil)
+            addr += 0x1000;
+    }
+    return addr;
+}
+
 void mbgather(multiboot_info_t *mbi, page *dest) {
-    if !(mbi->flags & (0x1 << 6)) {
+    if (!(mbi->flags & (0x1 << 6))) {
         // El mmap no es valido
+        // TODO: Morir
     }
 
     page *first = NULL;
@@ -14,8 +27,8 @@ void mbgather(multiboot_info_t *mbi, page *dest) {
 
     // Recorremos el buffer que contiene el memory map
     memory_map_t *mmap;
-    for (mmap = mbi->mmap_addr;
-        mmap < mbi->mmap_addr + mbi->mmap_length;
+    for (mmap = (memory_map_t *) mbi->mmap_addr;
+        mmap < (memory_map_t *) (mbi->mmap_addr + mbi->mmap_length);
         mmap += sizeof(mmap->size) + mmap->size) {
 
         // Si el tipo no es 1, entonces no es RAM disponible
@@ -25,8 +38,7 @@ void mbgather(multiboot_info_t *mbi, page *dest) {
         // Direcciones en el espacio de memoria fisico
         unsigned long start_addr = page_align(mmap->base_addr_low, 1);
         unsigned long stop_addr =
-            page_align(mmap->base_addr_low + mmap_length, 0);
-
+            page_align(mmap->base_addr_low + mmap->length_low, 0);
 
         // Direcciones de las estructuras correspondientes
         page *start = dest + start_addr/0x1000;
@@ -38,11 +50,9 @@ void mbgather(multiboot_info_t *mbi, page *dest) {
 
         // Ubicamos las estructuras
         for (current = start; current < stop; current++) {
-            *current = {
-                .count = 0, 
-                .next = (page*) ((uint32_t) (current - 1) + KERNEL_OFFSET),
-                .prev = (page*) ((uint32_t) (current + 1) + KERNEL_OFFSET)
-            };
+            current->count = 0;
+            current->next = (page*) ((uint32_t) (current - 1) + KERNEL_OFFSET);
+            current->prev = (page*) ((uint32_t) (current + 1) + KERNEL_OFFSET);
         }
 
         // Enlazamos con el ultimo "chunk"
@@ -60,12 +70,4 @@ void mbgather(multiboot_info_t *mbi, page *dest) {
 }
 
 
-uint32_t page_align(uint32_t addr, int ceil) {
-    // Si la direccion no esta alineada,
-    if (!IS_ALIGNED(addr)) {
-        addr &= 0xFFFFF000;
-        if (ceil)
-            addr += 0x1000;
-    }
-    return addr;
-}
+

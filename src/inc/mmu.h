@@ -111,11 +111,13 @@
 
 typedef struct page page;
 
-typedef struct page {
+struct page {
     int count;
     page *next;
     page *prev;
 };
+
+#define PAGE_SIZE 0x1000
 
 #endif
 
