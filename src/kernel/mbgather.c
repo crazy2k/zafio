@@ -1,40 +1,71 @@
 #include "../inc/multiboot.h"
 #include "../inc/mmu.h"
 
-void mbgather(multiboot_info_t *mbinfo, page *dest) {
-    if !(mbinfo->flags & (0x1 << 7)) {
+#define IS_ALIGNED(addr) !(addr & 0xFFF)
+
+void mbgather(multiboot_info_t *mbi, page *dest) {
+    if !(mbi->flags & (0x1 << 6)) {
         // El mmap no es valido
     }
 
-    page *current = NULL, *first = NULL, last = NULL;
+    page *first = NULL;
+    page *last = NULL;
+    page *current = NULL;
 
+    // Recorremos el buffer que contiene el memory map
     memory_map_t *mmap;
-    for (mmap = mbinfo->mmap_addr;
-        mmap < mbinfo->mmap_addr + mbinfo->mmap_length;
-        mmap = mmap + sizeof(mmap->size) + mmap->size) {
-    
-        if (mmap->type != 1) continue;
-       
-        int not_aligned = (mmap->base_addr_low & 0XFFF) ? 1 : 0; 
-        // Correrse a la siguiente pagina si la direccion no esta alineada a 4K
-        int offset = mmap->base_addr_low / 0x1000 + not_aligned; 
-        current = dest + offset;
+    for (mmap = mbi->mmap_addr;
+        mmap < mbi->mmap_addr + mbi->mmap_length;
+        mmap += sizeof(mmap->size) + mmap->size) {
 
-        if (first == NULL) first = current;
-        if (last) {
-            current->prev = last;
-            last->next = current;
+        // Si el tipo no es 1, entonces no es RAM disponible
+        if (mmap->type != 1)
+            continue;
+
+        // Direcciones en el espacio de memoria fisico
+        unsigned long start_addr = page_align(mmap->base_addr_low, 1);
+        unsigned long stop_addr =
+            page_align(mmap->base_addr_low + mmap_length, 0);
+
+
+        // Direcciones de las estructuras correspondientes
+        page *start = dest + start_addr/0x1000;
+        page *stop = dest + stop_addr/0x1000;
+
+        // first es la primera estructura de todas
+        if (first == NULL)
+            first = start;
+
+        // Ubicamos las estructuras
+        for (current = start; current < stop; current++) {
+            *current = {
+                .count = 0, 
+                .next = (page*) ((uint32_t) (current - 1) + KERNEL_OFFSET),
+                .prev = (page*) ((uint32_t) (current + 1) + KERNEL_OFFSET)
+            };
         }
 
-        int offset_to_last = (mmap->base_addr_low + mmap->length_low) / 0x1000;
-        last = dest + offset_to_last;
-        for (; current < last; current++) {
-            *current = { .count = 0, 
-                .next = (page*) ((uint32_t) (current[i + 1]) + KERNEL_OFFSET),
-                .prev = (page*) ((uint32_t) (current[i - 1]) + KERNEL_OFFSET) };
+        // Enlazamos con el ultimo "chunk"
+        if (last != NULL) {
+            start->prev = last;
+            last->next = start;
         }
+
+        last = stop - 1;
     }
 
+    // Enlazamos la ultima de todas con la primera estructura
     first->prev = last;
     last->next = first;
+}
+
+
+uint32_t page_align(uint32_t addr, int ceil) {
+    // Si la direccion no esta alineada,
+    if (!IS_ALIGNED(addr)) {
+        addr &= 0xFFFFF000;
+        if (ceil)
+            addr += 0x1000;
+    }
+    return addr;
 }
