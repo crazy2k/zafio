@@ -109,11 +109,13 @@
 #define PTE_RW PDE_RW
 #define PTE_P PDE_P
 
-typedef struct {
+typedef struct page page;
+
+typedef struct page {
     int count;
-    page* next;
-    page* prev;
-} page;
+    page *next;
+    page *prev;
+};
 
 #endif
 
