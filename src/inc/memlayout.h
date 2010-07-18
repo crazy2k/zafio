@@ -1,3 +1,7 @@
+#ifndef __MEMLAYOUT_H__
+
+#define __MEMLAYOUT_H__
+
 #define KERNEL_OFFSET 0xC0000000
 #define KPHADDR(dir) ((dir) - KERNEL_OFFSET)
 
@@ -9,3 +13,5 @@
 #define KERNEL_STACK (KERNEL_PAGE_DIRECTORY + 0x00001000)        // kernel + 1MB + 8K
 
 #define VIDEO_MEMORY 0x000B8000
+
+#endif
