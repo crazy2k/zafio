@@ -19,11 +19,8 @@ OBJS := $(addprefix $(OBJSDIR), $(OBJS))
 
 KERNEL := kernel.bin
 
-ENTRY_SRC := $(SRCDIR)/kernel/entry.S
-ENTRY_OBJ := $(OBJSDIR)/entry.o
-
-STARTER_SRC := $(SRCDIR)/kernel/starter.S
-STARTER_OBJ := $(OBJSDIR)/starter.o
+LOADER_SRC := $(SRCDIR)/kernel/loader.S
+LOADER_OBJ := $(OBJSDIR)/loader.o
 
 # Datos para el armado de la imagen de disco floppy
 DISKETTE := $(REFTESTDIR)/aux/diskette.img
@@ -31,14 +28,11 @@ DISKETTE := $(REFTESTDIR)/aux/diskette.img
 $(OBJSDIR):
 	mkdir $(OBJSDIR)
 
-$(KERNEL): $(OBJS) $(STARTER_OBJ) $(ENTRY_OBJ)
-	$(LD) $(LDFLAGS) $(ENTRY_OBJ) $(OBJS) -o $@
+$(KERNEL): $(OBJS) $(LOADER_OBJ)
+	$(LD) $(LDFLAGS) $(LOADER_OBJ) $(OBJS) -o $@
 
-$(ENTRY_OBJ): $(ENTRY_SRC)
-	$(AS) $(ASFLAGS) $(ENTRY_SRC) -o $@
-
-$(STARTER_OBJ): $(STARTER_SRC)
-	$(AS) $(ASFLAGS) $(STARTER_SRC) -o $@
+$(LOADER_OBJ): $(LOADER_SRC)
+	$(AS) $(ASFLAGS) $(LOADER_SRC) -o $@
 
 deps: $(SOURCES) $(OBJSDIR)
 	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(OBJSDIR:/=\/)\1/" > $@  
@@ -50,7 +44,7 @@ obj/%.o:
 .PHONY: clean new diskette.img
 
 clean:
-	rm -f $(OBJSDIR)*.o
+	rm -f $(OBJSDIR)/*.o
 	rm -f $(KERNEL)
 	rm -f deps
 	rm -f $(REFTESTDIR)/diskette.img

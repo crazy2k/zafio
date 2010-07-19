@@ -2,8 +2,7 @@
 
    El kernel se reservara las direcciones a partir de 3 GB en el
    espacio de direcciones virtual. Por simplicidad, haremos
-   corresponder 3GB + 1MB a 1MB, por lo que la direccion de
-   reubicacion inicial sera 3GB + 1MB. */
+   corresponder 3GB + 1MB a 1MB. */
 _kernel_virt_addr = 0xC0100000;
 _kernel_phys_addr = 0x00100000;
 
@@ -15,8 +14,8 @@ ENTRY (loader)
 SECTIONS {
     . = _kernel_phys_addr;
 
-    .text_starter : {
-        obj/starter.o (.text)
+    .textloader : {
+        *(.textnoreloc)
     }
 
     .mbihelpers : {
