@@ -79,10 +79,6 @@ selectors:
     ; actualizamos esp con la direccion virtual del stack y lo limpiamos
     mov esp, stack + STACK_SIZE
     
-    ; le pasamos esta informacion al codigo C
-    push ebx
-    push eax
-
     call cmain
 
     ; nunca deberiamos llegar aca
