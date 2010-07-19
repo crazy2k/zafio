@@ -3,24 +3,37 @@ Mapa de memoria física
 
 XXX: Rever el tamaño reservado al kernel.
 
-+-------------------------+ 0x00000000
-| memoria usada por PCs   |
-| viejas                  |
-+-------------------------+ 0x000A0000
-| VGA                     | 
-+-------------------------+ 0x000C0000
-| dispositivos de 16bits, |
-| etc.                    |
-+-------------------------+ 0x000F0000
-| BIOS ROM (¿mapeado?)    |
-+-------------------------+ 0x00100000
-| ¿nuestro kernel?        |            } 15 MB (es un poco mucho, REVER)
-+-------------------------+ 0x00FFFFFF
-|           ...           |
-|                         |
-+-------------------------+
-| dispositivos de 32 bits |
-+-------------------------+ 0xFFFFFFFF
++---------------------------+ 0x00000000
+| memoria usada por PCs     |
+| viejas                    |
++---------------------------+ 0x000A0000
+| VGA                       | 
++---------------------------+ 0x000C0000
+| dispositivos de 16bits,   |
+| etc.                      |
++---------------------------+ 0x000F0000
+| BIOS ROM (¿mapeado?)      |
++---------------------------+ 0x00100000
+| mbgather                  |
+| codigo y datos del kernel |
++---------------------------+ 0x00200000
+| tabla de paginas del      |
+| kernel                    |
++---------------------------+ 0x00201000
+| directorio de paginas del |
+| kernel                    |
++---------------------------+ 0x00202000
+| stack                     |
++---------------------------+ 0x00203000
+| GDT y GDTR                |
++---------------------------+ 0x00204000
+| estructuras pages         |
++---------------------------+ 0x00205000
+|           ...             |
+|                           |
++---------------------------+
+| dispositivos de 32 bits   |
++---------------------------+ 0xFFFFFFFF
 
 Hasta el primer MB (0x00100000), hay partes de la memoria que no se
 pueden utilizar. Para evitarnos tener que cargar el kernel de a partes
