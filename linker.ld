@@ -14,7 +14,9 @@ ENTRY (loader)
 SECTIONS {
     . = _kernel_phys_addr;
 
-    .textloader : {
+    /* Codigo de loader.S. Tiene que alinearse a 32 bits para que se
+       encuentre el header Multiboot. */
+    .textloader ALIGN(0x4) : {
         *(.textloader)
     }
 
