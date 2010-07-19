@@ -1,5 +1,6 @@
 Mapa de memoria física
 ======================
+
 +---------------------------+ 0x00000000
 | Memoria usada por PCs     |
 | viejas                    |
