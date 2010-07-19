@@ -4,26 +4,28 @@ Mapa de memoria física
 XXX: Rever el tamaño reservado al kernel.
 
 +---------------------------+ 0x00000000
-| memoria usada por PCs     |
+| Memoria usada por PCs     |
 | viejas                    |
 +---------------------------+ 0x000A0000
 | VGA                       | 
 +---------------------------+ 0x000C0000
-| dispositivos de 16bits,   |
+| Dispositivos de 16bits,   |
 | etc.                      |
 +---------------------------+ 0x000F0000
 | BIOS ROM (¿mapeado?)      |
 +---------------------------+ 0x00100000
-| mbgather                  |
+| Header Multiboot;         |
+| codigo de loader.S;       |
+| mbihelpers;               |
 | codigo y datos del kernel |
 +---------------------------+ 0x00200000
-| tabla de paginas del      |
+| Tabla de paginas del      |
 | kernel                    |
 +---------------------------+ 0x00201000
-| directorio de paginas del |
+| Directorio de paginas del |
 | kernel                    |
 +---------------------------+ 0x00202000
-| stack                     |
+| Stack del kernel          |
 +---------------------------+ 0x00203000
 | GDT y GDTR                |
 +---------------------------+ 0x00204000
