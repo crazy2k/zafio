@@ -1,8 +1,6 @@
 Mapa de memoria física
 ======================
 
-XXX: Rever el tamaño reservado al kernel.
-
 +---------------------------+ 0x00000000
 | Memoria usada por PCs     |
 | viejas                    |
