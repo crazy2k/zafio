@@ -5,10 +5,6 @@ unsigned long long int segment = GDT_DESC_BASE(0) | GDT_DESC_LIMIT(0xFFFFF) /*| 
        GDT_GRANULARITY_LIMIT_4KB | GDT_PRESENT_SEGMENT*/;
 
 void cmain(unsigned int magic_number, void* mbinfo) {
-    if (magic_number != 0x1BADB002) {
-        // no nos cargo un bootloader Multiboot: mbinfo no sirve y no
-        // conocemos el estado de la maquina con precision
-    }
 
     unsigned char *video_mem = (unsigned char *) 0xB8000;
     int i;
