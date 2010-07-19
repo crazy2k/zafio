@@ -1,38 +1,41 @@
-global loader
+global init
 
 extern _kernel_addr_offset
 extern _gdt_begin_phys
 extern _gdt_len
 extern _gdtr_begin_phys
 extern _pd_begin_phys
+extern _stack_phys
+extern _pages_phys
+extern _selectors_phys
+extern verify_multiboot
+extern mbigather
 extern cmain
-
-
-; Datos para usar en el header Multiboot
-MAGIC equ 0x1BADB002 ; la especificacion requiere este numero magico
-FLAGS equ 0          ; por ahora, no le pedimos nada al bootloader
-CHECKSUM equ (- MAGIC - FLAGS)
 
 STACK_SIZE equ 0x00001000
 
-
 section .text
-; Header Multiboot
-dd MAGIC
-dd FLAGS
-dd CHECKSUM
+init:
+    mov dx, 0x10
+    mov ds, dx
+    mov es, dx
+    mov ds, dx
+    mov fs, dx
+    mov gs, dx
+    mov ss, dx
 
+    ; armamos un stack para el codigo C
+    mov esp, _stack_phys + STACK_SIZE
 
-; NOTA: Tener en cuenta que las direcciones de reubicacion no coinciden con
-; las direcciones de carga. Hasta que se activa la paginacion de memoria,
-; si se quiere referenciar a una etiqueta X hay que hacerlo restandole el
-; valor de la etiqueta _kernel_addr_offset.
-loader:
-    xchg bx, bx
-    cli
+    ; morir si no nos cargo un bootloader multiboot
+    push eax
+    call verify_multiboot
+    add esp, 4
 
-    ; cargamos la GDT
-    lgdt [_gdtr_begin_phys]
+    push _pages_phys
+    push ebx 
+    call mbigather
+    add esp, 8
 
     ; indicamos ubicacion del directorio de paginas
     mov ecx, _pd_begin_phys
@@ -57,9 +60,9 @@ loader:
     call cmain
 
     ; nunca deberiamos llegar aca
-parar:
+die:
     hlt
-    jmp parar
+    jmp die
 
 
 section .gdtr

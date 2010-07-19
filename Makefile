@@ -8,7 +8,7 @@ AS := nasm
 ASFLAGS := -f elf 
 
 LD := ld
-LDFLAGS := -T linker.ld 
+LDFLAGS := -T linker.ld
 
 SOURCES := $(shell find $(SRCDIR) -name "*.c")
 HEADERS := $(shell find $(SRCDIR) -name "*.h")
@@ -19,8 +19,11 @@ OBJS := $(addprefix $(OBJSDIR), $(OBJS))
 
 KERNEL := kernel.bin
 
-LOADER_SRC := $(SRCDIR)/kernel/loader.S
-LOADER_OBJ := $(OBJSDIR)/loader.o
+ENTRY_SRC := $(SRCDIR)/kernel/entry.S
+ENTRY_OBJ := $(OBJSDIR)/entry.o
+
+STARTER_SRC := $(SRCDIR)/kernel/starter.S
+STARTER_OBJ := $(OBJSDIR)/starter.o
 
 # Datos para el armado de la imagen de disco floppy
 DISKETTE := $(REFTESTDIR)/aux/diskette.img
@@ -28,11 +31,14 @@ DISKETTE := $(REFTESTDIR)/aux/diskette.img
 $(OBJSDIR):
 	mkdir $(OBJSDIR)
 
-$(KERNEL): $(OBJS) $(LOADER_OBJ)
-	$(LD) $(LDFLAGS) $(OBJS) $(LOADER_OBJ) -o $@
+$(KERNEL): $(OBJS) $(STARTER_OBJ) $(ENTRY_OBJ)
+	$(LD) $(LDFLAGS) $(ENTRY_OBJ) $(OBJS) -o $@
 
-$(LOADER_OBJ): $(LOADER_SRC)
-	$(AS) $(ASFLAGS) $(LOADER_SRC) -o $@
+$(ENTRY_OBJ): $(ENTRY_SRC)
+	$(AS) $(ASFLAGS) $(ENTRY_SRC) -o $@
+
+$(STARTER_OBJ): $(STARTER_SRC)
+	$(AS) $(ASFLAGS) $(STARTER_SRC) -o $@
 
 deps: $(SOURCES) $(OBJSDIR)
 	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(OBJSDIR:/=\/)\1/" > $@  

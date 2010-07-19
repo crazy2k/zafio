@@ -5,6 +5,17 @@
 
 #define IS_ALIGNED(addr) !(addr & 0xFFF)
 
+void panic(char *msg) {
+    // TODO: Completar
+    __asm__ __volatile__("hlt");
+}
+
+void verify_multiboot(unsigned int magic) {
+    if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
+        panic("El kernel debe ser cargado por un bootloader Multiboot.");
+    }
+}
+
 uint32_t page_align(uint32_t addr, int ceil) {
     // Si la direccion no esta alineada,
     if (!IS_ALIGNED(addr)) {
@@ -15,10 +26,10 @@ uint32_t page_align(uint32_t addr, int ceil) {
     return addr;
 }
 
-void mbgather(multiboot_info_t *mbi, page *dest) {
+void mbigather(multiboot_info_t *mbi, page *dest) {
     if (!(mbi->flags & (0x1 << 6))) {
         // El mmap no es valido
-        // TODO: Morir
+        panic("El kernel precisa informacion sobre la memoria.");
     }
 
     page *first = NULL;

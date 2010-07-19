@@ -12,14 +12,24 @@ _kernel_addr_offset = _kernel_virt_addr - _kernel_phys_addr;
 /* Definicion del punto de entrada */
 ENTRY (loader)
 
-SECTIONS{
-    . = _kernel_virt_addr;
+SECTIONS {
+    . = _kernel_phys_addr;
+
+    .text_starter : {
+        obj/starter.o (.text)
+    }
+
+    .mbihelpers : {
+        obj/mbihelpers.o (.*)
+    }
+
+    . = . + _kernel_addr_offset;
 
     /* Codigo del kernel */
     .text : AT(ADDR(.text) - _kernel_addr_offset) {
         *(.text)
     }
-    
+
     .rodata : AT(ADDR(.rodata) - _kernel_addr_offset) {
         *(.rodata)
     }
@@ -33,13 +43,12 @@ SECTIONS{
         *(.bss)
     }
     
-
     /* Tabla de paginas inicial, ubicada 1MB despues del inicio del kernel */
     . = _kernel_virt_addr + 0x00100000;
 
     _pt_begin = .;
 
-    .pt ALIGN(0x400) : AT(ADDR(.pt) - _kernel_addr_offset) {
+    .pt : AT(ADDR(.pt) - _kernel_addr_offset) {
         *(.pt)
     }
 
@@ -47,14 +56,16 @@ SECTIONS{
     _pd_begin = .;
     _pd_begin_phys = _pd_begin - _kernel_addr_offset;
 
-    .pd ALIGN(0x400) : AT(ADDR(.pd) - _kernel_addr_offset) {
+    .pd : AT(ADDR(.pd) - _kernel_addr_offset) {
         *(.pd)
     }
 
     /* Stack del kernel al comienzo de 2MB + 8K */
-    .kernelstack ALIGN(0x8) : AT(ADDR(.kernelstack) - _kernel_addr_offset) {
+    _stack = .;
+    _stack_phys = _stack - _kernel_addr_offset;
+    .kernelstack : AT(ADDR(.kernelstack) - _kernel_addr_offset) {
         *(.kernelstack)
-        _stack_size = 0x400;
+        _stack_size = 0x1000;
         . = _stack_size;
     }
 
@@ -62,7 +73,7 @@ SECTIONS{
     _gdt_begin = .;
     _gdt_begin_phys = _gdt_begin - _kernel_addr_offset;
 
-    .gdt ALIGN(0x400) : AT(ADDR(.gdt) - _kernel_addr_offset) {
+    .gdt : AT(ADDR(.gdt) - _kernel_addr_offset) {
         *(.gdt)
     }
 
@@ -75,4 +86,10 @@ SECTIONS{
     .gdtr : AT(ADDR(.gdtr) - _kernel_addr_offset) {
         *(.gdtr)
     }
+
+    .pages ALIGN(0x1000) : {
+        *(.pages)
+    }
+    _pages_phys = ADDR(.pages) - _kernel_addr_offset;
+
 }
