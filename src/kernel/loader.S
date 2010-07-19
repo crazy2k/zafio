@@ -28,18 +28,20 @@ dd MAGIC
 dd FLAGS
 dd CHECKSUM
 
-
-; NOTA: Tener en cuenta que las direcciones de reubicacion no coinciden con
-; las direcciones de carga. Hasta que se activa la paginacion de memoria,
-; si se quiere referenciar a una etiqueta X hay que hacerlo restandole el
-; valor de la etiqueta _kernel_addr_offset.
 loader:
-    xchg bx, bx
+    ; si fuimos cargados por un bootloader Multiboot, entonces:
+    ; - eax contiene el numero magico,
+    ; - ebx contiene la direccion fisica de la estructura con informacion
+    ;   que nos dejo el bootloader (multiboot info)
+
+    xchg bx, bx     ; magic breakpoint para bochs
+
     cli
 
     ; cargamos la GDT
     lgdt [_gdtr_begin_phys]
-    ; Cargar selectores
+
+    ; cargamos los selectores de segmento
     jmp 0x8:selectors
 
 selectors:
@@ -59,6 +61,7 @@ selectors:
     call verify_multiboot
     add esp, 4
 
+    ; tomar datos del multiboot info y armar estructuras convenientes
     push _pages_phys
     push ebx 
     call mbigather
@@ -73,12 +76,8 @@ selectors:
     or ecx, 0x80000000  ; activamos el bit PG
     mov cr0, ecx
 
+    ; actualizamos esp con la direccion virtual del stack y lo limpiamos
     mov esp, stack + STACK_SIZE
-
-    ; si fuimos cargados por un bootloader Multiboot, entonces:
-    ; - eax contiene el numero magico,
-    ; - ebx contiene la direccion fisica de la estructura con informacion
-    ;   que nos dejo el bootloader
     
     ; le pasamos esta informacion al codigo C
     push ebx
