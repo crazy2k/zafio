@@ -15,7 +15,7 @@ SECTIONS {
     . = _kernel_phys_addr;
 
     .textloader : {
-        *(.textnoreloc)
+        *(.textloader)
     }
 
     .mbihelpers : {
