@@ -19,8 +19,6 @@ MEMINFO equ (0x1 << 1)
 FLAGS equ MEMINFO    ; le pedimos la informacion de memoria al bootloader
 CHECKSUM equ (- MAGIC - FLAGS)
 
-STACK_SIZE equ 0x00001000
-
 
 section .textloader
 ; Header Multiboot
