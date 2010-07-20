@@ -1,4 +1,5 @@
 #include "../inc/memlayout.h"
+#include "../inc/utils.h"
 
 #define SCREEN_ROWS 25
 #define SCREEN_COLS 80
@@ -9,10 +10,11 @@
 int current_pos = 0;
 
 void scroll_down() {
-    //memcopy(SCREEN_BEGIN + COLS*SCREEN_CHAR_SIZE, SCREEN_END, SCREEN_BEGIN);
+    memcpy((void *) SCREEN_BEGIN + SCREEN_COLS*SCREEN_CHAR_SIZE,
+        (void *) SCREEN_END, SCREEN_BEGIN);
 }
 
-void putchar(int pos, char chr) {
+void putchr(int pos, char chr) {
     char *video_mem = (char *) VIDEO_MEMORY;
     video_mem[pos*2] = 0x0F;
     video_mem[pos*2 + 1] = chr;
@@ -21,7 +23,7 @@ void putchar(int pos, char chr) {
 void cls() {
     int pos;
     for (pos = 0; pos < 80*25*2; pos++)
-        putchar(pos, 0);
+        putchr(pos, 0);
 }
 
 void print(char *str) {
@@ -29,7 +31,7 @@ void print(char *str) {
     for (i = 0; str[i] != '\0'; i++) {
         if (current_pos >= 80*24)
             scroll_down();
-        putchar(current_pos, str[i]);
+        putchr(current_pos, str[i]);
         current_pos++;
     }
     current_pos += 80;
