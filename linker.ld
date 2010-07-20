@@ -68,7 +68,6 @@ SECTIONS {
     }
 
     .pages : AT(ADDR(.pages) - _kernel_addr_offset) {
-        *(COMMON)
         *(.pages)
     }
 
