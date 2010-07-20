@@ -13,6 +13,7 @@ extern _stack_bottom
 %define KERNEL_OFFSET 0xC0000000
 %define KPHADDR(dir) (dir - KERNEL_OFFSET) 
 
+
 ; Datos para usar en el header Multiboot
 MAGIC equ 0x1BADB002 ; la especificacion requiere este numero magico
 MEMINFO equ (0x1 << 1)
@@ -36,7 +37,7 @@ loader:
     cli
 
     ; cargamos la GDT
-    lgdt [ KPHADDR(gdtr) ]
+    lgdt [KPHADDR(gdtr)]
 
     ; cargamos los selectores de segmento
     jmp 0x8:selectors
