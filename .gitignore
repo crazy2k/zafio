@@ -2,4 +2,5 @@
 kernel.bin
 _build/
 obj/
+reftest/diskette.img
 deps

@@ -16,6 +16,17 @@ void page_dir_map(uint32_t page_dir[], void* virtual, void* phisical, uint32_t f
 }
 
 void page_dir_unmap(uint32_t page_dir[], void* virtual) {
-	page_dir[PDI(virtual)] = 0x0;	
+    page_dir[PDI(virtual)] = 0x0;	
+}
+
+// Mapea una pagina fisca nueva a la direccion virutal, pasada por parametro 
+void* new_page(uint32_t page_dir[], void* virual_addr) {
+     
+   return NULL; 
+}
+
+// Retorna la pagina fisica correspondiente a la direccion virtual, a la lista de paginas libres
+void free_page(uint32_t page_dir[], void* virual_addr) {
+
 }
 
