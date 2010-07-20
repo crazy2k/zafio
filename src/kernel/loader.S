@@ -2,7 +2,6 @@ global loader
 
 extern kernel_pd
 extern pages
-extern gdt
 extern gdtr
 extern verify_multiboot
 extern mbigather
