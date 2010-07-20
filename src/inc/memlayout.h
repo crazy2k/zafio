@@ -3,6 +3,7 @@
 #define __MEMLAYOUT_H__
 
 #include "types.h"
+#include <stdint.h>
 
 #define KERNEL_OFFSET 0xC0000000
 #define KPHADDR(dir) (((uint32_t) dir) - KERNEL_OFFSET)
