@@ -12,10 +12,9 @@ void link_pages(page *fst, page *sec) {
 }
 
 // Pone en la lista a la pagina obj despues de la pagina referenciada por list
-void add_page_to_list(page* list, page* obj) {
-    page *next = list->next;
-    link_pages(list, obj);
-    link_pages(obj, next);
+void add_page_to_list(page* head, page* new) {
+    link_pages(new, head->next);
+    link_pages(head, new);
 }
 
 /*void page_table_map(uint32_t page_table[], void* virtual, void* phisical, uint32_t flags) {
