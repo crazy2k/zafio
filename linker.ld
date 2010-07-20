@@ -21,9 +21,6 @@ SECTIONS {
      */
     .textloader ALIGN(0x4) : {
         *(.textloader)
-    }
-
-    .mbihelpers : {
         obj/mbihelpers.o (.*)
     }
 
