@@ -49,7 +49,7 @@ clean:
 	rm -f deps
 	rm -f $(REFTESTDIR)/diskette.img
 
-new: clean $(KERNEL)
+new: clean $(REFTESTDIR)/diskette.img
 
 diskette.img: $(REFTESTDIR)/diskette.img
 
