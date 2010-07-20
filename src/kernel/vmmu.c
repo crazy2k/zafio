@@ -1,4 +1,6 @@
 #include "../inc/vmmu.h"
+#include "../inc/utils.h"
+#include "../inc/memlayout.h"
 
 page pages[] __attribute__ ((section (".pages"))) = { {} }; 
 page* page_list = 0; 
@@ -16,7 +18,7 @@ void add_page_to_list(page* list, page* obj) {
     link_pages(obj, next);
 }
 
-void page_table_map(uint32_t page_table[], void* virtual, void* phisical, uint32_t flags) {
+/*void page_table_map(uint32_t page_table[], void* virtual, void* phisical, uint32_t flags) {
 	page_table[PTI(virtual)] = PDE_PT_BASE(phisical) | flags;
 }
 
@@ -31,19 +33,54 @@ void page_dir_map(uint32_t page_dir[], void* virtual, void* phisical, uint32_t f
 
 void page_dir_unmap(uint32_t page_dir[], void* virtual) {
     page_dir[PDI(virtual)] = 0x0;	
+}*/
+
+
+// Obtiene el entry correspondiente a la direccion virtual dentro del directorio page_dir
+uint32_t* get_page_table_entry(uint32_t page_dir[], void* virtual) {
+    uint32_t dir_entry = page_dir[PDI(virtual)];
+    uint32_t *table = KVIRTADDR(PDE_PT_BASE(dir_entry));
+    return &table[PTI(virtual)];
 }
 
-// Mapea una pagina fisca nueva a la direccion virutal, pasada por parametro 
-void* new_page(uint32_t page_dir[], void* virual_addr) {
-     
-   return NULL; 
+void allocate_page_table(uint32_t page_dir[], void* virtual) {
+    page *res = reserve_page(page_list->next);
+    void *phisical = PAGE_TO_PHADDR(res);
+    page_dir[PDI(virtual)] = PDE_PT_BASE(phisical) | PDE_P | PDE_PWT;
+    memset(KVIRTADDR(phisical), 0, PAGE_SIZE);
+}
+
+// Mapea una pagina fisca nueva a la direccion virtual, pasada por parametro 
+void* new_page(uint32_t page_dir[], void* virtual, uint32_t flags) {
+    /*
+    TODO: Si no hay mas paginas libres kpanic!!!
+    if (!page_list) kpanic("No hay mas memoria fisica disponible");
+    */  
+
+    // Si la tabla de paginas no estaba presente mapearla
+    if (!(page_dir[PDI(virtual)] | PDE_P))
+        allocate_page_table(page_dir, virtual);
+
+    uint32_t *entry = get_page_table_entry(page_dir, virtual);
+    page *res = reserve_page(page_list->next);
+    void *phisical = PAGE_TO_PHADDR(res);
+
+    *entry = PTE_PAGE_BASE(phisical) | PTE_P | flags;
+
+    return virtual; 
 }
 
 // Retorna la pagina fisica correspondiente a la direccion virtual, a la lista de paginas libres
-void free_page(uint32_t page_dir[], void* virual_addr) {
+void free_page(uint32_t page_dir[], void* virtual) {
+    uint32_t *entry = get_page_table_entry(page_dir, virtual);
+    page* fpage = PHADDR_TO_PAGE( PTE_PAGE_BASE(*entry) );
 
+    return_page(fpage);
+    *entry = 0;
 }
 
+
+// Decrementa el contador de referencias y retorna la pagina a la lista de paginas libres al llegar a 0
 void return_page(page* returned) {
     if ( --returned->count == 0 ) {
         if (page_list)
@@ -53,10 +90,10 @@ void return_page(page* returned) {
     }
 }
 
-// Saca a la pagina de la lista de paginas libres
-void reserve_page(page* reserved) {
+// Saca a la pagina de la lista de paginas libres e incrementa el contador de referencias
+page *reserve_page(page* reserved) {
     if (reserved->next && reserved->prev)
-        link_pages(reserved->next, reserved->prev);
+        link_pages(reserved->prev, reserved->next);
 
     if (reserved == page_list) {
         if ( reserved->next == reserved )
@@ -66,5 +103,7 @@ void reserve_page(page* reserved) {
 
     reserved->count++;
     reserved->next = reserved->prev = NULL;
+
+    return reserved;
 }
 

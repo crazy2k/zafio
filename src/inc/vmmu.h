@@ -7,6 +7,9 @@
 #define RELOCATE_PTR_TO(pointer, virtual_dir) \
 	((void*) ( ((uint32_t)pointer & 0xFFF) | ((uint32_t)virtual_dir & 0xFFFFF000) ))
 
+#define PAGE_TO_PHADDR(obj) ((void *) ((obj) - pages))
+#define PHADDR_TO_PAGE(addr) ((page *) (pages + ((uint32_t) (addr))/PAGE_SIZE ))
+
 extern uint32_t kernel_pd[1024];
 extern uint32_t kernel_pt[1024];
 
@@ -15,19 +18,24 @@ extern page pages[];
 
 void link_pages(page*, page*);
 
-void page_table_map(uint32_t[], void* , void* , uint32_t);
+/*void page_table_map(uint32_t[], void* , void* , uint32_t);
 
 void page_table_unmap(uint32_t page_dir[], void* virtual);
 
 void page_dir_map(uint32_t[], void* , void* , uint32_t);
 
-void page_dir_unmap(uint32_t page_dir[], void* vlirtual);
+void page_dir_unmap(uint32_t page_dir[], void* vlirtual);*/
 
-void* new_page(uint32_t page_dir[], void* virual_addr);
+uint32_t* get_page_table_entry(uint32_t page_dir[], void* virtual);
+
+void allocate_page_table(uint32_t page_dir[], void* virtual);
+
+void* new_page(uint32_t page_dir[], void* virual_addr, uint32_t flags);
 
 void free_page(uint32_t page_dir[], void* virual_addr);
 
-void reserve_page(page* reserved);
+void return_page(page* returned);
 
+page *reserve_page(page* reserved);
 
 #endif

@@ -12,3 +12,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
     return dest;
 }
 
+void *memset (void * ptr, int value, size_t num) {
+
+    return ptr;
+}
