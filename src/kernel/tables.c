@@ -52,7 +52,7 @@ uint64_t gdt[] __attribute__((aligned(0x08))) = {
 
 struct { 
     uint16_t size __attribute__((packed));
-    uint32_t dir  __attribute__((packed));
+    uint32_t addr __attribute__((packed));
 } gdtr __attribute__((aligned(0x08))) = { sizeof(gdt) - 1, KPHADDR(gdt) }; 
 
 
