@@ -7,9 +7,11 @@
 
 // bool type
 typedef signed int bool;
-#define true 1;
-#define false 0;
 
+#define TRUE 1
+#define FALSE 0
+
+// Miselaneaous types
 typedef uint32_t reg_t;
 typedef void *ptr_t;
 typedef unsigned int size_t;
