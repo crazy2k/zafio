@@ -34,7 +34,6 @@ loader:
     ;   que nos dejo el bootloader (multiboot info)
 
     xchg bx, bx     ; magic breakpoint para bochs
-
     cli
 
     ; cargamos la GDT
