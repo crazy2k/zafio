@@ -1,16 +1,18 @@
 global loader
 
-extern _kernel_addr_offset
-extern _gdt_begin_phys
-extern _gdt_len
-extern _pd_begin_phys
-extern _stack_bottom_phys
-extern _pages_phys
-extern _stack_bottom
+extern kernel_pd
+extern pages
+extern gdt
 extern verify_multiboot
 extern mbigather
 extern cmain
+extern _stack_bottom
 
+
+%define KERNEL_OFFSET 0xC0000000
+%define KPHADDR(dir) (dir - KERNEL_OFFSET) 
+
+gdt_len equ (5 * 8)
 
 ; Datos para usar en el header Multiboot
 MAGIC equ 0x1BADB002 ; la especificacion requiere este numero magico
@@ -53,7 +55,7 @@ selectors:
     mov ss, dx
 
     ; armamos un stack para el codigo C
-    mov esp, _stack_bottom_phys
+    mov esp, KPHADDR(_stack_bottom)
 
     ; morir si no nos cargo un bootloader multiboot
     push eax
@@ -61,13 +63,13 @@ selectors:
     add esp, 4
 
     ; tomar datos del multiboot info y armar estructuras convenientes
-    push _pages_phys
+    push KPHADDR(pages)
     push ebx 
     call mbigather
     add esp, 8
 
     ; indicamos ubicacion del directorio de paginas
-    mov ecx, _pd_begin_phys
+    mov ecx, KPHADDR(kernel_pd)
     mov cr3, ecx
 
     ; activamos paginacion
@@ -85,6 +87,6 @@ die:
     hlt
     jmp die
 
-gdtr: dw _gdt_len - 1 ; se escribe sizeof(gdt) - 1
-      dd _gdt_begin_phys
+gdtr: dw gdt_len - 1 ; se escribe sizeof(gdt) - 1
+      dd KPHADDR(gdt)
 

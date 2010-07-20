@@ -1,8 +1,9 @@
 #include "../inc/vmmu.h"
 
-page* pages_begin __attribute__ ((section (".pages"))) = 0; 
+page pages[] __attribute__ ((section (".pages"))) = { {} }; 
 page* page_list = 0; 
 
+// Conecta entre si la paginas fst con sec
 void link_pages(page *fst, page *sec) {
     fst->next = sec;
     sec->prev = fst;

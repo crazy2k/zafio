@@ -11,6 +11,7 @@ extern uint32_t kernel_pd[1024];
 extern uint32_t kernel_pt[1024];
 
 extern page* page_list;
+extern page pages[];
 
 void link_pages(page*, page*);
 

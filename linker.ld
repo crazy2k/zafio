@@ -33,7 +33,6 @@ SECTIONS {
      * (crece hacia abajo)
      */
     _stack_bottom = .;
-    _stack_bottom_phys = _stack_bottom - _kernel_addr_offset;
 
     /* Tabla de paginas del kernel */
     .pt : AT(ADDR(.pt) - _kernel_addr_offset) {
@@ -41,8 +40,6 @@ SECTIONS {
     }
 
     /* Directorio de paginas inicial */
-    _pd_begin_phys = pd - _kernel_addr_offset;
-
     .pd : AT(ADDR(.pd) - _kernel_addr_offset) {
         *(.pd)
     }
@@ -70,12 +67,5 @@ SECTIONS {
     .pages : AT(ADDR(.pages) - _kernel_addr_offset) {
         *(.pages)
     }
-
-    /* Otros simbolos */
-
-    _gdt_begin_phys = gdt - _kernel_addr_offset;
-    _gdt_len = 8*5; /* Ojala que se pueda cambiar por otra cosa */
-
-    _pages_phys = pages_begin - _kernel_addr_offset;
 
 }

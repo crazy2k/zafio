@@ -1,4 +1,5 @@
 #include "../inc/mmu.h"
+#include "../inc/vmmu.h"
 
 void cmain() {
 
@@ -8,5 +9,6 @@ void cmain() {
         video_mem[i] = 0;
     }
 
+   reserve_page((page*) (0xC200200) );
 
 }

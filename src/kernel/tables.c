@@ -1,7 +1,7 @@
 #include "../inc/mmu.h"
 #include "../inc/memlayout.h"
 
-uint32_t pd[1024] __attribute__((section (".pd"))) = {
+uint32_t kernel_pd[1024] __attribute__((section (".pd"))) = {
     [PDI(KERNEL_PHYS_ADDR)] = PDE_PT_BASE(KPHADDR(KERNEL_PAGE_TABLE)) |
         PTE_PWT | PTE_RW | PTE_P,
         
@@ -9,7 +9,7 @@ uint32_t pd[1024] __attribute__((section (".pd"))) = {
         PTE_PWT | PTE_RW | PTE_P,
 };
 
-uint32_t pt_temp_im[1024] __attribute__((section (".pt"))) = {
+uint32_t kernel_pt[1024] __attribute__((section (".pt"))) = {
     [PTI(VIDEO_MEMORY)] = PTE_PAGE_BASE(VIDEO_MEMORY) | PTE_G |
         PTE_PWT | PTE_RW | PTE_P,
 
