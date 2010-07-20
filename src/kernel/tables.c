@@ -12,6 +12,9 @@ uint32_t pd[1024] __attribute__((section (".pd"))) = {
 uint32_t pt_temp_im[1024] __attribute__((section (".pt"))) = {
     [PTI(VIDEO_MEMORY)] = PTE_PAGE_BASE(VIDEO_MEMORY) | PTE_G |
         PTE_PWT | PTE_RW | PTE_P,
+
+    [PTI(LOADER_ADDR)] = PTE_PAGE_BASE(LOADER_ADDR) | PTE_G |
+        PTE_PWT | PTE_RW | PTE_P,
         
     [PTI(KERNEL_VIRT_ADDR)] = PTE_PAGE_BASE(KERNEL_PHYS_ADDR) | PTE_G |
         PTE_PWT | PTE_RW | PTE_P,

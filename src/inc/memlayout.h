@@ -12,6 +12,8 @@
 #define KERNEL_PAGE_TABLE (KERNEL_VIRT_ADDR - 0x1000 * 2)    // kernel - 8K
 #define KERNEL_PAGE_DIRECTORY (KERNEL_VIRT_ADDR - 0x1000)    // kernel - 4K
 
+#define LOADER_ADDR 0x00100000
+
 #define VIDEO_MEMORY 0x000B8000
 
 #endif
