@@ -28,7 +28,8 @@ Mapa de memoria física
 +---------------------------+ 0x00200000
 | Codigo y Datos del Kernel |
 | GDT y GDTR                |
-| Estructuras Pages         |
++---------------------------+ 0x002xxxxx
+| Estructuras pages         |
 +---------------------------+ 0x002xxxxx
 |           ...             |
 |                           |

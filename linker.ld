@@ -65,7 +65,12 @@ SECTIONS {
     .bss : AT(ADDR(.bss) - _kernel_addr_offset) {
         *(COMMON)
         *(.bss)
-    } 
+    }
+
+    .pages : AT(ADDR(.pages) - _kernel_addr_offset) {
+        *(COMMON)
+        *(.pages)
+    }
 
 
     /* Custom Symbols */
