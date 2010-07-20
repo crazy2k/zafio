@@ -23,4 +23,11 @@ void page_dir_map(uint32_t[], void* , void* , uint32_t);
 
 void page_dir_unmap(uint32_t page_dir[], void* vlirtual);
 
+void* new_page(uint32_t page_dir[], void* virual_addr);
+
+void free_page(uint32_t page_dir[], void* virual_addr);
+
+void reserve_page(page* reserved);
+
+
 #endif
