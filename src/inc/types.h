@@ -12,7 +12,7 @@ typedef signed int bool;
 #define FALSE 0
 
 // Miselaneaous types
-typedef uint32_t reg_t;
+typedef unsigned int reg_t;
 typedef void *ptr_t;
 typedef unsigned int size_t;
 typedef signed int time_t;
