@@ -1,41 +1,40 @@
 Mapa de memoria física
 ======================
 
-+---------------------------+ 0x00000000
-| Memoria usada por PCs     |
-| viejas                    |
-+---------------------------+ 0x000A0000
-| VGA                       | 
-+---------------------------+ 0x000C0000
-| Dispositivos de 16bits,   |
-| etc.                      |
-+---------------------------+ 0x000F0000
-| BIOS ROM (¿mapeado?)      |
-+---------------------------+ 0x00100000
-| Header Multiboot;         |
-| codigo de loader.S;       |
-| mbihelpers;               |
-+---------------------------+ 0x001FD000
-| Stack del kernel          |
-+---------------------------+ 0x001FE000
-| Stack del kernel          |
-| Tabla de paginas del      |
-| kernel                    |
-+---------------------------+ 0x001FF000
-| Stack del kernel          |
-| Directorio de paginas del |
-| kernel                    |
-+---------------------------+ 0x00200000
-| Codigo y Datos del Kernel |
-| GDT y GDTR                |
-+---------------------------+ 0x002xxxxx
-| Estructuras pages         |
-+---------------------------+ 0x002xxxxx
-|           ...             |
-|                           |
-+---------------------------+
-| dispositivos de 32 bits   |
-+---------------------------+ 0xFFFFFFFF
++----------------------------+ 0x00000000
+| Memoria usada por PCs      |
+| viejas                     |
++----------------------------+ 0x000A0000
+| VGA                        | 
++----------------------------+ 0x000C0000
+| Dispositivos de 16bits,    |
+| etc.                       |
++----------------------------+ 0x000F0000
+| BIOS ROM (¿mapeado?)       |
++----------------------------+ 0x00100000
+| Header Multiboot;          |
+| codigo de loader.S;        |
+| mbihelpers;                |
+|          ...               |
+| Stack del loader/kernel    |
++----------------------------+ 0x001FE000
+| Tabla de paginas del       |
+| kernel                     |
++----------------------------+ 0x001FF000
+| Directorio de paginas del  |
+| kernel                     |
++----------------------------+ 0x00200000
+| Codigo y datos del kernel; |
+| estructuras page;
+| GDT y GDTR                 |
++----------------------------+ 0x002xxxxx
+| Estructuras pages          |
++----------------------------+ 0x002xxxxx
+|           ...              |
+|                            |
++----------------------------+
+| dispositivos de 32 bits    |
++----------------------------+ 0xFFFFFFFF
 
 Hasta el primer MB (0x00100000), hay partes de la memoria que no se
 pueden utilizar. Para evitarnos tener que cargar el kernel de a partes

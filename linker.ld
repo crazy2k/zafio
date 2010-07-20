@@ -1,24 +1,24 @@
-/* Direccion virtual que sera asignada al kernel.
+/* TODO: Comentar un poco esto */
 
-   El kernel se reservara las direcciones a partir de 3 GB en el
-   espacio de direcciones virtual. Por simplicidad, haremos
-   corresponder 3GB + 1MB a 1MB. */
-_dirs_virt_addr = 0xC0200000 - 0x1000 * 2;
-_dirs_phys_addr = 0x00200000 - 0x1000 * 2;
-_kernel_virt_addr = 0xC0200000;
-_kernel_phys_addr = 0x00200000;
 _loader_phys_addr = 0x00100000;
 
+_kernel_virt_addr = 0xC0200000;
+_kernel_phys_addr = 0x00200000;
 _kernel_addr_offset = _kernel_virt_addr - _kernel_phys_addr;
+
+_tables_virt_addr = _kernel_virt_addr - 0x1000*2;
+_tables_phys_addr = _kernel_phys_addr - 0x1000*2;
 
 /* Definicion del punto de entrada */
 ENTRY (loader)
 
 SECTIONS {
-    
+
     . = _loader_phys_addr;
+
     /* Codigo de loader.S. Tiene que alinearse a 32 bits para que se
-       encuentre el header Multiboot. */
+     *  encuentre el header Multiboot.
+     */
     .textloader ALIGN(0x4) : {
         *(.textloader)
     }
@@ -27,10 +27,11 @@ SECTIONS {
         obj/mbihelpers.o (.*)
     }
 
+    . = _tables_virt_addr;
 
-    . = _dirs_virt_addr;
-
-    /* Principio del stack del kernel al comienzo de 2MB - 8K */
+    /* Principio del stack del loader/kernel al comienzo de 2MB - 8K
+     * (crece hacia abajo)
+     */
     _stack_bottom = .;
     _stack_bottom_phys = _stack_bottom - _kernel_addr_offset;
 
@@ -45,7 +46,6 @@ SECTIONS {
     .pd : AT(ADDR(.pd) - _kernel_addr_offset) {
         *(.pd)
     }
-
 
     . = _kernel_virt_addr;
 
@@ -71,11 +71,10 @@ SECTIONS {
         *(.pages)
     }
 
-
-    /* Custom Symbols */
+    /* Otros simbolos */
 
     _gdt_begin_phys = gdt - _kernel_addr_offset;
-    _gdt_len = 8 * 5; /* Se, ya se, me queres matar, tenes idea de como hacer esto mejor? (sin section) */
+    _gdt_len = 8*5; /* Ojala que se pueda cambiar por otra cosa */
 
     _pages_phys = pages_begin - _kernel_addr_offset;
 
