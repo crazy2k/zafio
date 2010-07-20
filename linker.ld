@@ -47,7 +47,7 @@ SECTIONS {
     }
 
 
-    . = _kernel_phys_addr;
+    . = _kernel_virt_addr;
 
     /* Codigo del kernel */
     .text : AT(ADDR(.text) - _kernel_addr_offset) {
@@ -77,6 +77,6 @@ SECTIONS {
     _gdt_begin_phys = gdt - _kernel_addr_offset;
     _gdt_len = 8 * 5; /* Se, ya se, me queres matar, tenes idea de como hacer esto mejor? (sin section) */
 
-    _pages_phys = page_list - _kernel_addr_offset;
+    _pages_phys = pages_begin - _kernel_addr_offset;
 
 }
