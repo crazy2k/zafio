@@ -4,3 +4,4 @@ _build/
 obj/
 reftest/diskette.img
 deps
+tags
