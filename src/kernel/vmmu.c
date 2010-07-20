@@ -3,7 +3,7 @@
 #include "../inc/memlayout.h"
 
 page pages[] __attribute__ ((section (".pages"))) = { {} }; 
-page* page_list = 0; 
+page* page_list = NULL; 
 
 // Conecta entre si la paginas fst con sec
 void link_pages(page *fst, page *sec) {
@@ -39,10 +39,15 @@ void page_dir_unmap(uint32_t page_dir[], void* virtual) {
 // Obtiene el entry correspondiente a la direccion virtual dentro del directorio page_dir
 uint32_t* get_page_table_entry(uint32_t page_dir[], void* virtual) {
     uint32_t dir_entry = page_dir[PDI(virtual)];
-    uint32_t *table = KVIRTADDR(PDE_PT_BASE(dir_entry));
+
+    //Si la tabla de paginas no esta disponible, retornar NULL
+    if (!(dir_entry | PDE_P)) return NULL;
+
+    uint32_t *table = KVIRTADDR( PDE_PT_BASE(dir_entry) );
     return &table[PTI(virtual)];
 }
 
+// Mapea una pagina fisica nueva para una tabla de paginas de page_dir
 void allocate_page_table(uint32_t page_dir[], void* virtual) {
     page *res = reserve_page(page_list->next);
     void *phisical = PAGE_TO_PHADDR(res);
@@ -50,7 +55,7 @@ void allocate_page_table(uint32_t page_dir[], void* virtual) {
     memset(KVIRTADDR(phisical), 0, PAGE_SIZE);
 }
 
-// Mapea una pagina fisca nueva a la direccion virtual, pasada por parametro 
+// Mapea una pagina fisca nueva para la direccion virtual, pasada por parametro 
 void* new_page(uint32_t page_dir[], void* virtual, uint32_t flags) {
     /*
     TODO: Si no hay mas paginas libres kpanic!!!
@@ -92,15 +97,18 @@ void return_page(page* returned) {
 
 // Saca a la pagina de la lista de paginas libres e incrementa el contador de referencias
 page *reserve_page(page* reserved) {
+    // Si tiene nodos adyacentes linkearlos entre si
     if (reserved->next && reserved->prev)
         link_pages(reserved->prev, reserved->next);
 
+    // Si la pagina era la primera de la lista, poner a otra como primera
     if (reserved == page_list) {
-        if ( reserved->next == reserved )
-            page_list = NULL;
-        else page_list = reserved->next;
+        if ( reserved->next != reserved )
+            page_list = reserved->next;
+        else page_list = NULL;
     }
 
+    // Incrementar contador, y marcar nodos adyacentes como nulos
     reserved->count++;
     reserved->next = reserved->prev = NULL;
 
