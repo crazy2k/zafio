@@ -3,6 +3,7 @@ global loader
 extern kernel_pd
 extern pages
 extern gdt
+extern gdtr
 extern verify_multiboot
 extern mbigather
 extern cmain
@@ -11,8 +12,6 @@ extern _stack_bottom
 
 %define KERNEL_OFFSET 0xC0000000
 %define KPHADDR(dir) (dir - KERNEL_OFFSET) 
-
-gdt_len equ (5 * 8)
 
 ; Datos para usar en el header Multiboot
 MAGIC equ 0x1BADB002 ; la especificacion requiere este numero magico
@@ -40,7 +39,7 @@ loader:
     cli
 
     ; cargamos la GDT
-    lgdt [gdtr]
+    lgdt [ KPHADDR(gdtr) ]
 
     ; cargamos los selectores de segmento
     jmp 0x8:selectors
@@ -86,7 +85,3 @@ selectors:
 die:
     hlt
     jmp die
-
-gdtr: dw gdt_len - 1 ; se escribe sizeof(gdt) - 1
-      dd KPHADDR(gdt)
-

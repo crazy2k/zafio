@@ -50,5 +50,9 @@ uint64_t gdt[] __attribute__((aligned(0x08))) = {
     GDT_DESC_DPL(0x3) | GDT_DESC_TYPE(GDT_F_DATA_W) | COMMON_FLAGS 
 };
 
+struct { 
+  uint16_t size __attribute__((packed));
+  uint32_t dir  __attribute__((packed));
+} gdtr __attribute__((aligned(0x08))) = { sizeof(gdt) - 1, KPHADDR(gdt) }; 
 
 

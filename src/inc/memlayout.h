@@ -3,7 +3,7 @@
 #define __MEMLAYOUT_H__
 
 #define KERNEL_OFFSET 0xC0000000
-#define KPHADDR(dir) ((dir) - KERNEL_OFFSET)
+#define KPHADDR(dir) (((uint32_t) dir) - KERNEL_OFFSET)
 
 #define KERNEL_VIRT_ADDR 0xC0200000
 #define KERNEL_PHYS_ADDR KPHADDR(KERNEL_VIRT_ADDR)
