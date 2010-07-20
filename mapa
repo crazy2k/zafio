@@ -15,20 +15,21 @@ Mapa de memoria física
 | Header Multiboot;         |
 | codigo de loader.S;       |
 | mbihelpers;               |
-| codigo y datos del kernel |
-+---------------------------+ 0x00200000
++---------------------------+ 0x001FD000
+| Stack del kernel          |
++---------------------------+ 0x001FE000
+| Stack del kernel          |
 | Tabla de paginas del      |
 | kernel                    |
-+---------------------------+ 0x00201000
++---------------------------+ 0x001FF000
+| Stack del kernel          |
 | Directorio de paginas del |
 | kernel                    |
-+---------------------------+ 0x00202000
-| Stack del kernel          |
-+---------------------------+ 0x00203000
++---------------------------+ 0x00200000
+| Codigo y Datos del Kernel |
 | GDT y GDTR                |
-+---------------------------+ 0x00204000
-| estructuras pages         |
-+---------------------------+ 0x00205000
+| Estructuras Pages         |
++---------------------------+ 0x002xxxxx
 |           ...             |
 |                           |
 +---------------------------+

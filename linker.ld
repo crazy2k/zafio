@@ -3,8 +3,11 @@
    El kernel se reservara las direcciones a partir de 3 GB en el
    espacio de direcciones virtual. Por simplicidad, haremos
    corresponder 3GB + 1MB a 1MB. */
-_kernel_virt_addr = 0xC0100000;
-_kernel_phys_addr = 0x00100000;
+_dirs_virt_addr = 0xC0200000 - 0x1000 * 2;
+_dirs_phys_addr = 0x00200000 - 0x1000 * 2;
+_kernel_virt_addr = 0xC0200000;
+_kernel_phys_addr = 0x00200000;
+_loader_phys_addr = 0x00100000;
 
 _kernel_addr_offset = _kernel_virt_addr - _kernel_phys_addr;
 
@@ -12,8 +15,8 @@ _kernel_addr_offset = _kernel_virt_addr - _kernel_phys_addr;
 ENTRY (loader)
 
 SECTIONS {
-    . = _kernel_phys_addr;
-
+    
+    . = _loader_phys_addr;
     /* Codigo de loader.S. Tiene que alinearse a 32 bits para que se
        encuentre el header Multiboot. */
     .textloader ALIGN(0x4) : {
@@ -24,7 +27,27 @@ SECTIONS {
         obj/mbihelpers.o (.*)
     }
 
-    . = . + _kernel_addr_offset;
+
+    . = _dirs_virt_addr;
+
+    /* Principio del stack del kernel al comienzo de 2MB - 8K */
+    _stack_bottom = .;
+    _stack_bottom_phys = _stack_bottom - _kernel_addr_offset;
+
+    /* Tabla de paginas del kernel */
+    .pt : AT(ADDR(.pt) - _kernel_addr_offset) {
+        *(.pt)
+    }
+
+    /* Directorio de paginas inicial */
+    _pd_begin_phys = pd - _kernel_addr_offset;
+
+    .pd : AT(ADDR(.pd) - _kernel_addr_offset) {
+        *(.pd)
+    }
+
+
+    . = _kernel_phys_addr;
 
     /* Codigo del kernel */
     .text : AT(ADDR(.text) - _kernel_addr_offset) {
@@ -42,55 +65,14 @@ SECTIONS {
     .bss : AT(ADDR(.bss) - _kernel_addr_offset) {
         *(COMMON)
         *(.bss)
-    }
-    
-    /* Tabla de paginas inicial, ubicada 1MB despues del inicio del kernel */
-    . = _kernel_virt_addr + 0x00100000;
+    } 
 
-    _pt_begin = .;
 
-    .pt : AT(ADDR(.pt) - _kernel_addr_offset) {
-        *(.pt)
-    }
+    /* Custom Symbols */
 
-    /* Directorio de paginas inicial */
-    _pd_begin = .;
-    _pd_begin_phys = _pd_begin - _kernel_addr_offset;
+    _gdt_begin_phys = gdt - _kernel_addr_offset;
+    _gdt_len = 8 * 5; /* Se, ya se, me queres matar, tenes idea de como hacer esto mejor? (sin section) */
 
-    .pd : AT(ADDR(.pd) - _kernel_addr_offset) {
-        *(.pd)
-    }
-
-    /* Stack del kernel al comienzo de 2MB + 8K */
-    _stack = .;
-    _stack_phys = _stack - _kernel_addr_offset;
-    .kernelstack : AT(ADDR(.kernelstack) - _kernel_addr_offset) {
-        *(.kernelstack)
-        _stack_size = 0x1000;
-        . = _stack_size;
-    }
-
-    /* GDT */
-    _gdt_begin = .;
-    _gdt_begin_phys = _gdt_begin - _kernel_addr_offset;
-
-    .gdt : AT(ADDR(.gdt) - _kernel_addr_offset) {
-        *(.gdt)
-    }
-
-    _gdt_end = .;
-    _gdt_len = _gdt_end - _gdt_begin;
-
-    /* Registro para la GDT */
-    _gdtr_begin = .;
-    _gdtr_begin_phys = _gdtr_begin - _kernel_addr_offset;
-    .gdtr : AT(ADDR(.gdtr) - _kernel_addr_offset) {
-        *(.gdtr)
-    }
-
-    .pages ALIGN(0x1000) : {
-        *(.pages)
-    }
-    _pages_phys = ADDR(.pages) - _kernel_addr_offset;
+    _pages_phys = page_list - _kernel_addr_offset;
 
 }

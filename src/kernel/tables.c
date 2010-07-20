@@ -30,7 +30,7 @@ uint32_t pt_temp_im[1024] __attribute__((section (".pt"))) = {
 
 #define COMMON_FLAGS (GDT_DESC_G | GDT_DESC_DB | GDT_DESC_P | GDT_DESC_S)
 
-uint64_t gdt[] __attribute__((section (".gdt"))) = {
+uint64_t gdt[] __attribute__((aligned(0x08))) = {
     
     /*Null Segment*/ GDT_NULL,
     

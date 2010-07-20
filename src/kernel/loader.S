@@ -3,11 +3,10 @@ global loader
 extern _kernel_addr_offset
 extern _gdt_begin_phys
 extern _gdt_len
-extern _gdtr_begin_phys
 extern _pd_begin_phys
-extern _stack_phys
+extern _stack_bottom_phys
 extern _pages_phys
-extern _selectors_phys
+extern _stack_bottom
 extern verify_multiboot
 extern mbigather
 extern cmain
@@ -39,7 +38,7 @@ loader:
     cli
 
     ; cargamos la GDT
-    lgdt [_gdtr_begin_phys]
+    lgdt [gdtr]
 
     ; cargamos los selectores de segmento
     jmp 0x8:selectors
@@ -54,7 +53,7 @@ selectors:
     mov ss, dx
 
     ; armamos un stack para el codigo C
-    mov esp, _stack_phys + STACK_SIZE
+    mov esp, _stack_bottom_phys
 
     ; morir si no nos cargo un bootloader multiboot
     push eax
@@ -77,7 +76,7 @@ selectors:
     mov cr0, ecx
 
     ; actualizamos esp con la direccion virtual del stack y lo limpiamos
-    mov esp, stack + STACK_SIZE
+    mov esp, _stack_bottom
     
     call cmain
 
@@ -86,11 +85,6 @@ die:
     hlt
     jmp die
 
-
-section .gdtr
 gdtr: dw _gdt_len - 1 ; se escribe sizeof(gdt) - 1
       dd _gdt_begin_phys
 
-
-section .kernelstack
-stack:

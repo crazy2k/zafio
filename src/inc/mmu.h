@@ -3,6 +3,7 @@
 #define __MMU_H__
 
 #include <stdint.h>
+#include "types.h"
 
 #define __LOW16_BITS__ 0x0000FFFF
 #define __16_23_BITS__ 0x00FF0000

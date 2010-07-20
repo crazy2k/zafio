@@ -10,6 +10,8 @@
 extern uint32_t kernel_pd[1024];
 extern uint32_t kernel_pt[1024];
 
+extern page* page_list; 
+
 void page_table_map(uint32_t[], void* , void* , uint32_t);
 
 void page_table_unmap(uint32_t page_dir[], void* virtual);

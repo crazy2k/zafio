@@ -1,5 +1,7 @@
 #include "../inc/vmmu.h"
 
+page* page_list = 0; 
+
 void page_table_map(uint32_t page_table[], void* virtual, void* phisical, uint32_t flags) {
 	page_table[PTI(virtual)] = PDE_PT_BASE(phisical) | flags;
 }
