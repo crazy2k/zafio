@@ -1,12 +1,31 @@
 #include "../inc/mmu.h"
+#include "../inc/io.h"
 
 void cmain() {
-
-    unsigned char *video_mem = (unsigned char *) 0xB8000;
-    int i;
-    for (i = 0; i < 80*25*2; i++) {
-        video_mem[i] = 0;
-    }
-
-
+    cls();
+    print("                    w");
+    print("                  ww         www");
+    print("                www        wwwwww");
+    print("               www       wwwwwwww");
+    print("               www     wwwwwwwww");
+    print("                www  wwwwwwwwww");
+    print("                 wwwwwwwwwwwww");
+    print("                 wwwwwwwww");
+    print("                 www");
+    print("                www");
+    print("               www");
+    print("              www        Bienvenido a Zafio");
+    print("             www");
+    print("             www");
+    print("             www");
+    print("             www");
+    print("              wwww           ww");
+    print("               wwwwwwwwwwwwwwwww");
+    print("                wwwwwwwwwwwwwwwww");
+    print("                  wwwwww     wwwww");
+    print("                               www");
+    print("                               www");
+    print("                         w    ww");
+    print("                        wwwwwwww");
+    print("                         wwwww");
 }
