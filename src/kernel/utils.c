@@ -17,7 +17,7 @@ void *memset (void * s, int c, size_t n) {
 
     int i;
     for (i = 0; i < n; i++)
-        bs[i] = 0;
+        bs[i] = (char)c;
 
     return s;
 }
