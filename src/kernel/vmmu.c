@@ -50,8 +50,8 @@ uint32_t* get_pte(uint32_t pd[], void* vaddr) {
 
 // Mapea una pagina fisica nueva para una tabla de paginas de page_dir
 void allocate_pt(uint32_t pd[], void* vaddr) {
-    page *page = reserve_page(page_list->next);
-    void *phpage = PAGE_TO_PHADDR(page);
+    page *p = reserve_page(page_list->next);
+    void *phpage = PAGE_TO_PHADDR(p);
     pd[PDI(vaddr)] = PDE_PT_BASE(phpage) | PDE_P | PDE_PWT;
     memset(KVIRTADDR(phpage), 0, PAGE_SIZE);
 }
@@ -67,8 +67,8 @@ void* new_page(uint32_t pd[], void* vaddr, uint32_t flags) {
     if (!(pd[PDI(vaddr)] & PDE_P))
         allocate_pt(pd, vaddr);
 
-    page *page = reserve_page(page_list->next);
-    void *phpage = PAGE_TO_PHADDR(page);
+    page *p = reserve_page(page_list->next);
+    void *phpage = PAGE_TO_PHADDR(p);
 
     uint32_t *pte = get_pte(pd, vaddr);
     *pte = PTE_PAGE_BASE(phpage) | PTE_P | flags;
@@ -80,9 +80,9 @@ void* new_page(uint32_t pd[], void* vaddr, uint32_t flags) {
 // de paginas libres
 void free_page(uint32_t pd[], void* vaddr) {
     uint32_t *pte = get_pte(pd, vaddr);
-    page* page = PHADDR_TO_PAGE(PTE_PAGE_BASE(*pte));
+    page *p = PHADDR_TO_PAGE(PTE_PAGE_BASE(*pte));
 
-    return_page(page);
+    return_page(p);
     *pte = 0;
 }
 
@@ -101,22 +101,22 @@ void return_page(page* reserved) {
 
 // Saca a la pagina de la lista de paginas libres e incrementa su contador de
 // referencias
-page *reserve_page(page* page) {
+page *reserve_page(page* fpage) {
     // Si tiene nodos adyacentes enlazarlos entre si
-    if (page->next && page->prev)
-        link_pages(page->prev, page->next);
+    if (fpage->next && fpage->prev)
+        link_pages(fpage->prev, fpage->next);
 
     // Si la pagina era la cabeza de la lista, cambiar la cabeza por otra
-    if (page_list == page) {
-        if (page->next != page)
-            page_list = page->next;
+    if (page_list == fpage) {
+        if (fpage->next != fpage)
+            page_list = fpage->next;
         else page_list = NULL;
     }
 
     // Incrementar contador, y marcar adyacencias como nulas
-    page->count++;
-    page->next = page->prev = NULL;
+    fpage->count++;
+    fpage->next = fpage->prev = NULL;
 
-    return page;
+    return fpage;
 }
 
