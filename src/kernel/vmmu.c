@@ -90,7 +90,7 @@ void free_page(uint32_t pd[], void* vaddr) {
 // Decrementa el contador de referencias y retorna la pagina a la lista de
 // paginas libres si este llego a cero
 void return_page(page* reserved) {
-    reserved->count--;
+    (reserved->count)--;
     if (reserved->count == 0) {
         if (page_list)
             add_page_to_list(page_list, reserved);
