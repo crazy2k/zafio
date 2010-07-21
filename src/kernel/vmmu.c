@@ -41,7 +41,7 @@ uint32_t* get_page_table_entry(uint32_t page_dir[], void* virtual) {
     uint32_t dir_entry = page_dir[PDI(virtual)];
 
     //Si la tabla de paginas no esta disponible, retornar NULL
-    if (!(dir_entry | PDE_P)) return NULL;
+    if (!(dir_entry & PDE_P)) return NULL;
 
     uint32_t *table = KVIRTADDR( PDE_PT_BASE(dir_entry) );
     return &table[PTI(virtual)];
@@ -63,7 +63,7 @@ void* new_page(uint32_t page_dir[], void* virtual, uint32_t flags) {
     */  
 
     // Si la tabla de paginas no estaba presente mapearla
-    if (!(page_dir[PDI(virtual)] | PDE_P))
+    if (!(page_dir[PDI(virtual)] & PDE_P))
         allocate_page_table(page_dir, virtual);
 
     uint32_t *entry = get_page_table_entry(page_dir, virtual);

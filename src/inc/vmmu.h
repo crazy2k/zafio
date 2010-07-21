@@ -7,7 +7,7 @@
 #define RELOCATE_PTR_TO(pointer, virtual_dir) \
 	((void*) ( ((uint32_t)pointer & 0xFFF) | ((uint32_t)virtual_dir & 0xFFFFF000) ))
 
-#define PAGE_TO_PHADDR(obj) ((void *) ((obj) - pages))
+#define PAGE_TO_PHADDR(obj) ((void *) ((obj) - pages) * PAGE_SIZE)
 #define PHADDR_TO_PAGE(addr) ((page *) (pages + ((uint32_t) (addr))/PAGE_SIZE ))
 
 extern uint32_t kernel_pd[1024];
