@@ -23,6 +23,14 @@ extern uint32_t kernel_pt[1024];
 extern page* page_list;
 extern page pages[];
 
+typedef struct {
+    page *first;
+    page *last;
+
+} memory_info_t;
+
+extern memory_info_t memory_info;
+
 void link_pages(page*, page*);
 
 /*void page_table_map(uint32_t[], void* , void* , uint32_t);

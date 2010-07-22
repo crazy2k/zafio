@@ -5,6 +5,8 @@
 page pages[] __attribute__ ((section (".pages"))) = { {} }; 
 page* page_list = NULL; 
 
+memory_info_t memory_info;
+
 // Conecta entre si la paginas fst con sec
 void link_pages(page *fst, page *sec) {
     fst->next = sec;

@@ -2,6 +2,7 @@
 #include "../inc/mmu.h"
 #include "../inc/memlayout.h"
 #include "../inc/types.h"
+#include "../inc/vmmu.h"
 
 #define IS_ALIGNED(addr) !(addr & 0xFFF)
 
@@ -26,7 +27,7 @@ uint32_t page_align(uint32_t addr, int ceil) {
     return addr;
 }
 
-void mbigather(multiboot_info_t *mbi, page *dest) {
+void mbigather(multiboot_info_t *mbi, page *dest, memory_info_t *meminfo) {
     if (!(mbi->flags & (0x1 << 6))) {
         // El mmap no es valido
         panic("El kernel precisa informacion sobre la memoria.");
@@ -78,6 +79,9 @@ void mbigather(multiboot_info_t *mbi, page *dest) {
     // Enlazamos la ultima de todas con la primera estructura
     first->prev = last;
     last->next = first;
+
+    meminfo->first = first;
+    meminfo->last = last;
 }
 
 

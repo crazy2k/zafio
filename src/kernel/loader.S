@@ -2,6 +2,7 @@ global loader
 
 extern kernel_pd
 extern pages
+extern memory_info
 extern gdtr
 extern verify_multiboot
 extern mbigather
@@ -59,6 +60,7 @@ selectors:
     add esp, 4
 
     ; tomar datos del multiboot info y armar estructuras convenientes
+    push KPHADDR(memory_info)
     push KPHADDR(pages)
     push ebx 
     call mbigather
