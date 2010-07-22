@@ -33,13 +33,13 @@ void clline(void *pos) {
     void *begin = SCREEN_LINE_BEGIN(pos);
     int i;
     for (i = 0; i < SCREEN_ROW_SIZE; i++)
-        putchr(begin + i, 0);
+        copychar(begin + i, 0);
 }
 
 /*
  * Limpia toda la pantalla.
  */
-void cls() {
+void kcls() {
     void *begin = (void *)SCREEN_BEGIN;
     int i;
     for (i = 0; i < SCREEN_ROWS; i++)
@@ -47,17 +47,9 @@ void cls() {
 }
 
 /*
- * Imprime la cadena en la pantalla y salta de linea.
+ * Coloca el caracter ``chr`` en la posicion ``pos`` de la pantalla.
  */
-void print(char *str) {
-    writestr(str);
-    writechr('\n');
-}
-
-/*
- * Pone el caracter ``chr`` en la posicion ``pos`` de la pantalla.
- */
-void putchr(void *pos, char chr) {
+void copychar(void *pos, char chr) {
     char *bytepos = (char *)pos;
     bytepos[0] = chr;
     bytepos[1] = 0x0F;
@@ -66,14 +58,14 @@ void putchr(void *pos, char chr) {
 /*
  * Escribe el caracter ``chr`` en la pantalla y avanza ``current_pos``.
  */
-void writechr(char chr) {
+void kputc(char chr) {
     if (chr == '\n')
         current_pos = SCREEN_LINE_BEGIN(current_pos) + SCREEN_ROW_SIZE;
     else {
         if (current_pos >= (void *)SCREEN_END)
             scroll_down();
 
-        putchr(current_pos, chr);
+        copychar(current_pos, chr);
 
         current_pos += SCREEN_CHAR_SIZE;
     }

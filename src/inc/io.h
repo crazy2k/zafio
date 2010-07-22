@@ -6,16 +6,16 @@
 
 void scroll_down();
 
-void putchr(void *pos, char chr);
+void clline(void *pos);
 
-void clline(void *start);
+void kcls();
 
-void cls();
+void copychar(void *pos, char chr);
 
-void print(char *str);
+void kputc(char chr);
 
-void writechr(char chr);
+void kputs(char *str);
 
-void writestr(char *str);
+void kputui32(uint32_t n);
 
 #endif
