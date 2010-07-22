@@ -2,19 +2,19 @@
 #include "../inc/utils.h"
 #include "../inc/memlayout.h"
 
-page pages[] __attribute__ ((section (".pages"))) = { {} }; 
-page* page_list = NULL; 
+page_t pages[] __attribute__ ((section (".pages"))) = { {} }; 
+page_t* page_list = NULL; 
 
 memory_info_t memory_info;
 
 // Conecta entre si la paginas fst con sec
-void link_pages(page *fst, page *sec) {
+void link_pages(page_t *fst, page_t *sec) {
     fst->next = sec;
     sec->prev = fst;
 }
 
 // Pone en la lista a la pagina obj despues de la pagina referenciada por list
-void add_page_to_list(page* head, page* new) {
+void add_page_to_list(page_t* head, page_t* new) {
     link_pages(new, head->next);
     link_pages(head, new);
 }
@@ -52,7 +52,7 @@ uint32_t* get_pte(uint32_t pd[], void* vaddr) {
 
 // Mapea una pagina fisica nueva para una tabla de paginas de page_dir
 void allocate_pt(uint32_t pd[], void* vaddr) {
-    page *p = reserve_page(page_list->next);
+    page_t *p = reserve_page(page_list->next);
     void *phpage = PAGE_TO_PHADDR(p);
     pd[PDI(vaddr)] = PDE_PT_BASE(phpage) | PDE_P | PDE_PWT;
     memset(KVIRTADDR(phpage), 0, PAGE_SIZE);
@@ -69,7 +69,7 @@ void* new_page(uint32_t pd[], void* vaddr, uint32_t flags) {
     if (!(pd[PDI(vaddr)] & PDE_P))
         allocate_pt(pd, vaddr);
 
-    page *p = reserve_page(page_list->next);
+    page_t *p = reserve_page(page_list->next);
     void *phpage = PAGE_TO_PHADDR(p);
 
     uint32_t *pte = get_pte(pd, vaddr);
@@ -82,7 +82,7 @@ void* new_page(uint32_t pd[], void* vaddr, uint32_t flags) {
 // de paginas libres
 void free_page(uint32_t pd[], void* vaddr) {
     uint32_t *pte = get_pte(pd, vaddr);
-    page *p = PHADDR_TO_PAGE(PTE_PAGE_BASE(*pte));
+    page_t *p = PHADDR_TO_PAGE(PTE_PAGE_BASE(*pte));
 
     return_page(p);
     *pte = 0;
@@ -91,7 +91,7 @@ void free_page(uint32_t pd[], void* vaddr) {
 
 // Decrementa el contador de referencias y retorna la pagina a la lista de
 // paginas libres si este llego a cero
-void return_page(page* reserved) {
+void return_page(page_t* reserved) {
     (reserved->count)--;
     if (reserved->count == 0) {
         if (page_list)
@@ -103,22 +103,22 @@ void return_page(page* reserved) {
 
 // Saca a la pagina de la lista de paginas libres e incrementa su contador de
 // referencias
-page *reserve_page(page* fpage) {
+page_t *reserve_page(page_t* page) {
     // Si tiene nodos adyacentes enlazarlos entre si
-    if (fpage->next && fpage->prev)
-        link_pages(fpage->prev, fpage->next);
+    if (page->next && page->prev)
+        link_pages(page->prev, page->next);
 
     // Si la pagina era la cabeza de la lista, cambiar la cabeza por otra
-    if (page_list == fpage) {
-        if (fpage->next != fpage)
-            page_list = fpage->next;
+    if (page_list == page) {
+        if (page->next != page)
+            page_list = page->next;
         else page_list = NULL;
     }
 
     // Incrementar contador, y marcar adyacencias como nulas
-    fpage->count++;
-    fpage->next = fpage->prev = NULL;
+    page->count++;
+    page->next = page->prev = NULL;
 
-    return fpage;
+    return page;
 }
 

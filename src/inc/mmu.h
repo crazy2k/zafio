@@ -86,7 +86,7 @@
  *   en mayuscula.
  */
 
-// Page Directory Entry
+// page_t Directory Entry
 
 #define PDE_PT_BASE(addr) ((uint32_t)(addr) & __12_31_BITS__)
 #define PDE_PS (((uint32_t) 1) << 7)
@@ -97,7 +97,7 @@
 #define PDE_RW (((uint32_t) 1) << 1)
 #define PDE_P (((uint32_t) 1) << 0)
 
-// Page Table Entry
+// page_t Table Entry
 
 #define PTE_PAGE_BASE(dir) ((uint32_t)(dir) & __12_31_BITS__)
 #define PTE_G (((uint32_t) 1) << 8)
@@ -110,12 +110,12 @@
 #define PTE_RW PDE_RW
 #define PTE_P PDE_P
 
-typedef struct page page;
+typedef struct page_t page_t;
 
-struct page {
+struct page_t {
     int count;
-    page *next;
-    page *prev;
+    page_t *next;
+    page_t *prev;
 };
 
 #define PAGE_SIZE 0x1000

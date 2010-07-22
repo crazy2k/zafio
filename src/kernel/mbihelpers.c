@@ -22,20 +22,20 @@ uint32_t page_align(uint32_t addr, int ceil) {
     if (!IS_ALIGNED(addr)) {
         addr &= 0xFFFFF000;
         if (ceil)
-            addr += 0x1000;
+            addr += PAGE_SIZE;
     }
     return addr;
 }
 
-void mbigather(multiboot_info_t *mbi, page *dest, memory_info_t *meminfo) {
+void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
     if (!(mbi->flags & (0x1 << 6))) {
         // El mmap no es valido
         panic("El kernel precisa informacion sobre la memoria.");
     }
 
-    page *first = NULL;
-    page *last = NULL;
-    page *current = NULL;
+    page_t *first = NULL;
+    page_t *last = NULL;
+    page_t *current = NULL;
 
     // Recorremos el buffer que contiene el memory map
     memory_map_t *mmap;
@@ -53,8 +53,8 @@ void mbigather(multiboot_info_t *mbi, page *dest, memory_info_t *meminfo) {
             page_align(mmap->base_addr_low + mmap->length_low, 0);
 
         // Direcciones de las estructuras correspondientes
-        page *start = dest + start_addr/0x1000;
-        page *stop = dest + stop_addr/0x1000;
+        page_t *start = dest + start_addr/PAGE_SIZE;
+        page_t *stop = dest + stop_addr/PAGE_SIZE;
 
         // first es la primera estructura de todas
         if (first == NULL)
@@ -63,8 +63,8 @@ void mbigather(multiboot_info_t *mbi, page *dest, memory_info_t *meminfo) {
         // Ubicamos las estructuras
         for (current = start; current < stop; current++) {
             current->count = 0;
-            current->next = (page*) ((uint32_t) (current - 1) + KERNEL_OFFSET);
-            current->prev = (page*) ((uint32_t) (current + 1) + KERNEL_OFFSET);
+            current->next = (page_t*) ((uint32_t) (current - 1) + KERNEL_OFFSET);
+            current->prev = (page_t*) ((uint32_t) (current + 1) + KERNEL_OFFSET);
         }
 
         // Enlazamos con el ultimo "chunk"
