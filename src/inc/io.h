@@ -14,4 +14,8 @@ void cls();
 
 void print(char *str);
 
+void writechr(char chr);
+
+void writestr(char *str);
+
 #endif

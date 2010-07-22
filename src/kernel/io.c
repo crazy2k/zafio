@@ -15,18 +15,15 @@
 
 void *current_pos = (void *)SCREEN_BEGIN;
 
+/*
+ * Levanta los datos de la pantalla y ``current_pos`` una linea.
+ */
 void scroll_down() {
     memcpy((void *)SCREEN_BEGIN, (void *)SCREEN_BEGIN + SCREEN_ROW_SIZE,
         (SCREEN_END - SCREEN_BEGIN) - SCREEN_ROW_SIZE);
 
     current_pos -= SCREEN_ROW_SIZE;
     clline(current_pos);
-}
-
-void putchr(void *pos, char chr) {
-    char *bytepos = (char *)pos;
-    bytepos[0] = chr;
-    bytepos[1] = 0x0F;
 }
 
 /*
@@ -39,6 +36,9 @@ void clline(void *pos) {
         putchr(begin + i, 0);
 }
 
+/*
+ * Limpia toda la pantalla.
+ */
 void cls() {
     void *begin = (void *)SCREEN_BEGIN;
     int i;
@@ -46,16 +46,36 @@ void cls() {
         clline(begin + SCREEN_ROW_SIZE*i);
 }
 
+/*
+ * Imprime la cadena en la pantalla y salta de linea.
+ */
 void print(char *str) {
-    int i;
-    for (i = 0; str[i] != '\0'; i++) {
-        if (current_pos >= (void *)SCREEN_END) {
+    writestr(str);
+    writechr('\n');
+}
+
+/*
+ * Pone el caracter ``chr`` en la posicion ``pos`` de la pantalla.
+ */
+void putchr(void *pos, char chr) {
+    char *bytepos = (char *)pos;
+    bytepos[0] = chr;
+    bytepos[1] = 0x0F;
+}
+
+/*
+ * Escribe el caracter ``chr`` en la pantalla y avanza ``current_pos``.
+ */
+void writechr(char chr) {
+    if (chr == '\n')
+        current_pos = SCREEN_LINE_BEGIN(current_pos) + SCREEN_ROW_SIZE;
+    else {
+        if (current_pos >= (void *)SCREEN_END)
             scroll_down();
-        }
-        putchr(current_pos, str[i]);
+
+        putchr(current_pos, chr);
 
         current_pos += SCREEN_CHAR_SIZE;
     }
-    current_pos += SCREEN_ROW_SIZE - i*SCREEN_CHAR_SIZE;
 }
 
