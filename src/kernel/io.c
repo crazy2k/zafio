@@ -71,3 +71,54 @@ void kputc(char chr) {
     }
 }
 
+/*
+ * Escribe la cadena ``str`` en la pantalla.
+ */
+void kputs(char *str) {
+    char c;
+    while ((c = *str++) != '\0')
+        kputc(c);
+}
+
+#define SCREEN_UI_BASE 16
+#define SCREEN_UI_LOG2BASE 4
+#define SCREEN_UI_REPLENGTH (sizeof(uint32_t)*8/SCREEN_UI_LOG2BASE)
+void kputui32(uint32_t n) {
+    char chars[SCREEN_UI_BASE];
+
+    int i;
+    char base = '0';
+    for (i = 0; i < SCREEN_UI_BASE; i++) {
+        if (i == 10)
+            base = 'A';
+
+        chars[i] = base + (i % 10);
+    }
+
+    char str[SCREEN_UI_REPLENGTH + 1];
+
+    for (i = SCREEN_UI_REPLENGTH - 1; i >= 0; i--, n /= SCREEN_UI_BASE)
+        str[i] = chars[n % SCREEN_UI_BASE];
+
+    str[SCREEN_UI_REPLENGTH] = '\0';
+
+    kputs("0x");
+    kputs(str);
+}
+
+/*
+ * TODO: Hacerla?
+int printf(char *format, ...) {
+    int curr_arg = 0;
+
+    char c;
+    while ((c = *format++) != '\0') {
+        if (c == '%') {
+            c = *format++;
+
+            if (c == 's')
+
+        }
+    }
+}
+*/
