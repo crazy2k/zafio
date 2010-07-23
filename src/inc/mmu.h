@@ -14,8 +14,8 @@
 #define __22_31_BITS__ 0xFFC00000
 #define __12_21_BITS__ 0x003FF000
 
-#define PDI(laddr) (((uint32_t)laddr & __22_31_BITS__) >> 22)
-#define PTI(laddr) (((uint32_t)laddr & __12_21_BITS__) >> 12)
+#define PDI(laddr) (((uint32_t)(laddr) & __22_31_BITS__) >> 22)
+#define PTI(laddr) (((uint32_t)(laddr) & __12_21_BITS__) >> 12)
 
 /* Segmentacion
  * ============

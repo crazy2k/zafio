@@ -6,8 +6,8 @@
 #include "types.h"
 
 #define KERNEL_OFFSET 0xC0000000
-#define KPHADDR(dir) ((void*) (((uint32_t) dir) - KERNEL_OFFSET))
-#define KVIRTADDR(dir) ((void*) (((uint32_t) dir) + KERNEL_OFFSET))
+#define KPHADDR(dir) ((void*) (((uint32_t) (dir)) - KERNEL_OFFSET))
+#define KVIRTADDR(dir) ((void*) (((uint32_t) (dir)) + KERNEL_OFFSET))
 
 #define KERNEL_VIRT_ADDR 0xC0200000
 #define KERNEL_PHYS_ADDR KPHADDR(KERNEL_VIRT_ADDR)

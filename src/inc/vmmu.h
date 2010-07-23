@@ -5,7 +5,7 @@
 #define __VMMU_H__
 
 #define RELOCATE_PTR_TO(pointer, virtual_dir) \
-	((void*) ( ((uint32_t)pointer & 0xFFF) | ((uint32_t)virtual_dir & 0xFFFFF000) ))
+	((void*) ( ((uint32_t)(pointer) & 0xFFF) | ((uint32_t)(virtual_dir) & 0xFFFFF000) ))
 
 /* Recibe un puntero a ``page_t``, y devuelve la direccion fisica de la pagina
  * representada por dicha estructura
@@ -15,7 +15,9 @@
 /* Recibe la direccion fisica de una pagina y devuelve un puntero a la
  * estructura ``page_t`` que la representa
  */
-#define PHADDR_TO_PAGE(addr) ((page_t *) (pages + ((uint32_t) addr)/PAGE_SIZE))
+#define PHADDR_TO_PAGE(addr) ((page_t *) (pages + ((uint32_t) (addr))/PAGE_SIZE))
+
+#define IS_ALIGNED(addr) !((uint32_t)(addr) & 0xFFF)
 
 extern uint32_t kernel_pd[1024];
 extern uint32_t kernel_pt[1024];
