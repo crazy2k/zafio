@@ -64,8 +64,8 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
         // Ubicamos las estructuras
         for (current = start; current < stop; current++) {
             current->count = 0;
-            current->next = (page_t*) ((uint32_t) (current - 1) + KERNEL_OFFSET);
-            current->prev = (page_t*) ((uint32_t) (current + 1) + KERNEL_OFFSET);
+            current->prev = (page_t*)((void *)(current - 1) + KERNEL_OFFSET);
+            current->next = (page_t*)((void *)(current + 1) + KERNEL_OFFSET);
         }
 
         // Enlazamos con el ultimo "chunk"
