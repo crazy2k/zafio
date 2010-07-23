@@ -30,19 +30,29 @@ void cmain() {
     kputs("                        wwwwwwww\n");
     kputs("                         wwwww\n");
 
-    kputs("Primer 'page': ");
+    kputs("Primer 'page'          : ");
     kputui32((uint32_t)memory_info.first);
     kputs(" - corresponde a la pagina ");
     kputui32((uint32_t)PAGE_TO_PHADDR(memory_info.first));
     kputs("\n");
 
-    kputs("Ultimo 'page': ");
+    kputs("Previo al primer 'page': ");
+    kputui32((uint32_t)memory_info.first->prev);
+    kputs(" - corresponde a la pagina ");
+    kputui32((uint32_t)PAGE_TO_PHADDR(memory_info.first->prev));
+    kputs("\n");
+
+    kputs("Ultimo 'page'          : ");
     kputui32((uint32_t)memory_info.last);
     kputs(" - corresponde a la pagina ");
     kputui32((uint32_t)PAGE_TO_PHADDR(memory_info.last));
     kputs("\n");
 
+    kputs("Lower: ");
+    kputui32((uint32_t)memory_info.lower);
+    kputs("\n");
 
-
+    kputs("Upper: ");
+    kputui32((uint32_t)memory_info.upper);
     kputs("\n");
 }

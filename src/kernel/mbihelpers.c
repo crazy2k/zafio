@@ -82,6 +82,8 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
 
     meminfo->first = first;
     meminfo->last = last;
+    meminfo->lower = mbi->mem_lower;
+    meminfo->upper = mbi->mem_upper;
 }
 
 

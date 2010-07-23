@@ -26,6 +26,8 @@ extern page_t pages[];
 typedef struct {
     page_t *first;
     page_t *last;
+    int lower;
+    int upper;
 
 } memory_info_t;
 
