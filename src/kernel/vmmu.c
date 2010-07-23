@@ -48,6 +48,8 @@ void page_dir_unmap(uint32_t page_dir[], void* virtual) {
 }*/
 
 
+// TODO: Tomar una decision con respecto al problema de que se precise otra
+// tabla. Por ahora, pd no se usa porque siempre estamos en el mismo entry.
 void map_kernel_pages(uint32_t pd[], uint32_t pt[], void *vstart, int n) {
     int i;
     for (i = 0; i < n; i++) {
