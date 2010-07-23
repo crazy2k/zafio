@@ -57,4 +57,8 @@ void return_page(page_t* returned);
 
 page_t *reserve_page(page_t* reserved);
 
+void map_kernel_pages(uint32_t pd[], uint32_t pt[], void *start, int n);
+
+void *kpage_align(void *addr, int ceil);
+
 #endif

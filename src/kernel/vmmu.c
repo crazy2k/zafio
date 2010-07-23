@@ -1,11 +1,22 @@
 #include "../inc/vmmu.h"
 #include "../inc/utils.h"
 #include "../inc/memlayout.h"
+#include "../inc/io.h"
 
 page_t pages[] __attribute__ ((section (".pages"))) = { {} }; 
 page_t* page_list = NULL; 
 
 memory_info_t memory_info;
+
+void *kpage_align(void *addr, int ceil) {
+    // Si la direccion no esta alineada,
+    if (!IS_ALIGNED(addr)) {
+        addr = (void *)((uint32_t)addr & 0xFFFFF000);
+        if (ceil)
+            addr += PAGE_SIZE;
+    }
+    return addr;
+}
 
 // Conecta entre si la paginas fst con sec
 void link_pages(page_t *fst, page_t *sec) {
@@ -36,6 +47,23 @@ void page_dir_unmap(uint32_t page_dir[], void* virtual) {
     page_dir[PDI(virtual)] = 0x0;	
 }*/
 
+
+void map_kernel_pages(uint32_t pd[], uint32_t pt[], void *vstart, int n) {
+    int i;
+    for (i = 0; i < n; i++) {
+        void *vaddr = vstart + PAGE_SIZE*i;
+
+        // TODO: Usar un panic de verdad
+        if (PDI(vaddr) != PDI(KERNEL_VIRT_ADDR)) {
+            kputs("PANIC: Se agoto el espacio reservado para page_ts\n");
+            return;
+        }
+
+        pt[PTI(vaddr)] = PTE_PAGE_BASE(KPHADDR(vaddr)) | PTE_G |
+            PTE_PWT | PTE_RW | PTE_P;
+
+    }
+}
 
 // Devuelve un puntero a la entrada en la tabla de paginas correspondiente a
 // la direccion virtual ``virt`` usando el directorio ``pd``.

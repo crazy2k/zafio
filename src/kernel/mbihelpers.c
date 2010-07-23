@@ -4,8 +4,6 @@
 #include "../inc/types.h"
 #include "../inc/vmmu.h"
 
-#define IS_ALIGNED(addr) !(addr & 0xFFF)
-
 void panic(char *msg) {
     // TODO: Completar
     __asm__ __volatile__("hlt");
