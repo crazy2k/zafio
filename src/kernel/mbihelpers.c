@@ -41,7 +41,8 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
     memory_map_t *mmap;
     for (mmap = (memory_map_t *) mbi->mmap_addr;
         mmap < (memory_map_t *) (mbi->mmap_addr + mbi->mmap_length);
-        mmap += sizeof(mmap->size) + mmap->size) {
+        mmap = (memory_map_t *) ((void *)mmap + sizeof(mmap->size) +
+            mmap->size)) {
 
         // Si el tipo no es 1, entonces no es RAM disponible
         if (mmap->type != 1)
