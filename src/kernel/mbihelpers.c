@@ -62,8 +62,8 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
         // Ubicamos las estructuras
         for (current = start; current < stop; current++) {
             current->count = 0;
-            current->prev = (page_t*)((void *)(current - 1) + KERNEL_OFFSET);
-            current->next = (page_t*)((void *)(current + 1) + KERNEL_OFFSET);
+            current->prev = (page_t *)KVIRTADDR((current - 1));
+            current->next = (page_t *)KVIRTADDR((current + 1));
         }
 
         // Enlazamos con el ultimo "chunk"
@@ -76,11 +76,11 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
     }
 
     // Enlazamos la ultima de todas con la primera estructura
-    first->prev = last;
-    last->next = first;
+    first->prev = (page_t *)KVIRTADDR(last);
+    last->next = (page_t *)KVIRTADDR(first);
 
-    meminfo->first = first;
-    meminfo->last = last;
+    meminfo->first = (page_t *)KVIRTADDR(first);
+    meminfo->last = (page_t *)KVIRTADDR(last);
     meminfo->lower = mbi->mem_lower;
     meminfo->upper = mbi->mem_upper;
 }
