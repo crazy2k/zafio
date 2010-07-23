@@ -2,8 +2,7 @@
 #include "../inc/vmmu.h"
 #include "../inc/io.h"
 
-void cmain() {
-    kcls();
+void welcome_msg() {
     kputs("                    w\n");
     kputs("                  ww         www\n");
     kputs("                www        wwwwww\n");
@@ -29,7 +28,9 @@ void cmain() {
     kputs("                         w    ww\n");
     kputs("                        wwwwwwww\n");
     kputs("                         wwwww\n");
+}
 
+void debug_prints() {
     kputs("Primer 'page'          : ");
     kputui32((uint32_t)memory_info.first);
     kputs(" - corresponde a la pagina ");
@@ -56,3 +57,41 @@ void cmain() {
     kputui32((uint32_t)memory_info.upper);
     kputs("\n");
 }
+
+void print_page(int i, page_t *page) {
+    kputs("page_t ");
+    kputui32((uint32_t)i);
+    kputs(": ");
+    kputui32((uint32_t)page);
+    kputs(" - corresponde a la pagina ");
+    kputui32((uint32_t)PAGE_TO_PHADDR(page));
+    kputs("\n");
+}
+
+// Imprimir lista de page_t
+void print_pages() {
+    page_t *first = memory_info.first;
+    print_page(0, first);
+
+    page_t *curr_page;
+    int i;
+    for (i = 1, curr_page = first->next; curr_page != first; i++, curr_page = curr_page->next)
+        print_page(i, curr_page);
+}
+
+
+void cmain() {
+    kcls();
+    welcome_msg();
+    debug_prints();
+
+    void *start = kpage_align((void *)memory_info.first, 0);
+    void *end = kpage_align((void *)memory_info.last, 1);
+    int n = ((uint32_t)(end - start))/PAGE_SIZE;
+    map_kernel_pages(kernel_pd, kernel_pt, start, n);
+
+    print_pages();
+
+}
+
+
