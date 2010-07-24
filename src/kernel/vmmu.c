@@ -73,16 +73,10 @@ void map_kernel_pages(uint32_t pd[], void *vstart, int n) {
         // Si la pagina ya fue mapeada, solo proseguimos si esta mapeada como
         // queremos. Los bits A y D no nos interesan (son alterados por el
         // hardware)
-        if (pte & PTE_P) {
-            if ((pte & ~(PTE_A) & ~(PTE_D)) != new_pte) {
-                kputui32(pte);
-                kputs("\n");
-                kputui32(new_pte);
-                kputs("\n");
+        if (pte & PTE_P)
+            if ((pte & ~(PTE_A) & ~(PTE_D)) != new_pte)
                 kpanic("map_kernel_pages: La pagina ya se encuentra mapeada \
 de manera diferente");
-            }
-        }
 
         pt[PTI(vaddr)] = new_pte;
     }
