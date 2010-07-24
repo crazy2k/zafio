@@ -89,12 +89,20 @@ void cmain() {
     welcome_msg();
     debug_prints();
 
+    // Mapeamos las paginas en las que se encuentran los page_t
     void *start = kpage_align((void *)memory_info.first, 0);
     void *end = kpage_align((void *)memory_info.last, 1);
     int n = ((uint32_t)(end - start))/PAGE_SIZE;
     map_kernel_pages(kernel_pd, start, n);
 
+    // Quitamos el mapeo de los primeros 4MB del espacio de direcciones virtual
+    page_dir_unmap(kernel_pd, (void *)0x00000000);
+
     print_pages();
+
+    // Si no ejecutamos un hlt aca, hay un page fault, ya que el codigo que nos
+    // llamo ya no esta mapeado en el espacio de memoria virtual
+    __asm__ __volatile__("hlt");
 
 }
 
