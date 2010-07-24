@@ -1,4 +1,5 @@
 #include "../inc/types.h"
+#include "../inc/io.h"
 
 void *memcpy(void *dest, const void *src, size_t n) {
     char *bdest = (char *) dest;
