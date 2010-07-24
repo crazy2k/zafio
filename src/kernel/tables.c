@@ -10,10 +10,10 @@ uint32_t kernel_pd[1024] __attribute__((section (".pd"))) = {
 };
 
 uint32_t kernel_pt[1024] __attribute__((section (".pt"))) = {
-    [PTI(VIDEO_MEMORY)] = PTE_PAGE_BASE(VIDEO_MEMORY) | PTE_G |
+    [PTI(VIDEO_PHYS_ADDR)] = PTE_PAGE_BASE(VIDEO_PHYS_ADDR) | PTE_G |
         PTE_PWT | PTE_RW | PTE_P,
 
-    [PTI(LOADER_ADDR)] = PTE_PAGE_BASE(LOADER_ADDR) | PTE_G |
+    [PTI(LOADER_PHYS_ADDR)] = PTE_PAGE_BASE(LOADER_PHYS_ADDR) | PTE_G |
         PTE_PWT | PTE_RW | PTE_P,
         
     [PTI(KERNEL_VIRT_ADDR)] = PTE_PAGE_BASE(KERNEL_PHYS_ADDR) | PTE_G |
