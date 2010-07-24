@@ -1,4 +1,5 @@
 #include "../inc/vmmu.h"
+#include "../inc/mmu.h"
 #include "../inc/utils.h"
 #include "../inc/memlayout.h"
 #include "../inc/io.h"
@@ -50,20 +51,40 @@ void page_dir_unmap(uint32_t page_dir[], void* virtual) {
 
 // TODO: Tomar una decision con respecto al problema de que se precise otra
 // tabla. Por ahora, pd no se usa porque siempre estamos en el mismo entry.
-void map_kernel_pages(uint32_t pd[], uint32_t pt[], void *vstart, int n) {
+void map_kernel_pages(uint32_t pd[], void *vstart, int n) {
     int i;
     for (i = 0; i < n; i++) {
         void *vaddr = vstart + PAGE_SIZE*i;
 
-        // TODO: Usar un panic de verdad
-        if (PDI(vaddr) != PDI(KERNEL_VIRT_ADDR)) {
-            kputs("PANIC: Se agoto el espacio reservado para page_ts\n");
-            return;
+        uint32_t pde = pd[PDI(vaddr)];
+        // Si no existe una tabla, no podemos seguir, ya que esta funcion se
+        // utiliza cuando aun no tenemos un mecanismo para reservar paginas
+        if (!(pde & PDE_P))
+            kpanic("map_kernel_pages: No hay tabla para mapear la direccion");
+
+        // Aca asumimos que la tabla se encuentra mapeada en las direcciones
+        // altas con el offset del kernel
+        uint32_t *pt = (uint32_t *)KVIRTADDR(PDE_PT_BASE(pde));
+
+        uint32_t pte = pt[PTI(vaddr)];
+        uint32_t new_pte = PTE_PAGE_BASE(KPHADDR(vaddr)) | PTE_G | PTE_PWT |
+            PTE_RW | PTE_P;
+
+        // Si la pagina ya fue mapeada, solo proseguimos si esta mapeada como
+        // queremos. Los bits A y D no nos interesan (son alterados por el
+        // hardware)
+        if (pte & PTE_P) {
+            if ((pte & ~(PTE_A) & ~(PTE_D)) != new_pte) {
+                kputui32(pte);
+                kputs("\n");
+                kputui32(new_pte);
+                kputs("\n");
+                kpanic("map_kernel_pages: La pagina ya se encuentra mapeada \
+de manera diferente");
+            }
         }
 
-        pt[PTI(vaddr)] = PTE_PAGE_BASE(KPHADDR(vaddr)) | PTE_G |
-            PTE_PWT | PTE_RW | PTE_P;
-
+        pt[PTI(vaddr)] = new_pte;
     }
 }
 
