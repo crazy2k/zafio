@@ -272,6 +272,8 @@ Directivas del ensamblador
     dirección como base para todas las referencias internas en una
     sección de código.
 
+.. TODO: Hablar de inline assembly en GCC.
+   http://ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html
 
 Referencias
 -----------
