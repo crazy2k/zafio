@@ -21,3 +21,10 @@ void *memset (void * s, int c, size_t n) {
 
     return s;
 }
+
+void kpanic(char *msg) {
+    kputs("PANIC: ");
+    kputs(msg);
+    kputs("\n");
+    __asm__ __volatile__("hlt");
+}

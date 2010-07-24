@@ -8,4 +8,6 @@ void *memcpy(void *dest, const void *src, size_t n);
 
 void *memset (void * ptr, int value, size_t num );
 
+void kpanic(char *msg);
+
 #endif
