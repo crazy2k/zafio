@@ -75,8 +75,12 @@ void print_pages() {
 
     page_t *curr_page;
     int i;
-    for (i = 1, curr_page = first->next; curr_page != first; i++, curr_page = curr_page->next)
+    for (i = 1, curr_page = first->next;
+        curr_page != first;
+        i++, curr_page = curr_page->next) {
+
         print_page(i, curr_page);
+    }
 }
 
 
