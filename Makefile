@@ -2,7 +2,7 @@ SRCDIR := src/
 REFTESTDIR := reftest/
 
 CC := gcc
-CFLAGS := -Wall -nostdlib -nostartfiles -nodefaultlibs 
+CFLAGS := -Wall -Werror -nostdlib -nostartfiles -nodefaultlibs 
 
 AS := nasm
 ASFLAGS := -f elf 
