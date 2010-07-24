@@ -4,6 +4,8 @@
 #include "../inc/memlayout.h"
 #include "../inc/io.h"
 
+#define ALIGN_TO_4MB(addr) (void *)((uint32_t)(addr) & 0x400000)
+
 page_t pages[] __attribute__ ((section (".pages"))) = { {} }; 
 page_t* page_list = NULL; 
 
@@ -31,22 +33,38 @@ void add_page_to_list(page_t* head, page_t* new) {
     link_pages(head, new);
 }
 
+void page_table_unmap(uint32_t pt[], void* vaddr) {
+	pt[PTI(vaddr)] = 0x0;
+    invalidate_tlb(vaddr);
+}
+
+void page_dir_unmap(uint32_t pd[], void* vaddr) {
+    pd[PDI(vaddr)] = 0x0;
+    // Invalidar la TLB para los 4MB
+    invalidate_tlb_pages(ALIGN_TO_4MB(vaddr), 1024);
+}
+
+void invalidate_tlb(void *vaddr) {
+    __asm__ __volatile__("invlpg (%0)" : : "r" (vaddr));
+}
+
+void invalidate_tlb_pages(void *vstart, int n) {
+    int i;
+    for (i = 0; i < n; i++)
+        invalidate_tlb(vstart + i*PAGE_SIZE);
+}
+
 /*void page_table_map(uint32_t page_table[], void* virtual, void* phisical, uint32_t flags) {
 	page_table[PTI(virtual)] = PDE_PT_BASE(phisical) | flags;
 }
 
-void page_table_unmap(uint32_t page_table[], void* virtual) {
-	page_table[PTI(virtual)] = 0x0;
-	
-}
+
 
 void page_dir_map(uint32_t page_dir[], void* virtual, void* phisical, uint32_t flags) {
 	page_dir[PDI(virtual)] = PDE_PT_BASE(phisical) | flags;
 }
 
-void page_dir_unmap(uint32_t page_dir[], void* virtual) {
-    page_dir[PDI(virtual)] = 0x0;	
-}*/
+*/
 
 
 // TODO: Tomar una decision con respecto al problema de que se precise otra
@@ -79,8 +97,11 @@ void map_kernel_pages(uint32_t pd[], void *vstart, int n) {
 de manera diferente");
 
         pt[PTI(vaddr)] = new_pte;
+
+        invalidate_tlb(vaddr);
     }
 }
+
 
 // Devuelve un puntero a la entrada en la tabla de paginas correspondiente a
 // la direccion virtual ``virt`` usando el directorio ``pd``.
