@@ -68,8 +68,8 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
 
         // Enlazamos con el ultimo "chunk"
         if (last != NULL) {
-            start->prev = last;
-            last->next = start;
+            start->prev = (page_t *)KVIRTADDR(last);
+            last->next = (page_t *)KVIRTADDR(start);
         }
 
         last = stop - 1;
