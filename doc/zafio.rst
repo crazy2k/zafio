@@ -16,3 +16,11 @@ parece relativamente sencilla y razonable. Como entendemos que nuestro
 foco principal está puesto en el sistema operativo en sí, y tenemos a
 nuestro alcance una herramienta como esta, optamos por aprovecharla en
 lugar de escribir nuestro propio *bootloader* desde cero.
+
+Convenciones
+------------
+
+.. TODO: Agregar las convenciones que usamos para las macros, los
+   nombres de las funciones, etc.
+
+
