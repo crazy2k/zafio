@@ -26,11 +26,11 @@ Los objetivos iniciales de este proyecto son:
 A continuación, la tabla de contenidos de la documentación:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    background
-   design
-   todo
+   zafio
+   extension
 
 ----
 
