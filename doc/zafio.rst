@@ -1,7 +1,7 @@
 .. default-role:: math
 
-Decisiones de diseño
-====================
+Zafio por dentro
+================
 
 El *bootloader*
 ---------------

@@ -1,5 +1,5 @@
-TODO List a largo/mediano plazo
-===============================
+Extensiones a futuro
+====================
 
 * No tener macros duplicadas en assembly y C. Ver si se pueden usar las
   macros de C en el assembly. Parece que GCC puede usar las macros para ambos
