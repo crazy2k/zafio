@@ -90,8 +90,8 @@ void cmain() {
     debug_prints();
 
     // Mapeamos las paginas en las que se encuentran los page_t
-    void *start = kpage_align((void *)memory_info.first, 0);
-    void *end = kpage_align((void *)memory_info.last, 1);
+    void *start = ALIGN_TO_PAGE((void *)memory_info.first, 0);
+    void *end = ALIGN_TO_PAGE((void *)memory_info.last, 1);
     int n = ((uint32_t)(end - start))/PAGE_SIZE;
     map_kernel_pages(kernel_pd, start, n);
 

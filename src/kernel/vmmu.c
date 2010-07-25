@@ -6,22 +6,10 @@
 
 // TODO: Ver mejor en que lugares falta invalidar la tlb
 
-#define ALIGN_TO_4MB(addr) (void *)((uint32_t)(addr) & 0x400000)
-
 page_t pages[] __attribute__ ((section (".pages"))) = { {} }; 
 page_t* page_list = NULL; 
 
 memory_info_t memory_info;
-
-void *kpage_align(void *addr, int ceil) {
-    // Si la direccion no esta alineada,
-    if (!IS_ALIGNED(addr)) {
-        addr = (void *)((uint32_t)addr & 0xFFFFF000);
-        if (ceil)
-            addr += PAGE_SIZE;
-    }
-    return addr;
-}
 
 // Conecta entre si la paginas fst con sec
 void link_pages(page_t *fst, page_t *sec) {

@@ -59,8 +59,6 @@ page_t *reserve_page(page_t* reserved);
 
 void map_kernel_pages(uint32_t pd[], void *vstart, int n);
 
-void *kpage_align(void *addr, int ceil);
-
 void page_table_unmap(uint32_t pt[], void* vaddr);
 
 void page_dir_unmap(uint32_t pd[], void* vaddr);
