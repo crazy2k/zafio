@@ -21,7 +21,7 @@
     <script type="text/javascript" src="static/doctools.js"></script>
     <script type="text/javascript" src="_static/translations.js"></script>
     <link rel="top" title="Zafio v0.1 documentation" href="index.html" />
-    <link rel="next" title="Decisiones de diseño" href="design.html" />
+    <link rel="next" title="Zafio por dentro" href="zafio.html" />
     <link rel="prev" title="Documentación de Zafio" href="index.html" /> 
   </head>
   <body>
@@ -32,7 +32,7 @@
           <a href="genindex.html" title="Índice General"
              accesskey="I">índice</a></li>
         <li class="right" >
-          <a href="design.html" title="Decisiones de diseño"
+          <a href="zafio.html" title="Zafio por dentro"
              accesskey="N">siguiente</a> |</li>
         <li class="right" >
           <a href="index.html" title="Documentación de Zafio"
@@ -182,12 +182,361 @@ de pasar de uno a otro:</p>
 </div>
 <div class="section" id="administracion-de-memoria">
 <h3>Administración de memoria<a class="headerlink" href="#administracion-de-memoria" title="Enlazar permanentemente con este título">¶</a></h3>
-</div>
+<p>En la arquitectura IA-32 la administración de la memoria se realiza
+gracias a las unidades de segmentación y paginación. Cuando la máquina
+se encuentra en modo protegido, con la paginación de memoria activada,
+puede pensarse en la existencia de tres tipos de direcciones, como
+muestra la siguiente figura:</p>
+<p class="graphviz">
+<img src="images/graphviz-d1a7ca048f0c3c3fbc239a74b5d8225d2812b055.png" alt="digraph direcciones {
+    rankdir=LR
+    &quot;dirección virtual&quot; [shape=box]
+    &quot;dirección lineal&quot; [shape=box]
+    &quot;dirección física&quot; [shape=box]
+    &quot;dirección virtual&quot; -&gt; &quot;dirección lineal&quot;
+        [label=&lt;&lt;font point-size=&quot;12&quot;&gt;unidad&lt;br /&gt;de segmentación&lt;/font&gt;&gt;];
+    &quot;dirección lineal&quot; -&gt; &quot;dirección física&quot;
+        [label=&lt;&lt;font point-size=&quot;12&quot;&gt;unidad&lt;br /&gt;de paginación&lt;/font&gt;&gt;];
+}" />
+</p>
+<p>La <strong>dirección virtual</strong> es la dirección a la que se hace referencia
+generalmente desde el código. Consiste en un selector de segmento y un
+<em>offset</em>. Al pasar por la unidad de segmentación, esta dirección se
+transforma en una dirección en un <strong>espacio de direcciones lineal</strong>
+(sin segmentos). Cuando el mecanismo de paginación se encuentra
+desactivado, esta dirección coincide con la <strong>dirección física</strong>, es
+decir, con la dirección que se impondrá en el <em>bus</em> de direcciones de
+la máquina. Si el mecanismo de paginación está activado, entonces la
+dirección lineal sufrirá una traducción más antes de llegar a ser una
+dirección física.</p>
+<p>El caso descripto en el párrafo anterior es un caso optimista. En
+realidad, cualquiera de las dos unidades puede abortar la traducción (y
+dar cuenta de ello al sistema operativo) si ocurre una falla de
+protección.</p>
 <div class="section" id="segmentacion">
-<h3>Segmentación<a class="headerlink" href="#segmentacion" title="Enlazar permanentemente con este título">¶</a></h3>
+<h4>Segmentación<a class="headerlink" href="#segmentacion" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Si bien en la actualidad la segmentación sigue siendo utilizada como
+mecanismo de protección de memoria, muchos sistemas operativos modernos
+prefieren delegar esta tarea al mecanismo de paginación de memoria.</p>
+<p>No obstante, la segmentación no puede ser desactivada en la
+arquitectura IA-32, en ninguno de sus modos. ¿Cómo hacen entonces los
+sistemas operativos modernos (que no precisan de la segmentación) para
+desactivarla? En realidad, no la desactivan. Utilizan el llamado
+&#8220;Modelo flat de segmentación&#8221;, que consiste en ubicar a todos los
+segmentos ocupando todo el espacio direccionable, desde la dirección
+cero. De este modo, se logra que las direcciones virtuales coincidan
+con las direcciones lineales.</p>
+<p>Las tablas GDT y LDT están compuestas por  <em>descriptores de segmentos</em>.
+Cada uno de ellos indica la posición y el tamaño de un segmento,
+junto con otros atributos de este. El descriptor de segmento tiene 64
+bits de tamaño y la siguiente estructura:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="5%" />
+<col width="7%" />
+<col width="5%" />
+<col width="7%" />
+<col width="11%" />
+<col width="5%" />
+<col width="11%" />
+<col width="5%" />
+<col width="10%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Base 31:24</th>
+<th class="head">G</th>
+<th class="head">D/B</th>
+<th class="head">L</th>
+<th class="head">AVL</th>
+<th class="head">Limit</th>
+<th class="head">P</th>
+<th class="head">DPL</th>
+<th class="head">S</th>
+<th class="head">Type</th>
+<th class="head">Base 23:16</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>31..24</td>
+<td>23</td>
+<td>22</td>
+<td>21</td>
+<td>20</td>
+<td>19..16</td>
+<td>15</td>
+<td>14..13</td>
+<td>12</td>
+<td>11..8</td>
+<td>7..0</td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="docutils">
+<colgroup>
+<col width="46%" />
+<col width="54%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Base 15:00</th>
+<th class="head">Limit 15:00</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>31..16</td>
+<td>15..0</td>
+</tr>
+</tbody>
+</table>
+<p>Los campos se interpretan según la siguiente tabla:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="7%" />
+<col width="93%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Campo</th>
+<th class="head">Significado</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>G</td>
+<td>El límite se interpreta en unidades de 1B (<tt class="docutils literal"><span class="pre">0</span></tt>) o 4KB (<tt class="docutils literal"><span class="pre">1</span></tt>)</td>
+</tr>
+<tr><td>D/B</td>
+<td>Segmentos de 16 bits (<tt class="docutils literal"><span class="pre">0</span></tt>) o 32 bits (<tt class="docutils literal"><span class="pre">1</span></tt>)</td>
+</tr>
+<tr><td>L</td>
+<td>Código que no es de 64 bits (<tt class="docutils literal"><span class="pre">0</span></tt>) o que es de 64 bits (<tt class="docutils literal"><span class="pre">1</span></tt>)</td>
+</tr>
+<tr><td>AVL</td>
+<td>Es un bit disponible para usar, si se quiere</td>
+</tr>
+<tr><td>P</td>
+<td>Segmento ausente en memoria (<tt class="docutils literal"><span class="pre">0</span></tt>) o presente en memoria (<tt class="docutils literal"><span class="pre">1</span></tt>)</td>
+</tr>
+<tr><td>DPL</td>
+<td>Nivel de privilegio del segmento (de 0 a 3)</td>
+</tr>
+<tr><td>S</td>
+<td>Segmento del sistema (<tt class="docutils literal"><span class="pre">0</span></tt>) o de código/datos (<tt class="docutils literal"><span class="pre">1</span></tt>)</td>
+</tr>
+<tr><td>Type</td>
+<td>Tipo del segmento: si es de datos o de codigo; si es de
+lectura o escritura/ejecutable. Ver tabla en el manual.
+Valores típicos: <tt class="docutils literal"><span class="pre">0010</span></tt> (Data; Read/Write) y <tt class="docutils literal"><span class="pre">1010</span></tt> (Code;
+Execute/Read))</td>
+</tr>
+<tr><td>Limit</td>
+<td>Representa el tamaño del segmento menos uno, y se interpreta
+según el valor del bit G</td>
+</tr>
+</tbody>
+</table>
+<p>Además, cuando el bit P se encuentra en <tt class="docutils literal"><span class="pre">0</span></tt>, el formato del
+descriptor de segmento cambia, dejando varios bits disponibles para que
+los aproveche el sistema operativo, por ejemplo, para almacenar
+información acerca de dónde puede encontrarse la información del
+segmento.</p>
 </div>
 <div class="section" id="paginacion">
-<h3>Paginación<a class="headerlink" href="#paginacion" title="Enlazar permanentemente con este título">¶</a></h3>
+<h4>Paginación<a class="headerlink" href="#paginacion" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>En la arquitectura IA-32 la paginación puede activarse una vez hecho el
+cambio a modo protegido. Cuando se encuentra activada, y se utilizan
+páginas de 4KB, la dirección lineal es dividida en tres partes por la
+unidad de paginación:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="47%" />
+<col width="41%" />
+<col width="12%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">índice en el directorio de páginas</th>
+<th class="head">índice en la tabla de páginas</th>
+<th class="head">offset</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>10 bits</td>
+<td>10 bits</td>
+<td>12 bits</td>
+</tr>
+</tbody>
+</table>
+<p>El primero de los tres campos representa un índice en el directorio de
+páginas. El directorio de páginas es una tabla que contiene <img class="math" src="images/math/b3b2422eb1e019642032c00b0c5d5982903fe45d.png" alt="2^{10}"/>
+entradas (una por cada índice posible). Cada entrada, además de varios
+atributos, contiene la dirección física de una tabla de páginas. El
+sistema de paginación utiliza el primer campo para seleccionar una de
+las entradas en el directorio de páginas (<em>Page Directory Entries</em> o
+PDEs). Consecuentemente, se obtendrá la dirección física de la tabla
+de páginas asociada a dicha entrada.</p>
+<p>El segundo campo es utilizado, entonces, para elegir una de las
+<img class="math" src="images/math/b3b2422eb1e019642032c00b0c5d5982903fe45d.png" alt="2^{10}"/> entradas de la tabla de páginas mencionada. Las entradas en
+la tabla de páginas (<em>Page Table Entries</em> o PTEs) contienen, además de
+varios atributos, la dirección física de una página en memoria. El
+offset es utilizado para seleccionar uno de los bytes en dicha página.</p>
+<p>El formato de los PDEs, cuando se usan páginas de 4KB, es el siguiente:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="14%" />
+<col width="8%" />
+<col width="10%" />
+<col width="6%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="6%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">PT Base</th>
+<th class="head">AVL</th>
+<th class="head">PS</th>
+<th class="head">AVL</th>
+<th class="head">A</th>
+<th class="head">PCD</th>
+<th class="head">PWT</th>
+<th class="head">U/S</th>
+<th class="head">R/W</th>
+<th class="head">P</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>31..12</td>
+<td>11..8</td>
+<td>7</td>
+<td>6</td>
+<td>5</td>
+<td>4</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>Y los campos se interpretan según la siguiente tabla:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Campo</th>
+<th class="head">Significado</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PT Base</td>
+<td>Dirección física de la tabla de páginas</td>
+</tr>
+<tr><td>AVL</td>
+<td>Está disponible para usar, si se quiere</td>
+</tr>
+<tr><td>PS</td>
+<td>Si <tt class="docutils literal"><span class="pre">CR4.PSE</span></tt> es <tt class="docutils literal"><span class="pre">1</span></tt>, indica si las páginas son de 4KB (<tt class="docutils literal"><span class="pre">0</span></tt>)
+o 4MB (<tt class="docutils literal"><span class="pre">1</span></tt>); si no, se ignora (se usan páginas de 4KB)</td>
+</tr>
+<tr><td>A</td>
+<td>Indica si la página/tabla fue accedida (<tt class="docutils literal"><span class="pre">1</span></tt>) o no (<tt class="docutils literal"><span class="pre">0</span></tt>)</td>
+</tr>
+<tr><td>PCD</td>
+<td>Indica si la página/tabla puede ser <em>cacheada</em> (<tt class="docutils literal"><span class="pre">0</span></tt>) o no
+(<tt class="docutils literal"><span class="pre">1</span></tt>)</td>
+</tr>
+<tr><td>PWT</td>
+<td>Indica si se realizará <em>write-through</em> (<tt class="docutils literal"><span class="pre">1</span></tt>) o <em>write-back</em>
+(<tt class="docutils literal"><span class="pre">0</span></tt>) de la página/tabla</td>
+</tr>
+<tr><td>U/S</td>
+<td>Indica si el nivel de privilegios asignado a la página es de
+supervisor (<tt class="docutils literal"><span class="pre">0</span></tt>) o de usuario (<tt class="docutils literal"><span class="pre">1</span></tt>)</td>
+</tr>
+<tr><td>R/W</td>
+<td>Indica si la página es de sólo lectura (<tt class="docutils literal"><span class="pre">0</span></tt>) o puede leerse y
+escribirse (<tt class="docutils literal"><span class="pre">1</span></tt>)</td>
+</tr>
+<tr><td>P</td>
+<td>Indica si la página/tabla está ausente (<tt class="docutils literal"><span class="pre">0</span></tt>) o presente
+(<tt class="docutils literal"><span class="pre">1</span></tt>) en memoria</td>
+</tr>
+</tbody>
+</table>
+<p>El formato de los PTEs, es el siguiente:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="13%" />
+<col width="5%" />
+<col width="9%" />
+<col width="5%" />
+<col width="5%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
+<col width="5%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Page Base</th>
+<th class="head">AVL</th>
+<th class="head">G</th>
+<th class="head">PAT</th>
+<th class="head">D</th>
+<th class="head">A</th>
+<th class="head">PCD</th>
+<th class="head">PWT</th>
+<th class="head">U/S</th>
+<th class="head">R/W</th>
+<th class="head">P</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>31..12</td>
+<td>11..9</td>
+<td>8</td>
+<td>7</td>
+<td>6</td>
+<td>5</td>
+<td>4</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>Y los campos se interpretan según la siguiente tabla:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Campo</th>
+<th class="head">Significado</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>G</td>
+<td>Si <tt class="docutils literal"><span class="pre">CR4.PGE</span></tt> es <tt class="docutils literal"><span class="pre">1</span></tt>, determina si la traducción es &#8220;global&#8221;</td>
+</tr>
+<tr><td>PAT</td>
+<td>Si PAT está soportado, determina el tipo de memoria usado para
+acceder a la página</td>
+</tr>
+<tr><td>D</td>
+<td>Indica si el software escribió en la página referenciada</td>
+</tr>
+</tbody>
+</table>
+<p>Los campos que no se hallan en esta tabla se interpretan de manera
+análoga al caso del PDE.</p>
+</div>
 </div>
 </div>
 <div class="section" id="referencia-de-nasm">
@@ -257,9 +606,11 @@ sección de código.</dd></dl>
 </li>
 <li><a class="reference external" href="#la-arquitectura">La arquitectura</a><ul>
 <li><a class="reference external" href="#modos-de-operacion">Modos de operación</a></li>
-<li><a class="reference external" href="#administracion-de-memoria">Administración de memoria</a></li>
+<li><a class="reference external" href="#administracion-de-memoria">Administración de memoria</a><ul>
 <li><a class="reference external" href="#segmentacion">Segmentación</a></li>
 <li><a class="reference external" href="#paginacion">Paginación</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference external" href="#referencia-de-nasm">Referencia de NASM</a><ul>
@@ -276,8 +627,8 @@ sección de código.</dd></dl>
             <p class="topless"><a href="index.html"
                                   title="Capítulo anterior">Documentación de Zafio</a></p>
             <h4>Próximo tema</h4>
-            <p class="topless"><a href="design.html"
-                                  title="Próximo capítulo">Decisiones de diseño</a></p>
+            <p class="topless"><a href="zafio.html"
+                                  title="Próximo capítulo">Zafio por dentro</a></p>
             <h3>Esta página</h3>
             <ul class="this-page-menu">
               <li><a href="sources/background.txt"
@@ -307,7 +658,7 @@ sección de código.</dd></dl>
           <a href="genindex.html" title="Índice General"
              >índice</a></li>
         <li class="right" >
-          <a href="design.html" title="Decisiones de diseño"
+          <a href="zafio.html" title="Zafio por dentro"
              >siguiente</a> |</li>
         <li class="right" >
           <a href="index.html" title="Documentación de Zafio"
