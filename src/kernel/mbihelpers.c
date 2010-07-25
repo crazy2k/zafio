@@ -15,16 +15,6 @@ void verify_multiboot(unsigned int magic) {
     }
 }
 
-uint32_t page_align(uint32_t addr, int ceil) {
-    // Si la direccion no esta alineada,
-    if (!IS_ALIGNED(addr)) {
-        addr &= 0xFFFFF000;
-        if (ceil)
-            addr += PAGE_SIZE;
-    }
-    return addr;
-}
-
 void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
     if (!(mbi->flags & (0x1 << 6))) {
         // El mmap no es valido
@@ -47,9 +37,9 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
             continue;
 
         // Direcciones en el espacio de memoria fisico
-        unsigned long start_addr = page_align(mmap->base_addr_low, 1);
-        unsigned long stop_addr =
-            page_align(mmap->base_addr_low + mmap->length_low, 0);
+        uint32_t start_addr = (uint32_t) ALIGN_TO_PAGE(mmap->base_addr_low, 1);
+        uint32_t stop_addr =
+            (uint32_t) ALIGN_TO_PAGE(mmap->base_addr_low + mmap->length_low, 0);
 
         // Direcciones de las estructuras correspondientes
         page_t *start = dest + start_addr/PAGE_SIZE;

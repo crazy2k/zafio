@@ -120,5 +120,11 @@ struct page_t {
 
 #define PAGE_SIZE 0x1000
 
+#define ALIGN_TO_4MB(addr) (void *)((uint32_t)(addr) & 0xFFC00000)
+
+#define ALIGN_TO_PAGE(addr, ceil) ({ uint32_t __addr = (uint32_t) (addr); \
+    if ( (ceil) && (__addr & 0xFFF) ) __addr += PAGE_SIZE; \
+    (void*) (__addr & 0xFFFFF000); })
+
 #endif
 
