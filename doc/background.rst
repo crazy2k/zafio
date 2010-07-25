@@ -153,89 +153,182 @@ de pasar de uno a otro:
 Administración de memoria
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+En la arquitectura IA-32 la administración de la memoria se realiza
+gracias a las unidades de segmentación y paginación. Cuando la máquina
+se encuentra en modo protegido, con la paginación de memoria activada,
+puede pensarse en la existencia de tres tipos de direcciones, como
+muestra la siguiente figura:
+
+.. graphviz::
+
+    digraph direcciones {
+        rankdir=LR
+        "dirección virtual" [shape=box]
+        "dirección lineal" [shape=box]
+        "dirección física" [shape=box]
+        "dirección virtual" -> "dirección lineal"
+            [label=<<font point-size="12">unidad<br />de segmentación</font>>];
+        "dirección lineal" -> "dirección física"
+            [label=<<font point-size="12">unidad<br />de paginación</font>>];
+    }
+
+La **dirección virtual** es la dirección a la que se hace referencia
+generalmente desde el código. Consiste en un selector de segmento y un
+*offset*. Al pasar por la unidad de segmentación, esta dirección se
+transforma en una dirección en un **espacio de direcciones lineal**
+(sin segmentos). Cuando el mecanismo de paginación se encuentra
+desactivado, esta dirección coincide con la **dirección física**, es
+decir, con la dirección que se impondrá en el *bus* de direcciones de
+la máquina. Si el mecanismo de paginación está activado, entonces la
+dirección lineal sufrirá una traducción más antes de llegar a ser una
+dirección física.
+
+El caso descripto en el párrafo anterior es un caso optimista. En
+realidad, cualquiera de las dos unidades puede abortar la traducción (y
+dar cuenta de ello al sistema operativo) si ocurre una falla de
+protección.
+
+
 Segmentación
-~~~~~~~~~~~~
+++++++++++++
 
-.. La administración de memoria mediante segmentación se implementó desde
-.. hace mucho tiempo atrás en la familia de procesadores de Intel. En los
-.. 8086 de Intel (que vieron el mercado en 1978), la segmentación, no
-.. obstante, fue implementada de una manera rudimentaria, únicamente con
-.. los fines de acceder a posiciones de memoria cuya dirección no cabía en
-.. los registros del procesador. Por esos tiempos, en la arquitectura de
-.. Intel, no se utilizaba la segmentación como un mecanismo para proteger
-.. espacios de memoria.
+Si bien en la actualidad la segmentación sigue siendo utilizada como
+mecanismo de protección de memoria, muchos sistemas operativos modernos
+prefieren delegar esta tarea al mecanismo de paginación de memoria.
 
-.. Con la aparición del procesador 80286 (1982) --- inclusión del modo
-.. protegido --- se hizo posible la definición de los tamaños y
-.. privilegios asignados a cada uno de los segmentos. Así, la segmentación
-.. pudo utilizarse para realizar protección de memoria, es decir,
-.. restringir el acceso de determinadas tareas a ciertos sectores de la
-.. memoria, logrando así, por ejemplo, que las aplicaciones no puedan
-.. acceder o modificar datos pertenecientes al sistema operativo.
+No obstante, la segmentación no puede ser desactivada en la
+arquitectura IA-32, en ninguno de sus modos. ¿Cómo hacen entonces los
+sistemas operativos modernos (que no precisan de la segmentación) para
+desactivarla? En realidad, no la desactivan. Utilizan el llamado
+"Modelo flat de segmentación", que consiste en ubicar a todos los
+segmentos ocupando todo el espacio direccionable, desde la dirección
+cero. De este modo, se logra que las direcciones virtuales coincidan
+con las direcciones lineales.
 
-.. Sin embargo, en una gran cantidad de sistemas operativos modernos
-.. (también es el caso de JOS), la segmentación fue dejada de lado como
-.. mecanismo de protección de memoria. Se utiliza, para esto, únicamente
-.. la paginación.
+Las tablas GDT y LDT están compuestas por  *descriptores de segmentos*.
+Cada uno de ellos indica la posición y el tamaño de un segmento,
+junto con otros atributos de este. El descriptor de segmento tiene 64
+bits de tamaño y la siguiente estructura:
 
-.. No obstante, la segmentación no puede ser desactivada en la
-.. arquitectura IA-32, en ninguno de sus modos. ¿Cómo hacen entonces los
-.. sistemas operativos modernos (que no precisan de la segmentación) para
-.. desactivarla? En realidad, no la desactivan. Utilizan algo llamado
-.. “Modelo flat de segmentación”, que consiste en ubicar a todos los
-.. segmentos ocupando todo el espacio que se pretende direccionar, desde
-.. la dirección cero. De este modo, la dirección (la parte del offset,
-.. específicamente) virtual (la utilizada en el código) coincide con la
-.. dirección lineal (la que toma como entrada el módulo de paginación).
++------------+----+-----+----+-----+--------+----+--------+----+-------+------------+
+| Base 31:24 |  G | D/B |  L | AVL |  Limit |  P |    DPL |  S |  Type | Base 23:16 |
++============+====+=====+====+=====+========+====+========+====+=======+============+
+|     31..24 | 23 |  22 | 21 |  20 | 19..16 | 15 | 14..13 | 12 | 11..8 |       7..0 |
++------------+----+-----+----+-----+--------+----+--------+----+-------+------------+
+
++------------+--------------+
+| Base 15:00 |  Limit 15:00 |
++============+==============+
+|     31..16 |        15..0 |
++------------+--------------+
+
+Los campos se interpretan según la siguiente tabla:
+
+===== =================================================================
+Campo Significado
+===== =================================================================
+    G El límite se interpreta en unidades de 1B (``0``) o 4KB (``1``)
+  D/B Segmentos de 16 bits (``0``) o 32 bits (``1``)
+    L Código que no es de 64 bits (``0``) o que es de 64 bits (``1``)
+  AVL Es un bit disponible para usar, si se quiere
+    P Segmento ausente en memoria (``0``) o presente en memoria (``1``)
+  DPL Nivel de privilegio del segmento (de 0 a 3)
+    S Segmento del sistema (``0``) o de código/datos (``1``)
+ Type Tipo del segmento: si es de datos o de codigo; si es de
+      lectura o escritura/ejecutable. Ver tabla en el manual.
+      Valores típicos: ``0010`` (Data; Read/Write) y ``1010`` (Code;
+      Execute/Read))
+Limit Representa el tamaño del segmento menos uno, y se interpreta
+      según el valor del bit G
+===== =================================================================
+
+Además, cuando el bit P se encuentra en ``0``, el formato del
+descriptor de segmento cambia, dejando varios bits disponibles para que
+los aproveche el sistema operativo, por ejemplo, para almacenar
+información acerca de dónde puede encontrarse la información del
+segmento.
 
 Paginación
-~~~~~~~~~~
+++++++++++
 
-.. La verdadera protección de memoria en JOS (y en muchos sistemas
-.. operativos modernos) se da gracias al mecanismo de paginación. La
-.. paginación se caracteriza por organizar la memoria física en bloques de
-.. tamaño fijo, no solapados, llamados marcos de página.
+En la arquitectura IA-32 la paginación puede activarse una vez hecho el
+cambio a modo protegido. Cuando se encuentra activada, y se utilizan
+páginas de 4KB, la dirección lineal es dividida en tres partes por la
+unidad de paginación:
 
-.. Observemos las distintas etapas por las cuales pasa una dirección
-.. virtual hasta que se convierte en una dirección física:
++------------------------------------+-------------------------------+---------+
+| índice en el directorio de páginas | índice en la tabla de páginas | offset  |
++====================================+===============================+=========+
+| 10 bits                            | 10 bits                       | 12 bits |
++------------------------------------+-------------------------------+---------+
 
-.. .. graphviz::
+El primero de los tres campos representa un índice en el directorio de
+páginas. El directorio de páginas es una tabla que contiene `2^{10}`
+entradas (una por cada índice posible). Cada entrada, además de varios
+atributos, contiene la dirección física de una tabla de páginas. El
+sistema de paginación utiliza el primer campo para seleccionar una de
+las entradas en el directorio de páginas (*Page Directory Entries* o
+PDEs). Consecuentemente, se obtendrá la dirección física de la tabla
+de páginas asociada a dicha entrada.
 
-..     digraph direcciones {
-..         "dirección virtual" [shape=box] -> "dirección lineal"
-..             [label="unidad de segmentación"];
-..         "dirección lineal" -> "dirección física"
-..             [label="unidad de paginación"];
-..     }
+El segundo campo es utilizado, entonces, para elegir una de las
+`2^{10}` entradas de la tabla de páginas mencionada. Las entradas en
+la tabla de páginas (*Page Table Entries* o PTEs) contienen, además de
+varios atributos, la dirección física de una página en memoria. El
+offset es utilizado para seleccionar uno de los bytes en dicha página.
 
-.. La primer traducción la realiza la unidad de segmentación, mientras
-.. que la segunda traducción es realizada por la unidad de paginación.
+El formato de los PDEs, cuando se usan páginas de 4KB, es el siguiente:
 
-.. En la arquitectura IA-32 la paginación puede activarse una vez hecho el
-.. cambio a modo protegido. Cuando se encuentra activada, y se utilizan
-.. páginas de 4KB, la dirección lineal es dividida en tres partes por la
-.. unidad de paginación:
++---------+-------+----+-----+---+-----+-----+-----+-----+---+
+| PT Base |   AVL | PS | AVL | A | PCD | PWT | U/S | R/W | P |
++=========+=======+====+=====+===+=====+=====+=====+=====+===+
+|  31..12 | 11..8 |  7 |   6 | 5 |   4 |   3 |   2 |   1 | 0 |
++---------+-------+----+-----+---+-----+-----+-----+-----+---+
 
-.. +------------------------------------+-------------------------------+---------+
-.. | índice en el directorio de páginas | índice en la tabla de páginas | offset  |
-.. +====================================+===============================+=========+
-.. | (10 bits)                          | (10 bits)                     | 12 bits |
-.. +------------------------------------+-------------------------------+---------+
+Y los campos se interpretan según la siguiente tabla:
 
-.. El primero de los tres campos representa un índice en el directorio de
-.. páginas. El directorio de páginas es una tabla que contiene 2^{10}
-.. entradas (una por cada índice posible). Cada entrada, además de varios
-.. atributos, contiene la dirección física de una tabla de páginas. El
-.. sistema de paginación utiliza el primer campo para seleccionar una de
-.. las entradas en el directorio de páginas (PDEs). Consecuentemente, se
-.. obtendrá la dirección física de la tabla de páginas asociada a dicha
-.. entrada.
+======= =================================================================
+Campo   Significado
+======= =================================================================
+PT Base Dirección física de la tabla de páginas
+AVL     Está disponible para usar, si se quiere
+PS      Si ``CR4.PSE`` es ``1``, indica si las páginas son de 4KB (``0``)
+        o 4MB (``1``); si no, se ignora (se usan páginas de 4KB)
+A       Indica si la página/tabla fue accedida (``1``) o no (``0``)
+PCD     Indica si la página/tabla puede ser *cacheada* (``0``) o no
+        (``1``)
+PWT     Indica si se realizará *write-through* (``1``) o *write-back*
+        (``0``) de la página/tabla
+U/S     Indica si el nivel de privilegios asignado a la página es de
+        supervisor (``0``) o de usuario (``1``)
+R/W     Indica si la página es de sólo lectura (``0``) o puede leerse y
+        escribirse (``1``)
+P       Indica si la página/tabla está ausente (``0``) o presente
+        (``1``) en memoria
+======= =================================================================
 
-.. El segundo campo es utilizado, entonces, para elegir una de las
-.. `2^{10}` entradas de la tabla de páginas mencionada. Las entradas en
-.. la tabla de páginas (PTEs) contienen, además de varios atributos, la
-.. dirección física de una página en memoria. El offset es utilizado para
-.. seleccionar uno de los bytes en dicha página.
+El formato de los PTEs, es el siguiente:
+
++-----------+-------+---+-----+---+---+-----+-----+-----+-----+---+
+| Page Base |   AVL | G | PAT | D | A | PCD | PWT | U/S | R/W | P |
++===========+=======+===+=====+===+===+=====+=====+=====+=====+===+
+|    31..12 | 11..9 | 8 |   7 | 6 | 5 |   4 |   3 |   2 |   1 | 0 |
++-----------+-------+---+-----+---+---+-----+-----+-----+-----+---+
+
+Y los campos se interpretan según la siguiente tabla:
+
+======= =================================================================
+Campo   Significado
+======= =================================================================
+G       Si ``CR4.PGE`` es ``1``, determina si la traducción es "global"
+PAT     Si PAT está soportado, determina el tipo de memoria usado para 
+        acceder a la página
+D       Indica si el software escribió en la página referenciada
+======= =================================================================
+
+Los campos que no se hallan en esta tabla se interpretan de manera
+análoga al caso del PDE.
+
 
 Referencia de NASM
 ------------------
