@@ -58,40 +58,43 @@ void page_dir_map(uint32_t page_dir[], void* virtual, void* phisical, uint32_t f
 
 
 // TODO: Tomar una decision con respecto al problema de que se precise otra
-// tabla. Por ahora, pd no se usa porque siempre estamos en el mismo entry.
+// tabla. 
 void map_kernel_pages(uint32_t pd[], void *vstart, int n) {
-    int i;
-    for (i = 0; i < n; i++) {
-        void *vaddr = vstart + PAGE_SIZE*i;
+    void *vaddr, *vstop = vstart + PAGE_SIZE*n;
 
-        uint32_t pde = pd[PDI(vaddr)];
-        // Si no existe una tabla, no podemos seguir, ya que esta funcion se
-        // utiliza cuando aun no tenemos un mecanismo para reservar paginas
-        if (!(pde & PDE_P))
-            kpanic("map_kernel_pages: No hay tabla para mapear la direccion");
-
-        // Aca asumimos que la tabla se encuentra mapeada en las direcciones
-        // altas con el offset del kernel
-        uint32_t *pt = (uint32_t *)KVIRTADDR(PDE_PT_BASE(pde));
-
-        uint32_t pte = pt[PTI(vaddr)];
+    for (vaddr = vstart; vaddr < vstop; vaddr += PAGE_SIZE) {
         uint32_t new_pte = PTE_PAGE_BASE(KPHADDR(vaddr)) | PTE_G | PTE_PWT |
             PTE_RW | PTE_P;
 
-        // Si la pagina ya fue mapeada, solo proseguimos si esta mapeada como
-        // queremos. Los bits A y D no nos interesan (son alterados por el
-        // hardware)
-        if (pte & PTE_P)
-            if ((pte & ~(PTE_A) & ~(PTE_D)) != new_pte)
-                kpanic("map_kernel_pages: La pagina ya se encuentra mapeada \
-de manera diferente");
+        uint32_t *pte;
+        // Si no existe una tabla, no podemos seguir, ya que esta funcion se
+        // utiliza cuando aun no tenemos un mecanismo para reservar paginas
+        if (!(pte = get_pte(pd, vaddr)))
+            kpanic("map_kernel_pages: No hay tabla para mapear la direccion");
 
-        pt[PTI(vaddr)] = new_pte;
+        if (*pte & PTE_P) {
+            // Si la pagina ya fue mapeada, solo proseguimos si esta mapeada como
+            // queremos. Los bits A y D no nos interesan (son alterados por el
+            // hardware)
+            if ((*pte & ~(PTE_A) & ~(PTE_D)) != new_pte)
+                kpanic("map_kernel_pages: La pagina ya se encuentra" 
+                    " mapeada de manera diferente");
+        }
+        else
+            *pte = new_pte;
 
         invalidate_tlb(vaddr);
     }
 }
 
+void map_kernel_tables(uint32_t pd[], void *vstart, int n) {
+    void *vaddr, *vstop = vstart + PAGE_SIZE*n;
+
+    for (vaddr = vstart; vaddr < vstop; vaddr += PAGE_SIZE) {
+        pd[PDI(vaddr)] = PDE_PT_BASE(KPHADDR(vaddr)) | PDE_P | PDE_PWT;
+        memset(vaddr, 0, PAGE_SIZE);
+    }
+}
 
 // Devuelve un puntero a la entrada en la tabla de paginas correspondiente a
 // la direccion virtual ``virt`` usando el directorio ``pd``.

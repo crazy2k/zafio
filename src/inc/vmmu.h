@@ -26,8 +26,8 @@ extern page_t* page_list;
 extern page_t pages[];
 
 typedef struct {
-    page_t *first;
-    page_t *last;
+    page_t *first_page;
+    page_t *last_page;
     int lower;
     int upper;
 
@@ -58,6 +58,10 @@ void return_page(page_t* returned);
 page_t *reserve_page(page_t* reserved);
 
 void map_kernel_pages(uint32_t pd[], void *vstart, int n);
+
+void map_kernel_tables(uint32_t pd[], void *vstart, int n);
+
+uint32_t* get_pte(uint32_t pd[], void* vaddr);
 
 void page_table_unmap(uint32_t pt[], void* vaddr);
 

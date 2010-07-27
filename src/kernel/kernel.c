@@ -32,21 +32,21 @@ void welcome_msg() {
 
 void debug_prints() {
     kputs("Primer 'page'          : ");
-    kputui32((uint32_t)memory_info.first);
+    kputui32((uint32_t)memory_info.first_page);
     kputs(" - corresponde a la pagina ");
-    kputui32((uint32_t)PAGE_TO_PHADDR(memory_info.first));
+    kputui32((uint32_t)PAGE_TO_PHADDR(memory_info.first_page));
     kputs("\n");
 
     kputs("Previo al primer 'page': ");
-    kputui32((uint32_t)memory_info.first->prev);
+    kputui32((uint32_t)memory_info.first_page->prev);
     kputs(" - corresponde a la pagina ");
-    kputui32((uint32_t)PAGE_TO_PHADDR(memory_info.first->prev));
+    kputui32((uint32_t)PAGE_TO_PHADDR(memory_info.first_page->prev));
     kputs("\n");
 
     kputs("Ultimo 'page'          : ");
-    kputui32((uint32_t)memory_info.last);
+    kputui32((uint32_t)memory_info.last_page);
     kputs(" - corresponde a la pagina ");
-    kputui32((uint32_t)PAGE_TO_PHADDR(memory_info.last));
+    kputui32((uint32_t)PAGE_TO_PHADDR(memory_info.last_page));
     kputs("\n");
 
     kputs("Lower: ");
@@ -70,13 +70,13 @@ void print_page(int i, page_t *page) {
 
 // Imprimir lista de page_t
 void print_pages() {
-    page_t *first = memory_info.first;
-    print_page(0, first);
+    page_t *first_page = memory_info.first_page;
+    print_page(0, first_page);
 
     page_t *curr_page;
     int i;
-    for (i = 1, curr_page = first->next;
-        curr_page != first;
+    for (i = 1, curr_page = first_page->next;
+        curr_page != first_page;
         i++, curr_page = curr_page->next) {
 
         print_page(i, curr_page);
@@ -90,8 +90,8 @@ void cmain() {
     debug_prints();
 
     // Mapeamos las paginas en las que se encuentran los page_t
-    void *start = ALIGN_TO_PAGE((void *)memory_info.first, 0);
-    void *end = ALIGN_TO_PAGE((void *)memory_info.last, 1);
+    void *start = ALIGN_TO_PAGE((void *)memory_info.first_page, 0);
+    void *end = ALIGN_TO_PAGE((void *)memory_info.last_page, 1);
     int n = ((uint32_t)(end - start))/PAGE_SIZE;
     map_kernel_pages(kernel_pd, start, n);
 

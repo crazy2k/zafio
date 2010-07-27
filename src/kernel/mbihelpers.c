@@ -69,8 +69,8 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
     first->prev = (page_t *)KVIRTADDR(last);
     last->next = (page_t *)KVIRTADDR(first);
 
-    meminfo->first = (page_t *)KVIRTADDR(first);
-    meminfo->last = (page_t *)KVIRTADDR(last);
+    meminfo->first_page = (page_t *)KVIRTADDR(first);
+    meminfo->last_page = (page_t *)KVIRTADDR(last);
     meminfo->lower = mbi->mem_lower;
     meminfo->upper = mbi->mem_upper;
 }
