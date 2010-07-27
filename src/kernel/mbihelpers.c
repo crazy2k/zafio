@@ -15,6 +15,14 @@ void verify_multiboot(unsigned int magic) {
     }
 }
 
+void clear_pages(page_t *start, page_t *stop) {
+    page_t* page;
+    for (page = start; page < stop; page++) {
+        page->next = page->prev = NULL;
+        page->count = 0;
+  }
+}
+
 void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
     if (!(mbi->flags & (0x1 << 6))) {
         // El mmap no es valido
@@ -46,8 +54,11 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
         page_t *stop = dest + stop_addr/PAGE_SIZE;
 
         // first es la primera estructura de todas
-        if (first == NULL)
+        if (first == NULL) {
             first = start;
+            //Dejar en blanco todas las paginas anteriores a first
+            clear_pages(dest, first);
+        }
 
         // Ubicamos las estructuras
         for (current = start; current < stop; current++) {
@@ -60,6 +71,8 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
         if (last != NULL) {
             start->prev = (page_t *)KVIRTADDR(last);
             last->next = (page_t *)KVIRTADDR(start);
+            //Dejar en blanco todas las paginas entre last y start
+            clear_pages(last + 1, start);
         }
 
         last = stop - 1;
