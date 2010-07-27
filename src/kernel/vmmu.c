@@ -31,7 +31,7 @@ void page_table_unmap(uint32_t pt[], void* vaddr) {
 void page_dir_unmap(uint32_t pd[], void* vaddr) {
     pd[PDI(vaddr)] = 0x0;
     // Invalidar la TLB para los 4MB
-    invalidate_tlb_pages(ALIGN_TO_4MB(vaddr), 1024);
+    invalidate_tlb_pages(ALIGN_TO_4MB(vaddr, FALSE), 1024);
 }
 
 void invalidate_tlb(void *vaddr) {
