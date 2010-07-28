@@ -1,5 +1,5 @@
 #include "../inc/mmu.h"
-#include "../inc/vmmu.h"
+#include "../inc/vmm.h"
 #include "../inc/io.h"
 
 void welcome_msg() {

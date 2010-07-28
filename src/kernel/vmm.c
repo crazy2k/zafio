@@ -1,4 +1,4 @@
-#include "../inc/vmmu.h"
+#include "../inc/vmm.h"
 #include "../inc/mmu.h"
 #include "../inc/utils.h"
 #include "../inc/memlayout.h"

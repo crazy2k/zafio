@@ -2,7 +2,7 @@
 #include "../inc/mmu.h"
 #include "../inc/memlayout.h"
 #include "../inc/types.h"
-#include "../inc/vmmu.h"
+#include "../inc/vmm.h"
 
 void panic(char *msg) {
     // TODO: Completar

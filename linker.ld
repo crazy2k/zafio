@@ -6,8 +6,8 @@ _kernel_virt_addr = 0xC0200000;
 _kernel_phys_addr = 0x00200000;
 _kernel_addr_offset = _kernel_virt_addr - _kernel_phys_addr;
 
-_tables_virt_addr = _kernel_virt_addr - 0x1000*2;
-_tables_phys_addr = _kernel_phys_addr - 0x1000*2;
+_tables_virt_addr = _kernel_virt_addr - 0x1000*253;
+_tables_phys_addr = _kernel_phys_addr - 0x1000*253;
 
 /* Definicion del punto de entrada */
 ENTRY (loader)

@@ -19,6 +19,7 @@ uint32_t kernel_pt[1024] __attribute__((section (".pt"))) = {
     [PTI(KERNEL_VIRT_ADDR)] = PTE_PAGE_BASE(KERNEL_PHYS_ADDR) | PTE_G |
         PTE_PWT | PTE_RW | PTE_P,
 
+    // Con una pagina para el stack alcanza (y sobra) al inicio
     [PTI(KERNEL_STACK)] = PTE_PAGE_BASE(KPHADDR(KERNEL_STACK)) | PTE_G |
         PTE_PWT | PTE_RW | PTE_P,
         

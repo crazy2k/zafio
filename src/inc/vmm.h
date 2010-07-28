@@ -1,8 +1,8 @@
 #include "../inc/mmu.h"
 
-#ifndef __VMMU_H__
+#ifndef __VMM_H__
 
-#define __VMMU_H__
+#define __VMM_H__
 
 #define RELOCATE_PTR_TO(pointer, virtual_dir) \
 	((void*) ( ((uint32_t)(pointer) & 0xFFF) | ((uint32_t)(virtual_dir) & 0xFFFFF000) ))
