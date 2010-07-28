@@ -73,4 +73,8 @@ void invalidate_tlb(void *vaddr);
 
 void invalidate_tlb_pages(void *vstart, int n);
 
+uint32_t count_pages(void *saddr, void *eaddr);
+
+void vm_init();
+
 #endif
