@@ -120,7 +120,7 @@ struct page_t {
 
 #define PAGE_SIZE 0x1000
 
-#define PAGE_4MB 0xC00000
+#define PAGE_4MB_SIZE 0xC00000
 
 #define ALIGN_TO_4MB(addr, ceil) ALIGN_TO(addr, 0xFFC00000, ceil)
 

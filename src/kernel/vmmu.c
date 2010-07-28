@@ -87,11 +87,13 @@ void map_kernel_pages(uint32_t pd[], void *vstart, int n) {
     }
 }
 
-void map_kernel_tables(uint32_t pd[], void *vstart, int n) {
-    void *vaddr, *vstop = vstart + PAGE_SIZE*n;
+void map_kernel_tables(uint32_t pd[], void *vstart, void *tables, int n) {
+    void *vaddr = vstart, *table_addr = tables;
+    int i;
 
-    for (vaddr = vstart; vaddr < vstop; vaddr += PAGE_SIZE) {
-        pd[PDI(vaddr)] = PDE_PT_BASE(KPHADDR(vaddr)) | PDE_P | PDE_PWT;
+    for (i = 0; i < n; i++) {
+        pd[PDI(vaddr + n*PAGE_4MB_SIZE)] = 
+            PDE_PT_BASE(KPHADDR(table_addr + n*PAGE_SIZE)) | PDE_P | PDE_PWT | PDE_RW;
         memset(vaddr, 0, PAGE_SIZE);
     }
 }

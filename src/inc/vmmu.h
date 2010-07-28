@@ -59,7 +59,7 @@ page_t *reserve_page(page_t* reserved);
 
 void map_kernel_pages(uint32_t pd[], void *vstart, int n);
 
-void map_kernel_tables(uint32_t pd[], void *vstart, int n);
+void map_kernel_tables(uint32_t pd[], void *vstart, void *tables, int n);
 
 uint32_t* get_pte(uint32_t pd[], void* vaddr);
 
