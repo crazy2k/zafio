@@ -3,10 +3,10 @@
 
 uint32_t kernel_pd[1024] __attribute__((section (".pd"))) = {
     [PDI(KERNEL_PHYS_ADDR)] = PDE_PT_BASE(KPHADDR(KERNEL_PAGE_TABLE)) |
-        PTE_PWT | PTE_RW | PTE_P,
+        PDE_PWT | PDE_RW| PDE_P,
         
     [PDI(KERNEL_VIRT_ADDR)] = PDE_PT_BASE(KPHADDR(KERNEL_PAGE_TABLE)) |
-        PTE_PWT | PTE_RW | PTE_P,
+        PDE_PWT | PDE_RW | PDE_P,
 };
 
 uint32_t kernel_pt[1024] __attribute__((section (".pt"))) = {
