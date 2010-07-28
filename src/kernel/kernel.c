@@ -85,11 +85,10 @@ void print_pages() {
 
 
 void cmain() {
-    kcls();
-    welcome_msg();
-
     vm_init();
 
+    kcls();
+    welcome_msg();
     debug_prints();
 
     print_pages();

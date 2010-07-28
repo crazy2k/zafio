@@ -122,6 +122,12 @@ struct page_t {
 
 #define PAGE_4MB_SIZE 0xC00000
 
+//La mayor cantiad de memoria q muede mapear el kernel
+#define MAX_KERNEL_MEMORY ((KERNEL_VIRT_ADDR - (uint32_t) page_tables) * PAGE_SIZE)
+
+//Ultima direccion virtual q puede utilizar el kernel
+#define LAST_KERNEL_VADDR ((void *)(MAX_KERNEL_MEMORY + KERNEL_OFFSET))
+
 #define ALIGN_TO_4MB(addr, ceil) ALIGN_TO(addr, 0xFFC00000, ceil)
 
 #define ALIGN_TO_PAGE(addr, ceil) ALIGN_TO(addr, 0xFFFFF000, ceil)

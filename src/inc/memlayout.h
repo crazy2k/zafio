@@ -52,9 +52,9 @@ Mapa de memoria física
 | Tablas de paginas para     |
 | direccionar 1004MB fisicos |
 +----------------------------+ 0x00200000
-| 0odigo y datos del kernel  |
+| Codigo y datos del kernel  |
 +----------------------------+ 0x002XXXXX
-| 0omienzo de estructuras    |
+| Comienzo de estructuras    |
 | page_t                     |
 +----------------------------+ 0x00400000   <--- 4MB
 | Más estructuras page_t     |
