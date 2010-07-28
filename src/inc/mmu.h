@@ -122,7 +122,7 @@ struct page_t {
 
 #define PAGE_4MB_SIZE 0xC00000
 
-//La mayor cantiad de memoria q muede mapear el kernel
+//La mayor cantiad de memoria q puede mapear el kernel
 #define MAX_KERNEL_MEMORY ((KERNEL_VIRT_ADDR - (uint32_t) page_tables) * PAGE_SIZE)
 
 //Ultima direccion virtual q puede utilizar el kernel
