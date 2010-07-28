@@ -25,6 +25,8 @@ extern uint32_t kernel_pt[1024];
 extern page_t* page_list;
 extern page_t pages[];
 
+extern uint32_t page_tables[][1024];
+
 typedef struct {
     page_t *first_page;
     page_t *last_page;
