@@ -124,8 +124,9 @@ void map_kernel_tables(uint32_t pd[], void *vstart, void *tables, int n) {
     int i;
 
     for (i = 0; i < n; i++) {
-        pd[PDI(vaddr + n*PAGE_4MB_SIZE)] = 
-            PDE_PT_BASE(KPHADDR(table_addr + n*PAGE_SIZE)) | PDE_P | PDE_PWT | PDE_RW;
+        pd[PDI(vaddr + i*PAGE_4MB_SIZE)] = 
+            PDE_PT_BASE(KPHADDR(table_addr + i*PAGE_SIZE)) | PDE_P | PDE_PWT |
+            PDE_RW;
         memset(vaddr, 0, PAGE_SIZE);
     }
 }
