@@ -129,13 +129,14 @@ struct page_t {
 //Ultima direccion virtual q puede utilizar el kernel
 #define LAST_KERNEL_VADDR ((void *)(MAX_KERNEL_MEMORY + KERNEL_OFFSET))
 
-#define ALIGN_TO_4MB(addr, ceil) ALIGN_TO(addr, 0xFFC00000, ceil)
+#define ALIGN_TO_4MB(addr, ceil) ALIGN_TO_N(addr, 0xFFC00000, 0x400000, ceil)
 
-#define ALIGN_TO_PAGE(addr, ceil) ALIGN_TO(addr, 0xFFFFF000, ceil)
+#define ALIGN_TO_PAGE(addr, ceil) ALIGN_TO_N(addr, 0xFFFFF000, 0x1000, ceil)
 
-#define ALIGN_TO(addr, mask, ceil) ({ uint32_t __addr = (uint32_t) (addr); \
-    uint32_t __mask = (uint32_t) (mask); \
-    if ( (ceil) && (__addr & ~__mask) ) __addr += PAGE_SIZE; \
+#define ALIGN_TO_N(addr, mask, n, ceil) ({ uint32_t __addr = (uint32_t)(addr); \
+    uint32_t __mask = (uint32_t)(mask); \
+    uint32_t __n = (uint32_t)(n); \
+    if ((ceil) && (__addr & ~__mask)) __addr += __n; \
     (void*) (__addr & __mask); })
 
 #endif
