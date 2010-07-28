@@ -7,40 +7,33 @@
 // TODO: Ver mejor en que lugares falta invalidar la tlb
 
 page_t pages[] __attribute__ ((section (".pages"))) = { {} }; 
-page_t* page_list = NULL; 
+page_t* page_list = NULL;
 
 memory_info_t memory_info;
 
 
 void vm_init() {
-    // Mapeamos toda la memoria en la que estaran las tablas de pagina
-    int total_tables_pages = count_pages(page_tables, (void *)KERNEL_VIRT_ADDR);
-    map_kernel_pages(kernel_pd, page_tables, total_tables_pages);
+    //Mapeamos los primeros 4MB fisicos, desde el comienzo de la memoria fisica
+    map_kernel_pages(kernel_pd, (void *) 0x00000000 + KERNEL_OFFSET, 1024);
 
-    // Mapeamos la memoria desde 4MB en adelante
-    void *last_phpage = PAGE_TO_PHADDR(memory_info.last_page);
-    void *last_addrpage = (void *)(total_tables_pages*PAGE_4MB_SIZE - PAGE_SIZE);
+    //Limite de direcciones virtuales mapeables
+    void* vaddr_limit = KVIRTADDR(PAGE_TO_PHADDR(memory_info.last_page + 1));
+    if (vaddr_limit > LAST_KERNEL_VADDR) vaddr_limit = LAST_KERNEL_VADDR;
 
-    int total_tables;
-    if (last_phpage < last_addrpage)
-        total_tables = (uint32_t)ALIGN_TO_4MB(last_phpage, TRUE)/PAGE_4MB_SIZE;
-    else
-        total_tables = total_tables_pages;
+    //Cantidad de memoria q va a ser mapeada
+    int total_memory = ((uint32_t) vaddr_limit - KERNEL_OFFSET) - PAGE_4MB_SIZE;
+    //Desde donde se va a mapear memoria
+    void *mem_vaddr = (void*) PAGE_4MB_SIZE + KERNEL_OFFSET;
 
-    map_kernel_tables(kernel_pd, (void *)0xC0400000, page_tables, total_tables);
+    map_kernel_tables(kernel_pd, mem_vaddr, page_tables, 
+        ((uint32_t) ALIGN_TO_4MB(total_memory, TRUE) )/PAGE_4MB_SIZE);
+
+    map_kernel_pages(kernel_pd, mem_vaddr, 
+        ((uint32_t) ALIGN_TO_PAGE(total_memory, TRUE) )/PAGE_SIZE);
 
     // Quitamos el mapeo de los primeros 4MB del espacio de direcciones virtual
     page_dir_unmap(kernel_pd, (void *)0x00000000);
 
-}
-
-/* Recibe una direccion de inicio ``saddr`` y una de fin ``eaddr`` y devuelve
- * la cantidad de paginas entre ambas direcciones incluyendo las paginas en
- * las que se encuentran ellas.
- */
-uint32_t count_pages(void *saddr, void *eaddr) {
-    void *diff = (void *)(ALIGN_TO_PAGE(eaddr, FALSE) - ALIGN_TO_PAGE(saddr, TRUE));
-    return ((uint32_t)diff)/PAGE_SIZE;
 }
 
 // Conecta entre si la paginas fst con sec
