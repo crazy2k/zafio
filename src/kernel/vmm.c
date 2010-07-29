@@ -43,9 +43,10 @@ void vm_init() {
     // Marcar el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
     set_unavailable_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_FST_PAGE)), 4 + tables_count);
 
-    int pages_count = PHADDR_TO_PAGE(ALIGN_TO_PAGE(memory_info.last_page, TRUE)) - 
-        PHADDR_TO_PAGE(KERNEL_PHYS_ADDR) + 1;
-    set_unavailable_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count); 
+    int pages_count = (PHADDR_TO_PAGE(ALIGN_TO_PAGE(PAGE_TO_PHADDR(memory_info.last_page), TRUE)) -
+        PHADDR_TO_PAGE(KERNEL_PHYS_ADDR)) + 1;
+
+    set_unavailable_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
 
     // Quitamos el identity map de los primeros 4MB del espacio de direcciones
     // virtual
