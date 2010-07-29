@@ -1,6 +1,6 @@
-SRCDIR := src/
-REFTESTDIR := reftest/
-
+#
+# Configuracion de herramientas
+#
 CC := gcc
 CFLAGS := -Wall -Werror -nostdlib -nostartfiles -nodefaultlibs 
 
@@ -10,10 +10,23 @@ ASFLAGS := -f elf
 LD := ld
 LDFLAGS := -T linker.ld
 
+#
+# Directorios
+#
+
+SRCDIR := src/
+REFTESTDIR := reftest/
+OBJSDIR := obj/
+#USRCDIR := usr/src/
+#UOBJSDIR := usr/obj/
+
+#
+# Archivos
+#
+
 SOURCES := $(shell find $(SRCDIR) -name "*.c")
 HEADERS := $(shell find $(SRCDIR) -name "*.h")
 
-OBJSDIR := obj/
 OBJS := $(notdir $(SOURCES:.c=.o))
 OBJS := $(addprefix $(OBJSDIR), $(OBJS))
 
@@ -22,8 +35,13 @@ KERNEL := kernel.bin
 LOADER_SRC := $(SRCDIR)/kernel/loader.S
 LOADER_OBJ := $(OBJSDIR)/loader.o
 
-# Datos para el armado de la imagen de disco floppy
+# Imagen de disco floppy
 DISKETTE := $(REFTESTDIR)/aux/diskette.img
+
+
+#
+# Reglas
+#
 
 $(OBJSDIR):
 	mkdir $(OBJSDIR)
