@@ -11,8 +11,17 @@ extern _stack_bottom
 
 
 %define KERNEL_OFFSET 0xC0000000
-%define KPHADDR(dir) (dir - KERNEL_OFFSET) 
+%define KPHADDR(dir) ((dir) - KERNEL_OFFSET)
 
+%macro CCALL 1-*
+    %rep (%0 - 1)
+        %rotate -1
+        push %1
+    %endrep
+    %rotate -1
+    call %1
+    add esp, 4*(%0 - 1) ; asumimos que los parametros son de 32 bits
+%endmacro
 
 ; Datos para usar en el header Multiboot
 MAGIC equ 0x1BADB002 ; la especificacion requiere este numero magico
@@ -55,16 +64,10 @@ selectors:
     mov esp, KPHADDR(_stack_bottom)
 
     ; morir si no nos cargo un bootloader multiboot
-    push eax
-    call verify_multiboot
-    add esp, 4
+    CCALL verify_multiboot, eax
 
     ; tomar datos del multiboot info y armar estructuras convenientes
-    push KPHADDR(memory_info)
-    push KPHADDR(pages)
-    push ebx 
-    call mbigather
-    add esp, 8
+    CCALL mbigather, ebx, KPHADDR(pages), KPHADDR(memory_info)
 
     ; indicamos ubicacion del directorio de paginas
     mov ecx, KPHADDR(kernel_pd)
