@@ -245,15 +245,21 @@ page_t *reserve_page(page_t* page) {
 
 int kbrk(void* vaddr) {
     //TODO: Ampliar la cantidad de memoria virtual hasta void*, agregando mas paginas fisicas al kernel
+
+    return 0;
 }
 
 
 void* ksbrk(int bytes) {
     //TODO: Agregar la cantidad de 'bytes' a la memoria virtual del kernel, agregando mas paginas fisicas
+
+    return NULL;
 }
 
 void* malloc(int size) {
     //TODO: Retornar una puntero a memoria de al menos 'size' bytes dentro del 'heap' del kernel
+
+    return NULL;
 }
 
 

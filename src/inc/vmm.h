@@ -79,4 +79,10 @@ uint32_t count_pages(void *saddr, void *eaddr);
 
 void vm_init();
 
+int kbrk(void* vaddr);
+
+void* ksbrk(int bytes);
+
+void* malloc(int size);
+
 #endif
