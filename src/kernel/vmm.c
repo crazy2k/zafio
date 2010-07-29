@@ -125,7 +125,7 @@ void map_kernel_tables(uint32_t pd[], void *vaddr, void *table_addr, int n) {
     int i;
     for (i = 0; i < n; i++, vaddr+= PAGE_4MB_SIZE, table_addr += PAGE_SIZE) {
         // Llenamos la nueva tabla con ceros
-        memset(table_addr + i*PAGE_SIZE, 0, PAGE_SIZE);
+        memset(table_addr, 0, PAGE_SIZE);
 
         // Apuntamos el PDE a una tabla nueva
         pd[PDI(vaddr)] = PDE_PT_BASE(KPHADDR(table_addr)) | PDE_P | PDE_PWT | PDE_RW;
