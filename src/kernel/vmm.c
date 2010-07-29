@@ -34,7 +34,6 @@ void vm_init() {
     map_kernel_tables(kernel_pd, mem_vaddr, page_tables, 
         ((uint32_t)ALIGN_TO_4MB(total_memory, TRUE))/PAGE_4MB_SIZE);
 
-    BOCHS_BREAK;
     // Mapeamos las paginas del resto de la memoria a mapear
     map_kernel_pages(kernel_pd, mem_vaddr, 
         ((uint32_t)ALIGN_TO_PAGE(total_memory, TRUE))/PAGE_SIZE);
