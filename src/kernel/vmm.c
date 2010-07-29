@@ -43,10 +43,11 @@ void vm_init() {
     // Marcar el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
     set_unavailable_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_FST_PAGE)), 4 + tables_count);
 
-    //next_free_vaddr = ALIGN_TO_PAGE((void*)memory_info.last_page + 1, TRUE);
+    // Convertir a variable global
+    void* next_free_vaddr = ALIGN_TO_PAGE((void*)memory_info.last_page + 1, FALSE);
 
-    int pages_count = (PHADDR_TO_PAGE(ALIGN_TO_PAGE(KPHADDR(memory_info.last_page), TRUE)) -
-        PHADDR_TO_PAGE(KERNEL_PHYS_ADDR));
+    int pages_count = PHADDR_TO_PAGE(KPHADDR(next_free_vaddr)) -
+        PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
 
     set_unavailable_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
 
@@ -241,4 +242,18 @@ page_t *reserve_page(page_t* page) {
 
     return page;
 }
+
+int kbrk(void* vaddr) {
+    //TODO: Ampliar la cantidad de memoria virtual hasta void*, agregando mas paginas fisicas al kernel
+}
+
+
+void* ksbrk(int bytes) {
+    //TODO: Agregar la cantidad de 'bytes' a la memoria virtual del kernel, agregando mas paginas fisicas
+}
+
+void* malloc(int size) {
+    //TODO: Retornar una puntero a memoria de al menos 'size' bytes dentro del 'heap' del kernel
+}
+
 
