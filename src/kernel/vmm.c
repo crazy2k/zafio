@@ -27,20 +27,39 @@ void vm_init() {
 
     total_memory -= PAGE_4MB_SIZE;
 
+    int tables_count = ((uint32_t)ALIGN_TO_4MB(total_memory, TRUE))/PAGE_4MB_SIZE;
+
     // Vamos a mapear a partir de los 4MB (ya mapeamos lo anterior)
     void *mem_vaddr = (void*)KVIRTADDR(PAGE_4MB_SIZE);
 
     // Apuntamos los PDE a tablas que luego se llenaran
-    map_kernel_tables(kernel_pd, mem_vaddr, page_tables, 
-        ((uint32_t)ALIGN_TO_4MB(total_memory, TRUE))/PAGE_4MB_SIZE);
+    map_kernel_tables(kernel_pd, mem_vaddr, page_tables, tables_count);
 
     // Mapeamos las paginas del resto de la memoria a mapear
     map_kernel_pages(kernel_pd, mem_vaddr, 
         ((uint32_t)ALIGN_TO_PAGE(total_memory, TRUE))/PAGE_SIZE);
 
+    
+    // Marcar el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
+    set_unavailable_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_FST_PAGE)), 4 + tables_count);
+
+    int pages_count = ALIGN_TO_PAGE(memory_info.last_page, TRUE) - KERNEL_PHYS_ADDR + 1;
+    set_unavailable_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count); 
+
     // Quitamos el identity map de los primeros 4MB del espacio de direcciones
     // virtual
     page_dir_unmap(kernel_pd, (void *)0x00000000);
+}
+
+void set_unavailable_pages(page_t* page, int n) {
+    int i = 0;
+    page_t* page_next;
+
+    for (i = 0; i < n; i++) {
+        page_next = page->next;
+        reserve_page(page);
+        page = page_next;
+    }
 }
 
 // Conecta entre si la paginas fst con sec
