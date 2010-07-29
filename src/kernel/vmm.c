@@ -11,7 +11,7 @@ page_t pages[] __attribute__ ((section (".pages"))) = { {} };
 page_t* page_list = NULL;
 
 memory_info_t memory_info;
-
+void* kernel_va_limit;
 
 void vm_init() {
     // Mapeamos los primeros 4MB fisicos en el higher half
@@ -43,11 +43,10 @@ void vm_init() {
     // Marcar el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
     set_unavailable_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_FST_PAGE)), 4 + tables_count);
 
-    // Convertir a variable global
-    void* next_free_vaddr = ALIGN_TO_PAGE((void*)memory_info.last_page + 1, FALSE);
+    // Limite actual de la memoria virtual
+    kernel_va_limit = ALIGN_TO_PAGE((void*)memory_info.last_page + 1, FALSE);
 
-    int pages_count = PHADDR_TO_PAGE(KPHADDR(next_free_vaddr)) -
-        PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
+    int pages_count = PHADDR_TO_PAGE(KPHADDR(kernel_va_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
 
     set_unavailable_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
 
@@ -243,20 +242,32 @@ page_t *reserve_page(page_t* page) {
     return page;
 }
 
-int kbrk(void* vaddr) {
-    //TODO: Ampliar la cantidad de memoria virtual hasta void*, agregando mas paginas fisicas al kernel
 
-    return 0;
+//kbrk y ksbrk, solo corren el limite de la vaddr del kernel hacia adelante, no permite q el kernel ceda paginas
+//En caso de intentar correr el limite hacia atras las funcs no tiene efecto
+long kbrk(void* vaddr) {
+    long bytes = ALIGN_TO_PAGE(vaddr, TRUE) - kernel_va_limit;
+    if (bytes < 0) bytes = 0;
+    
+    ksbrk(bytes);
+
+    return bytes;
 }
 
+void* ksbrk(unsigned long bytes) {
+    bytes = (long int) ALIGN_TO_PAGE(bytes, TRUE);
 
-void* ksbrk(int bytes) {
-    //TODO: Agregar la cantidad de 'bytes' a la memoria virtual del kernel, agregando mas paginas fisicas
+    while (bytes) {
+        new_page(kernel_pd, kernel_va_limit, PTE_G | PTE_PWT | PTE_RW | PTE_P);
 
-    return NULL;
+        kernel_va_limit += PAGE_SIZE;
+        bytes -= PAGE_SIZE;
+    }
+
+    return kernel_va_limit;
 }
 
-void* malloc(int size) {
+void* malloc(long int size) {
     //TODO: Retornar una puntero a memoria de al menos 'size' bytes dentro del 'heap' del kernel
 
     return NULL;
