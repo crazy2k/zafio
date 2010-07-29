@@ -178,11 +178,10 @@ void allocate_pt(uint32_t pd[], void* vaddr) {
 
 // Mapea una pagina fisica nueva para la direccion virtual pasada por parametro 
 void* new_page(uint32_t pd[], void* vaddr, uint32_t flags) {
-    /*
-    TODO: Si no hay mas paginas libres kpanic!!!
-    if (!page_list) kpanic("No hay mas memoria fisica disponible");
-    */  
+    if (!page_list) 
+        kpanic("No hay mas memoria fisica disponible");
 
+    vaddr = ALIGN_TO_PAGE(vaddr,FALSE);
     // Si la tabla de paginas no estaba presente mapearla
     if (!(pd[PDI(vaddr)] & PDE_P))
         allocate_pt(pd, vaddr);
