@@ -23,6 +23,24 @@ void clear_pages(page_t *start, page_t *stop) {
   }
 }
 
+// TODO: Terminarla y usarla
+void modules_gather(multiboot_info_t *mbi) {
+    if (!(mbi->flags & (0x1 << 3))) {
+        // La informacion sobre modulos no es valida. No entramos en panico
+        return;
+    }
+    int i;
+    module_t *mod;
+    for (i = 0, mod = (module_t *)mbi->mods_addr;
+        i < mbi->mods_count;
+        i++, mod++) {
+
+        // mod->mod_start es el inicio del modulo
+        // mod->mod_end es el final del modulo
+        // mod->string es una cadena asociada al modulo
+    }
+}
+
 void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
     if (!(mbi->flags & (0x1 << 6))) {
         // El mmap no es valido
