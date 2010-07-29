@@ -106,6 +106,25 @@ void kputui32(uint32_t n) {
     kputs(str);
 }
 
+void kputd(long int num) {
+    bool neg = num < 0 ;
+    
+    if (neg) kputc('-');
+    kputud( neg ? -num : num);
+}
+
+void kputud(unsigned long int num) {
+    char chars[SCREEN_UI_BASE] = {'\0'};
+    int i = SCREEN_UI_BASE - 1; //Anteultima pos
+    
+    do {
+        chars[--i] = (char)(num % 10ul) + '0';
+        num/=10ul;
+    } while(num != 0);
+
+    kputs(&chars[i]);
+}
+
 /*
  * TODO: Hacerla?
 int printf(char *format, ...) {

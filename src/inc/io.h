@@ -18,4 +18,7 @@ void kputs(char *str);
 
 void kputui32(uint32_t n);
 
+void kputud(unsigned long int num);
+void kputd(long int num);
+
 #endif
