@@ -26,8 +26,9 @@ extern _stack_bottom
 
 ; Datos para usar en el header Multiboot
 MAGIC equ 0x1BADB002 ; la especificacion requiere este numero magico
-MEMINFO equ (0x1 << 1)
-FLAGS equ MEMINFO    ; le pedimos la informacion de memoria al bootloader
+ALIGN_MODS equ (0x1 << 0)   ; flag de alineacion de modulos
+MEMINFO equ (0x1 << 1)      ; flag de informacion de memoria
+FLAGS equ (ALIGN_MODS | MEMINFO)
 CHECKSUM equ (- MAGIC - FLAGS)
 
 
