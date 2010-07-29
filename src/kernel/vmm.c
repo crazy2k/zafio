@@ -1,4 +1,5 @@
 #include "../inc/vmm.h"
+#include "../inc/debug.h"
 #include "../inc/mmu.h"
 #include "../inc/utils.h"
 #include "../inc/memlayout.h"
@@ -21,8 +22,8 @@ void vm_init() {
     // que tenemos
     uint32_t total_memory = (uint32_t)PAGE_TO_PHADDR(memory_info.last_page + 1);
 
-    if (total_memory > (uint32_t)MAX_KERNEL_MEMORY)
-        total_memory = (uint32_t)MAX_KERNEL_MEMORY;
+    if (total_memory > MAX_KERNEL_MEMORY)
+        total_memory = MAX_KERNEL_MEMORY;
 
     total_memory -= PAGE_4MB_SIZE;
 
@@ -33,6 +34,7 @@ void vm_init() {
     map_kernel_tables(kernel_pd, mem_vaddr, page_tables, 
         ((uint32_t)ALIGN_TO_4MB(total_memory, TRUE))/PAGE_4MB_SIZE);
 
+    BOCHS_BREAK;
     // Mapeamos las paginas del resto de la memoria a mapear
     map_kernel_pages(kernel_pd, mem_vaddr, 
         ((uint32_t)ALIGN_TO_PAGE(total_memory, TRUE))/PAGE_SIZE);
@@ -118,12 +120,11 @@ void map_kernel_pages(uint32_t pd[], void *vstart, int n) {
     }
 }
 
-
 // Mapea 'n' paginas de tablas para las direcciones virtuales desde 'vaddr'
 // alojandolas desde la direccion refenciada por 'table_addr' 
 void map_kernel_tables(uint32_t pd[], void *vaddr, void *table_addr, int n) {
     int i;
-    for (i = 0; i < n; i++, vaddr+= PAGE_SIZE, table_addr += PAGE_SIZE) {
+    for (i = 0; i < n; i++, vaddr+= PAGE_4MB_SIZE, table_addr += PAGE_SIZE) {
         // Llenamos la nueva tabla con ceros
         memset(table_addr + i*PAGE_SIZE, 0, PAGE_SIZE);
 

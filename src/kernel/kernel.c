@@ -1,6 +1,7 @@
 #include "../inc/mmu.h"
 #include "../inc/vmm.h"
 #include "../inc/io.h"
+#include "../inc/debug.h"
 
 void welcome_msg() {
     kputs("                    w\n");
@@ -85,9 +86,10 @@ void print_pages() {
 
 
 void cmain() {
+    kcls();
+
     vm_init();
 
-    kcls();
     welcome_msg();
     debug_prints();
 
