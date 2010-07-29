@@ -13,6 +13,7 @@ extern _stack_bottom
 %define KERNEL_OFFSET 0xC0000000
 %define KPHADDR(dir) ((dir) - KERNEL_OFFSET)
 
+; Llama a la funcion de C en %1 pasandole los parametros %2, %3, ...
 %macro CCALL 1-*
     %rep (%0 - 1)
         %rotate -1
