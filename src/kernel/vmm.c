@@ -43,8 +43,10 @@ void vm_init() {
     // Marcar el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
     set_unavailable_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_FST_PAGE)), 4 + tables_count);
 
+    //next_free_vaddr = ALIGN_TO_PAGE((void*)memory_info.last_page + 1, TRUE);
+
     int pages_count = (PHADDR_TO_PAGE(ALIGN_TO_PAGE(KPHADDR(memory_info.last_page), TRUE)) -
-        PHADDR_TO_PAGE(KERNEL_PHYS_ADDR)) + 1;
+        PHADDR_TO_PAGE(KERNEL_PHYS_ADDR));
 
     set_unavailable_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
 
