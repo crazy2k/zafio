@@ -36,7 +36,7 @@ typedef struct {
 } type_cache_t;
 
 
-void configure_type(size_t size, unsigned preallocate);
+void heap_configure_type(size_t size, unsigned preallocate);
     
 void* kmalloc(size_t size);
 void kfree(void *data);

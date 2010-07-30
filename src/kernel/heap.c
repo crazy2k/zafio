@@ -27,11 +27,12 @@ void* kmalloc(size_t size) {
 // Libera un objeto a los caches q fue creado por kmalloc
 void kfree(void* data) {
     cache_bucket_t* bucket = DATA_TO_BUCKET(data);
-    add_bucket(&cache_lists[bucket->type_tag], bucket);
+    type_cache_t* cache = &cache_lists[bucket->type_tag];
+    add_bucket(cache, bucket);
 }
 
 // Hace una allocacion naive, simplemente devolviendo un chunk de memoria contiguo de
-// size_t bytes al final del la memoria utilizada por el kernel
+// 'size' bytes al final del la memoria utilizada por el kernel
 // Siempre retorna una posicion alineada a CACHE_LINE
 void* stacked_malloc(size_t size) {
     void *new = used_mem_limit;
@@ -44,7 +45,7 @@ void* stacked_malloc(size_t size) {
     return (void*) new;
 }
 
-//Retorna el cache mas apropiado para guardar un objeto del tamaño size
+//Retorna el cache mas apropiado para guardar un objeto del tamaño 'size'
 static type_cache_t* get_cache(size_t size) {
     for (int i = 0; i < CACHES_NUM && cache_lists[0].bucket_size > 0; i++) {
         if (BUCKET_DATA_SIZE(&cache_lists[i]) > size)
@@ -77,7 +78,7 @@ static void add_bucket(type_cache_t* cache, cache_bucket_t* bucket) {
 // Crea un tipo de cache nuevo, en la lista cache list, de tamaño size,
 // al crearlo inicializa al cache con preallocate entries vacias 
 // Esta funcion debe ser llamada antes de la primer llamada a kmalloc, y NUNCA despues, durante la ejecucion del SO
-void configure_type(size_t size, unsigned preallocate) {
+void heap_configure_type(size_t size, unsigned preallocate) {
     int i;
     int bucket_size = ALIGN_TO_CACHE(size + 2, TRUE);
      

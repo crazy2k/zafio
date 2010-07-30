@@ -4,6 +4,7 @@
 #include "../inc/utils.h"
 #include "../inc/memlayout.h"
 #include "../inc/io.h"
+#include "../inc/heap.h"
 
 // TODO: Ver mejor en que lugares falta invalidar la tlb
 
@@ -58,6 +59,9 @@ void vm_init() {
     int pages_count = PHADDR_TO_PAGE(KPHADDR(kernel_va_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
 
     reserve_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
+
+    //TODO: Configurar heap
+    //heap_configure_type(32, 50);
 
     // Quitamos el identity map de los primeros 4MB del espacio de direcciones
     // virtual
