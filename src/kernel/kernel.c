@@ -74,8 +74,8 @@ void print_pages() {
     page_t *first_page = memory_info.first_page;
     print_page(0, first_page);
 
-    page_t *curr_page;
     int i;
+    page_t *curr_page;
     for (i = 1, curr_page = first_page->next;
         curr_page != first_page;
         i++, curr_page = curr_page->next) {

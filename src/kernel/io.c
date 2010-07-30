@@ -31,8 +31,8 @@ void scroll_down() {
  */
 void clline(void *pos) {
     void *begin = SCREEN_LINE_BEGIN(pos);
-    int i;
-    for (i = 0; i < SCREEN_ROW_SIZE; i++)
+
+    for (int i = 0; i < SCREEN_ROW_SIZE; i++)
         copychar(begin + i, 0);
 }
 
@@ -41,8 +41,8 @@ void clline(void *pos) {
  */
 void kcls() {
     void *begin = (void *)SCREEN_BEGIN;
-    int i;
-    for (i = 0; i < SCREEN_ROWS; i++)
+
+    for (int i = 0; i < SCREEN_ROWS; i++)
         clline(begin + SCREEN_ROW_SIZE*i);
 }
 
@@ -84,20 +84,18 @@ void kputs(char *str) {
 #define SCREEN_UI_LOG2BASE 4
 #define SCREEN_UI_REPLENGTH (sizeof(uint32_t)*8/SCREEN_UI_LOG2BASE)
 void kputui32(uint32_t n) {
-    char chars[SCREEN_UI_BASE];
+    char chars[SCREEN_UI_BASE],
+         str[SCREEN_UI_REPLENGTH + 1],
+         base = '0';
 
-    int i;
-    char base = '0';
-    for (i = 0; i < SCREEN_UI_BASE; i++) {
+    for (int i = 0; i < SCREEN_UI_BASE; i++) {
         if (i == 10)
             base = 'A';
 
         chars[i] = base + (i % 10);
     }
 
-    char str[SCREEN_UI_REPLENGTH + 1];
-
-    for (i = SCREEN_UI_REPLENGTH - 1; i >= 0; i--, n /= SCREEN_UI_BASE)
+    for (int i = SCREEN_UI_REPLENGTH - 1; i >= 0; i--, n /= SCREEN_UI_BASE)
         str[i] = chars[n % SCREEN_UI_BASE];
 
     str[SCREEN_UI_REPLENGTH] = '\0';

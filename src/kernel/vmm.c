@@ -57,10 +57,9 @@ void vm_init() {
 }
 
 void reserve_pages(page_t* page, int n) {
-    int i = 0;
     page_t* page_next;
 
-    for (i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         page_next = page->next;
         reserve_page(page);
         page = page_next;
@@ -95,8 +94,7 @@ void invalidate_tlb(void *vaddr) {
 }
 
 void invalidate_tlb_pages(void *vstart, int n) {
-    int i;
-    for (i = 0; i < n; i++)
+    for (int i = 0; i < n; i++)
         invalidate_tlb(vstart + i*PAGE_SIZE);
 }
 
@@ -116,9 +114,9 @@ void page_dir_map(uint32_t page_dir[], void* virtual, void* phisical, uint32_t f
 // TODO: Tomar una decision con respecto al problema de que se precise otra
 // tabla. 
 void map_kernel_pages(uint32_t pd[], void *vstart, int n) {
-    void *vaddr, *vstop = vstart + PAGE_SIZE*n;
+    void *vstop = vstart + PAGE_SIZE*n;
 
-    for (vaddr = vstart; vaddr < vstop; vaddr += PAGE_SIZE) {
+    for (void *vaddr = vstart; vaddr < vstop; vaddr += PAGE_SIZE) {
         uint32_t new_pte = PTE_PAGE_BASE(KPHADDR(vaddr)) | PTE_G | PTE_PWT |
             PTE_RW | PTE_P;
 
@@ -146,8 +144,7 @@ void map_kernel_pages(uint32_t pd[], void *vstart, int n) {
 // Mapea 'n' paginas de tablas para las direcciones virtuales desde 'vaddr'
 // alojandolas desde la direccion refenciada por 'table_addr' 
 void map_kernel_tables(uint32_t pd[], void *vaddr, void *table_addr, int n) {
-    int i;
-    for (i = 0; i < n; i++, vaddr+= PAGE_4MB_SIZE, table_addr += PAGE_SIZE) {
+    for (int i = 0; i < n; i++, vaddr+= PAGE_4MB_SIZE, table_addr += PAGE_SIZE) {
         // Llenamos la nueva tabla con ceros
         memset(table_addr, 0, PAGE_SIZE);
 
@@ -200,7 +197,7 @@ void* new_page(uint32_t pd[], void* vaddr, uint32_t flags) {
 }
 
 // Retorna la pagina fisica correspondiente a la direccion virtual a la lista
-// de paginas libres
+// de paginas libres, y la borra la entry en la tabla de paginas
 void free_page(uint32_t pd[], void* vaddr) {
     uint32_t *pte = get_pte(pd, vaddr);
     page_t *p = PHADDR_TO_PAGE(PTE_PAGE_BASE(*pte));

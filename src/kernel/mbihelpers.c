@@ -16,8 +16,7 @@ void verify_multiboot(unsigned int magic) {
 }
 
 void clear_pages(page_t *start, page_t *stop) {
-    page_t* page;
-    for (page = start; page < stop; page++) {
+    for (page_t* page = start; page < stop; page++) {
         page->next = page->prev = NULL;
         page->count = 0;
   }
@@ -29,8 +28,9 @@ void modules_gather(multiboot_info_t *mbi) {
         // La informacion sobre modulos no es valida. No entramos en panico
         return;
     }
+
     int i;
-    module_t *mod;
+    module_t* mod;
     for (i = 0, mod = (module_t *)mbi->mods_addr;
         i < mbi->mods_count;
         i++, mod++) {
@@ -49,11 +49,9 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
 
     page_t *first = NULL;
     page_t *last = NULL;
-    page_t *current = NULL;
 
     // Recorremos el buffer que contiene el memory map
-    memory_map_t *mmap;
-    for (mmap = (memory_map_t *) mbi->mmap_addr;
+    for (memory_map_t *mmap = (memory_map_t *) mbi->mmap_addr;
         mmap < (memory_map_t *) (mbi->mmap_addr + mbi->mmap_length);
         mmap = (memory_map_t *) ((void *)mmap + sizeof(mmap->size) +
             mmap->size)) {
@@ -79,7 +77,7 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
         }
 
         // Ubicamos las estructuras
-        for (current = start; current < stop; current++) {
+        for (page_t* current = start; current < stop; current++) {
             current->count = 0;
             current->prev = (page_t *)KVIRTADDR((current - 1));
             current->next = (page_t *)KVIRTADDR((current + 1));
