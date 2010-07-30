@@ -61,7 +61,7 @@ void vm_init() {
     reserve_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
 
     //TODO: Configurar heap
-    //heap_configure_type(32, 50);
+    heap_configure_type(sizeof(0x84), 0);
 
     // Quitamos el identity map de los primeros 4MB del espacio de direcciones
     // virtual

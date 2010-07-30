@@ -4,6 +4,7 @@
 #include "../inc/mmu.h"
 #include "../inc/vmm.h"
 #include "../inc/io.h"
+#include "../inc/heap.h"
 
 extern void *tasktest();
 
@@ -19,11 +20,7 @@ extern void *tasktest();
  *   espacio de direcciones virtual
  */
 tss_t *create_tss(int level, void *pd, void *stack_bottom, void *entry_point) {
-    //tss_t *tss = (tss_t *)new_page(kernel_pd, (void *)0x00A01000, NULL);
-    tss_t *tss = (tss_t *)KVIRTADDR(0x00A01000);
-
-    // TODO: Hacer el alloc de la estructura
-    //tss_t *tss = alloc(sizeof(tss_t));
+    tss_t *tss = (tss_t *)kmalloc(sizeof(tss_t));
 
     // De momento, no usamos el Previous Task Link
     tss->prev = NULL;
