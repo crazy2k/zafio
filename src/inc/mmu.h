@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "types.h"
 
+#define __LOW2_BITS__ 0x00000003
 #define __LOW16_BITS__ 0x0000FFFF
 #define __16_23_BITS__ 0x00FF0000
 #define __24_31_BITS__ 0xFF000000
@@ -73,6 +74,9 @@
 #define GDT_F_32BTG     0xF // 32-bit Trap Gate
 
 #define GDT_NULL ((uint64_t) 0)
+
+#define GDT_SEGSEL(rpl, index) \
+    (((rpl) && __LOW2_BITS__) | ((index) << 3))
 
 /* Paginacion
  * ==========

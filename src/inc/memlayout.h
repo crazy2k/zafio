@@ -23,6 +23,12 @@
 #define VIDEO_VIRT_ADDR 0xC00B8000
 #define VIDEO_PHYS_ADDR KPHADDR(VIDEO_VIRT_ADDR)
 
+#define GDT_INDEX_NULL 0x0
+#define GDT_INDEX_KERNEL_CS 0x1
+#define GDT_INDEX_KERNEL_DS 0x2
+#define GDT_INDEX_USER_CS 0x3
+#define GDT_INDEX_USER_DS 0x4
+
 /*
 
 Mapa de memoria física

@@ -49,7 +49,7 @@ typedef struct {
     uint16_t t:1;   // Debug trap flag
     uint16_t :15;
     uint16_t io;    // I/O map base address
-} tss;
+} tss_t;
 
 struct task_t {
     int pid; 
