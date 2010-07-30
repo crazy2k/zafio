@@ -4,6 +4,7 @@
 #include "../inc/utils.h"
 #include "../inc/memlayout.h"
 #include "../inc/io.h"
+#include "../inc/heap.h"
 
 // TODO: Ver mejor en que lugares falta invalidar la tlb
 
@@ -12,6 +13,7 @@ page_t* page_list = NULL;
 
 memory_info_t memory_info;
 void* kernel_va_limit;
+void* used_mem_limit;
 
 void vm_init() {
     // Mapeamos los primeros 4MB fisicos en el higher half; con esto, nos
@@ -41,15 +43,25 @@ void vm_init() {
     map_kernel_pages(kernel_pd, mem_vaddr, 
         ((uint32_t)ALIGN_TO_PAGE(total_memory, TRUE))/PAGE_SIZE);
 
-    // Marcar el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
+
+    //Inicializamos, lista de paginas fisicas libres
+    page_list = memory_info.first_page;
+
+    // Marcamos el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
     reserve_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_FST_PAGE)), 4 + tables_count);
 
+    // Puntero a la siguiente posicion de memoria sin utilizar (alineada a 8 bytes)
+    used_mem_limit = (void*) ALIGN_TO_CACHE((memory_info.last_page + 1), TRUE);
+
     // Limite actual de la memoria virtual
-    kernel_va_limit = ALIGN_TO_PAGE((void*)(memory_info.last_page + 1), TRUE);
+    kernel_va_limit = ALIGN_TO_PAGE(used_mem_limit, TRUE);
 
     int pages_count = PHADDR_TO_PAGE(KPHADDR(kernel_va_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
 
     reserve_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
+
+    //TODO: Configurar heap
+    //heap_configure_type(32, 50);
 
     // Quitamos el identity map de los primeros 4MB del espacio de direcciones
     // virtual

@@ -1,3 +1,7 @@
+#ifndef __SCHED_H__
+
+#define __SCHED_H__
+
 #include <stdint.h>
 
 typedef struct {
@@ -50,3 +54,5 @@ typedef struct {
 struct task_t {
     int pid; 
 };
+
+#endif
