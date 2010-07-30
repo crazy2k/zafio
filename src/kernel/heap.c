@@ -3,7 +3,7 @@
 
 // Una lista con una estructura por cada tamaño de tipo,
 // Permite recuperar espacio vacio
-static type_cache_t cache_lists[CACHES_NUM] = { {} };
+static type_cache_t cache_lists[CACHE_COUNT] = { {} };
 
 static void add_bucket(type_cache_t* cache, cache_bucket_t* bucket);
 static cache_bucket_t* pop_bucket(type_cache_t* cache);
@@ -47,7 +47,7 @@ void* stacked_malloc(size_t size) {
 
 //Retorna el cache mas apropiado para guardar un objeto del tamaño 'size'
 static type_cache_t* get_cache(size_t size) {
-    for (int i = 0; i < CACHES_NUM && cache_lists[0].bucket_size > 0; i++) {
+    for (int i = 0; i < CACHE_COUNT && cache_lists[0].bucket_size > 0; i++) {
         if (BUCKET_DATA_SIZE(&cache_lists[i]) > size)
             return &cache_lists[i];
     }
@@ -87,11 +87,11 @@ void heap_configure_type(size_t size, unsigned preallocate) {
 
     for (i = 0; i < preallocate; i++) add_bucket(&tcache, NULL);
 
-    if (cache_lists[CACHES_NUM - 1].bucket_size != 0)
+    if (cache_lists[CACHE_COUNT - 1].bucket_size != 0)
         kpanic("No puden crearse mas caches");
 
     //Ubica al cache de forma tal, q los de menor tamaño de bucket van primero
-    for (i = 0; i < CACHES_NUM && cache_lists[i].bucket_size != 0; i++) {
+    for (i = 0; i < CACHE_COUNT && cache_lists[i].bucket_size != 0; i++) {
         if (tcache.bucket_size < cache_lists[i].bucket_size) {
             tmp = cache_lists[i];
             cache_lists[i] = tcache;
