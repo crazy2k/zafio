@@ -45,7 +45,7 @@ void vm_init() {
     reserve_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_FST_PAGE)), 4 + tables_count);
 
     // Limite actual de la memoria virtual
-    kernel_va_limit = ALIGN_TO_PAGE((void*)memory_info.last_page + 1, FALSE);
+    kernel_va_limit = ALIGN_TO_PAGE((void*)(memory_info.last_page + 1), TRUE);
 
     int pages_count = PHADDR_TO_PAGE(KPHADDR(kernel_va_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
 
