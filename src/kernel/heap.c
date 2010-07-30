@@ -12,11 +12,9 @@ static type_cache_t* get_cache(size_t size);
 // Trae un objecto del tamaño size, pasando por los caches de memoria
 void* kmalloc(size_t size) {
     type_cache_t* cache = get_cache(size); 
-    cache_bucket_t* bucket;
+    cache_bucket_t* bucket = pop_bucket(cache);
 
-    if (cache->buckets)
-        bucket = pop_bucket(cache);
-    else 
+    if (bucket == NULL)
         bucket = stacked_malloc(cache->bucket_size);
 
     bucket->type_tag = CACHE_TYPE_TAG(cache);
@@ -93,6 +91,9 @@ void heap_configure_type(size_t size, unsigned preallocate) {
 
     //Ubica al cache de forma tal, q los de menor tamaño de bucket van primero
     for (i = 0; i < CACHE_COUNT && cache_lists[i].bucket_size != 0; i++) {
+        if (tcache.bucket_size < cache_lists[i].bucket_size)
+            kpanic("Ya se inicializo un cache para ese tamaño");
+
         if (tcache.bucket_size < cache_lists[i].bucket_size) {
             tmp = cache_lists[i];
             cache_lists[i] = tcache;
