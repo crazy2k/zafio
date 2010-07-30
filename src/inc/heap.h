@@ -11,9 +11,10 @@
 
 #define MIN_BUCKET_SIZE 32
 
-#define TYPE_TAG(cache_bucket_ptr) ( (cache_bucket_ptr)->tag_type & CACHE_TAG_MASK )
-#define NEXT_BUCKET(cache_bucket_ptr) ( (cache_bucket_ptr)->next & ~CACHE_TAG_MASK )
-#define BUCKET_DATA(cache_bucket_ptr) ( (void *) (cache_bucket_ptr)->data )
+#define DATA_TO_BUCKET(bucket_ptr) ((cache_bucket_t*) ((void*)(bucket_ptr) - sizeof(unsigned long)) )
+#define BUCKET_TO_DATA(bucket_ptr) ((void *) (bucket_ptr)->data)
+#define BUCKET_DATA_SIZE(cache_ptr) ((cache_ptr)->bucket_size - sizeof(unsigned long)) 
+#define CACHE_TYPE_TAG(cache_ptr) ((cache_ptr) - cache_lists)
 
 typedef struct cache_bucket_t cache_bucket_t;
 
@@ -37,8 +38,9 @@ typedef struct {
 
 void configure_type(size_t size, unsigned preallocate);
     
-void* stacked_malloc(size_t size);
 void* kmalloc(size_t size);
+void kfree(void *data);
+void* stacked_malloc(size_t size);
 
 #endif
 

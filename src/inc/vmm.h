@@ -94,7 +94,5 @@ long int kbrk(void* vaddr);
 
 void* ksbrk(unsigned long int bytes);
 
-void* malloc(long int size);
-
 #endif
 
