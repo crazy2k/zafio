@@ -17,6 +17,7 @@
 void create_tss(void *pd, void *stack_bottom, void *entry_point) {
     tss_t tss1;
     tss_t *tss = &tss1;
+    // TODO: Hacer el alloc de la estructura
     //tss_t *tss = alloc(sizeof(tss_t));
 
     // De momento, no usamos el Previous Task Link
