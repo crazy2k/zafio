@@ -6,11 +6,15 @@
 // Un EFLAGS con defaults razonables
 #define SCHED_COMMON_EFLAGS 0x3002
 
-/* - ``entry_point`` es la direccion del punto de entrada de la tarea en su
- *   espacio de direcciones virtual
+/* Crea la TSS para una tarea a ser cargada.
+ *
  * - ``pd`` es la direccion fisica del directorio de paginas de la tarea
+ * - ``stack_bottom`` es la direccion del stack pointer de la tarea en su
+ *   espacio de direcciones virtual
+ * - ``entry_point`` es la direccion del punto de entrada de la tarea en su
+ *   espacio de direcciones virtual
  */
-void create_tss(void *pd, void *entry_point, void *stack_bottom) {
+void create_tss(void *pd, void *stack_bottom, void *entry_point) {
     tss_t tss1;
     tss_t *tss = &tss1;
     //tss_t *tss = alloc(sizeof(tss_t));
