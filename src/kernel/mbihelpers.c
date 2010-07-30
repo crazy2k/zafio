@@ -4,14 +4,14 @@
 #include "../inc/types.h"
 #include "../inc/vmm.h"
 
-void panic(char *msg) {
+static void kpanic(char *msg) {
     // TODO: Completar
     __asm__ __volatile__("hlt");
 }
 
 void verify_multiboot(unsigned int magic) {
     if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
-        panic("El kernel debe ser cargado por un bootloader Multiboot.");
+        kpanic("El kernel debe ser cargado por un bootloader Multiboot.");
     }
 }
 
@@ -44,7 +44,7 @@ void modules_gather(multiboot_info_t *mbi) {
 void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
     if (!(mbi->flags & (0x1 << 6))) {
         // El mmap no es valido
-        panic("El kernel precisa informacion sobre la memoria.");
+        kpanic("El kernel precisa informacion sobre la memoria.");
     }
 
     page_t *first = NULL;

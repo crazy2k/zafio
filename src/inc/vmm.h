@@ -19,6 +19,14 @@
 
 #define IS_ALIGNED(addr) !((uint32_t)(addr) & 0xFFF)
 
+#define CACHE_LINE 8
+#define CACHE_LINE_MASK 0xFFFFFFF8
+
+#define ALIGN_TO_CACHE(num, ceil) \
+({  unsigned long __num = (unsigned long)(num); \
+    ((__num) & CACHE_LINE_MASK) + (((ceil) && ((__num) & ~CACHE_LINE_MASK)) ? CACHE_LINE : 0); })
+
+
 extern uint32_t kernel_pd[1024];
 extern uint32_t kernel_pt[1024];
 
@@ -36,6 +44,9 @@ typedef struct {
 } memory_info_t;
 
 extern memory_info_t memory_info;
+
+extern void* kernel_va_limit;
+extern void* used_mem_limit; 
 
 void reserve_pages(page_t* pages, int n);
 
@@ -82,8 +93,6 @@ void vm_init();
 long int kbrk(void* vaddr);
 
 void* ksbrk(unsigned long int bytes);
-
-void* malloc(long int size);
 
 #endif
 
