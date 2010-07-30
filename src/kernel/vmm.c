@@ -257,8 +257,8 @@ page_t *reserve_page(page_t* page) {
 //En caso de intentar correr el limite hacia atras las funcs no tiene efecto
 long kbrk(void* vaddr) {
     long bytes = ALIGN_TO_PAGE(vaddr, TRUE) - kernel_va_limit;
+
     if (bytes < 0) bytes = 0;
-    
     ksbrk(bytes);
 
     return bytes;
