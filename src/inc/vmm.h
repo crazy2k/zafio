@@ -37,7 +37,7 @@ typedef struct {
 
 extern memory_info_t memory_info;
 
-void set_unavailable_pages(page_t* pages, int n);
+void reserve_pages(page_t* pages, int n);
 
 void link_pages(page_t*, page_t*);
 
