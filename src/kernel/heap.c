@@ -56,6 +56,7 @@ static type_cache_t* get_cache(size_t size) {
     return NULL; //Codigo muerto
 }
 
+// Saca un bucket del cache si este esta presente, si no retorna NULL
 static cache_bucket_t* pop_bucket(type_cache_t* cache) {
     cache_bucket_t* result = cache->buckets;
 
@@ -64,7 +65,7 @@ static cache_bucket_t* pop_bucket(type_cache_t* cache) {
     return result;
 }
 
-// 
+// Agregar bucket a cache, si el primer es NULL, crea uno nuevo 
 static void add_bucket(type_cache_t* cache, cache_bucket_t* bucket) {
     if (bucket == NULL) 
         bucket = (cache_bucket_t *) stacked_malloc(cache->bucket_size);
