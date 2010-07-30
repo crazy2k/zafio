@@ -1,4 +1,7 @@
-// Magic breakpoint para bochs
+#ifndef __DEBUG_H__
+
+#define __DEBUG_H__// Magic breakpoint para bochs
+
 #define BOCHS_BREAK __asm__ __volatile__("xchg %bx, %bx" )     
 
 #define OUTPORTB(_port, _data) __asm__ __volatile__ ("outb %%al, %0" : : "dN" (_port), "a" (_data))
@@ -9,3 +12,4 @@
 // Stops simulation and breaks into the debug console
 //#define BochsBreak() ({ outportw(0x8A00,0x8A00); outportw(0x8A00,0x08AE0); })
 
+#endif
