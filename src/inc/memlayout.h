@@ -28,6 +28,7 @@
 #define GDT_INDEX_KERNEL_DS 0x2
 #define GDT_INDEX_USER_CS 0x3
 #define GDT_INDEX_USER_DS 0x4
+#define GDT_INDEX_TSS 0x5
 
 /*
 
