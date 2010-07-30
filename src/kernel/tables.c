@@ -22,13 +22,13 @@ uint32_t kernel_pt[1024] __attribute__((section (".pt"))) = {
     // Con una pagina para el stack alcanza (y sobra) al inicio
     [PTI(KERNEL_STACK)] = PTE_PAGE_BASE(KPHADDR(KERNEL_STACK)) | PTE_G |
         PTE_PWT | PTE_RW | PTE_P,
-        
+
     [PTI(KERNEL_PAGE_TABLE)] = PTE_PAGE_BASE(KPHADDR(KERNEL_PAGE_TABLE)) | 
         PTE_G | PTE_PWT | PTE_RW | PTE_P,
 
     [PTI(KERNEL_PAGE_DIRECTORY)] = PTE_PAGE_BASE(KPHADDR(KERNEL_PAGE_DIRECTORY)) | 
         PTE_G | PTE_PWT | PTE_RW | PTE_P,
-        
+
 };
 
 
