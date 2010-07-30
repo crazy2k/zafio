@@ -18,7 +18,6 @@ void* kmalloc(size_t size) {
         bucket = stacked_malloc(cache->bucket_size);
 
     bucket->type_tag = CACHE_TYPE_TAG(cache);
-
     return BUCKET_TO_DATA(bucket);
 }
 
@@ -58,8 +57,7 @@ static type_cache_t* get_cache(size_t size) {
 static cache_bucket_t* pop_bucket(type_cache_t* cache) {
     cache_bucket_t* result = cache->buckets;
 
-    if (cache->buckets) cache->buckets = result->next;
-
+    if (result) cache->buckets = result->next;
     return result;
 }
 

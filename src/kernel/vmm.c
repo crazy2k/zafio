@@ -277,10 +277,3 @@ void* ksbrk(unsigned long bytes) {
     return kernel_va_limit;
 }
 
-void* malloc(long int size) {
-    //TODO: Retornar una puntero a memoria de al menos 'size' bytes dentro del 'heap' del kernel
-
-    return NULL;
-}
-
-
