@@ -6,12 +6,19 @@
 static type_cache_t cache_lists[CACHES_NUM] = { {} };
 
 static void add_bucket(type_cache_t* cache, cache_bucket_t* bucket);
+static cache_bucket_t* pop_bucket(type_cache_t* cache);
 static type_cache_t* get_cache(size_t size);
 
 // Trae un objecto del tamaño size, pasando por los caches de memoria
 void* kmalloc(size_t size) {
     type_cache_t* cache = get_cache(size); 
-    cache_bucket_t* bucket = stacked_malloc(cache->bucket_size);
+    cache_bucket_t* bucket;
+
+    if (cache->buckets)
+        bucket = pop_bucket(cache);
+    else 
+        bucket = stacked_malloc(cache->bucket_size);
+
     bucket->type_tag = CACHE_TYPE_TAG(cache);
 
     return BUCKET_TO_DATA(bucket);
@@ -46,6 +53,14 @@ static type_cache_t* get_cache(size_t size) {
 
     kpanic("Objeto demasiado grande para ser guardado en los caches");
     return NULL; //Codigo muerto
+}
+
+static cache_bucket_t* pop_bucket(type_cache_t* cache) {
+    cache_bucket_t* result = cache->buckets;
+
+    if (cache->buckets) cache->buckets = result->next;
+
+    return result;
 }
 
 // 
