@@ -65,6 +65,7 @@ uint32_t* get_page_table_entry(uint32_t page_dir[], void* virtual);
 void allocate_page_table(uint32_t page_dir[], void* virtual);
 
 void* new_page(uint32_t page_dir[], void* virual_addr, uint32_t flags);
+void* new_pages(uint32_t pd[], void* vaddr, long n, uint32_t flags);
 
 void free_page(uint32_t page_dir[], void* virual_addr);
 

@@ -189,21 +189,33 @@ void allocate_pt(uint32_t pd[], void* vaddr) {
     memset(KVIRTADDR(phpage), 0, PAGE_SIZE);
 }
 
+// Mapea 'n' paginas fisicas nuevas a apartir de la direccion virtual pasada por parametro 
+void* new_pages(uint32_t pd[], void* vaddr, long n, uint32_t flags) {
+    for (int i = 0; i < n ; i++)
+        new_page(pd, vaddr + PAGE_SIZE*i, flags);
+
+    return vaddr;
+}
+
 // Mapea una pagina fisica nueva para la direccion virtual pasada por parametro 
 void* new_page(uint32_t pd[], void* vaddr, uint32_t flags) {
     if (!page_list) 
         kpanic("No hay mas memoria fisica disponible");
 
     vaddr = ALIGN_TO_PAGE(vaddr,FALSE);
+
     // Si la tabla de paginas no estaba presente mapearla
     if (!(pd[PDI(vaddr)] & PDE_P))
         allocate_pt(pd, vaddr);
 
-    page_t *p = reserve_page(page_list->next);
-    void *phpage = PAGE_TO_PHADDR(p);
-
+    page_t *page = reserve_page(page_list->next);
     uint32_t *pte = get_pte(pd, vaddr);
-    *pte = PTE_PAGE_BASE(phpage) | PTE_P | flags;
+
+    if (!(*pte & PDE_P))
+        kpanic("La direccion virtual que se intentaba asignar" 
+            "ya estaba mapeada en el directorio")
+
+    *pte = PTE_PAGE_BASE(PAGE_TO_PHADDR(page)) | PTE_P | flags;
 
     return vaddr; 
 }
