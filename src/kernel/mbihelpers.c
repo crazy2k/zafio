@@ -15,7 +15,7 @@ void verify_multiboot(unsigned int magic) {
     }
 }
 
-void clear_pages(page_t *start, page_t *stop) {
+static void clear_pages(page_t *start, page_t *stop) {
     for (page_t* page = start; page < stop; page++) {
         page->next = page->prev = NULL;
         page->count = 0;
