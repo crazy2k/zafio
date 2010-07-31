@@ -122,9 +122,9 @@ struct page_t {
     page_t *prev;
 };
 
-#define PAGE_SIZE 0x1000
+#define PAGE_SIZE 0x1000ul
 
-#define PAGE_4MB_SIZE 0x400000
+#define PAGE_4MB_SIZE 0x400000ul
 
 //La mayor cantiad de memoria q muede mapear el kernel
 #define MAX_KERNEL_MEMORY \
