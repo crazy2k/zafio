@@ -108,6 +108,9 @@ typedef struct {
 } program_t;
 
 void create_task(program_t prog) {
+
+    clone_pd(kernel_pd);
+
     // Aca habria que:
     // - clonar el pd del kernel o uno de molde,
     // - ubicar en ese pd paginas para el stack y para el codigo y datos de la

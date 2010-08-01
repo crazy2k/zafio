@@ -209,3 +209,6 @@ page_t *reserve_page(page_t* page) {
 
     return page;
 }
+
+void *clone_pd(uint32_t pd[]) {
+}
