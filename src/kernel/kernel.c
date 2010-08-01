@@ -96,7 +96,7 @@ void cmain() {
     welcome_msg();
     debug_prints();
 
-    tasks_test();
+    //tasks_test();
 
     print_pages();
 

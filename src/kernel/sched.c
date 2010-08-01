@@ -29,7 +29,7 @@ tss_t *create_tss(int level, void *pd, void *stack_bottom, void *entry_point) {
 
     // Stack para nivel 0
     // TODO: El stack tiene que ser uno nuevo por proceso
-    //tss->esp0 = KERNEL_STACK + PAGE_SIZE;
+    //tss->esp0 = (uint32_t)stack_bottom;
     tss->ss0 = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_DS);
 
     // No nos interesan los stacks de niveles 1 y 2
@@ -83,8 +83,8 @@ void tasks_test() {
 
     // un stack a los 10 MB
     //void *stack = new_page(kernel_pd, (void *)0x00A00000, NULL) + PAGE_SIZE;
-    //void *stack = kmalloc(PAGE_SIZE);
-    void *stack = (void *)KVIRTADDR(0x00A00000);
+    void *stack = malloc_page() + PAGE_SIZE;
+    //void *stack = (void *)KVIRTADDR(0x00A00000);
     tss_t *tss = create_tss(0x0, KPHADDR(kernel_pd), stack, tasktest);
 
     gdt[GDT_INDEX_TSS] = GDT_DESC_BASE((uint32_t)tss) | GDT_DESC_LIMIT(0x84) |
