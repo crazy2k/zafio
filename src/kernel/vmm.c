@@ -4,6 +4,7 @@
 #include "../inc/utils.h"
 #include "../inc/memlayout.h"
 #include "../inc/io.h"
+#include "../inc/sched.h"
 #include "../inc/heap.h"
 
 // TODO: Ver mejor en que lugares falta invalidar la tlb
@@ -46,8 +47,7 @@ static void free_pages_setup() {
 }
 
 static void heap_setup() {
-    //TODO: Configurar heap
-    //heap_configure_type(size_of(tss), 4);
+    heap_configure_type(sizeof(tss_t), 4);
 }
 
 static void update_gdtr() {
@@ -82,7 +82,7 @@ void add_page_to_list(page_t* head, page_t* new) {
 }
 
 void page_table_unmap(uint32_t pt[], void* vaddr) {
-	pt[PTI(vaddr)] = 0x0;
+	  pt[PTI(vaddr)] = 0x0;
     invalidate_tlb(vaddr);
 }
 
