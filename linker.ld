@@ -23,7 +23,7 @@ SECTIONS {
         obj/loader_helpers.o (.*)
     }
 
-    . = ALIGN(0x1000);
+    . = ALIGN(0x1000) + __kernel_addr_offset;
 
     /* Tope del stack */
     __stack_top = .;
