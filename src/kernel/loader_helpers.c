@@ -78,7 +78,7 @@ void mmu_init(uint32_t kernel_pd[1024], uint32_t page_tables[][1024],
     void *vmem_limit = (uint32_t)mem_limit > MAX_KERNEL_MEMORY ?
         KVIRTADDR(MAX_KERNEL_MEMORY) : KVIRTADDR(mem_limit);
 
-    meminfo->tables_count = (unsigned long)vmem_limit/PAGE_4MB_SIZE;
+    meminfo->tables_count = (unsigned long)ALIGN_TO_4MB(mem_limit)/PAGE_4MB_SIZE;
 
     // Apuntamos los PDE a tablas que luego se llenaran
     map_kernel_tables(kernel_pd, KVIRTADDR(0x00000000), vmem_limit,
