@@ -75,8 +75,12 @@ void jump_to_segsel(uint16_t segsel) {
 
 
 void tasks_test() {
+
+    // Esbozo de lo usado en un test preliminar
+
     // un stack a los 10 MB
     //void *stack = new_page(kernel_pd, (void *)0x00A00000, NULL) + PAGE_SIZE;
+    //void *stack = kmalloc(PAGE_SIZE);
     void *stack = (void *)KVIRTADDR(0x00A00000);
     tss_t *tss = create_tss(0x0, KPHADDR(kernel_pd), stack, tasktest);
 
@@ -85,23 +89,8 @@ void tasks_test() {
         GDT_DESC_P;
 
     uint16_t segsel = GDT_SEGSEL(0x0, GDT_INDEX_TSS);
-    kputui32((uint32_t)tasktest);
-    //__asm__ __volatile__("ljmp (%0)" : : "r" (segsel));
-
-    __asm__ __volatile__("xchg %bx, %bx");
-
-    __asm__ __volatile__("pushl %0\n\t"
-        "pushl $0\n\t"
-        "ljmp *(%%esp)\n\t"
-        "addl $8, %%esp"
-        : : "rm" (segsel));
-
-
-
-    
-
-    /*
-    load_task();
+    jump_to_segsel(segsel);
+}
 
     void *pd = kmalloc(PAGE_SIZE);
     void *stack = kmalloc(PAGE_SIZE)
