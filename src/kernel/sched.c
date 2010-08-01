@@ -92,10 +92,26 @@ void tasks_test() {
     jump_to_segsel(segsel);
 }
 
-    void *pd = kmalloc(PAGE_SIZE);
-    void *stack = kmalloc(PAGE_SIZE)
-    create_tss(pd, stack, &tasktest);
-    */
+typedef struct {
+    // Direcciones virtuales en espacio del kernel de cada seccion
+    void *text;         
+    void *data;
+    // Tamanio de cada seccion
+    uint32_t text_size;
+    uint32_t data_size;
+    // Direccion virtual de carga en espacio de usuario
+    void *text_load_addr;
+    void *data_load_addr;
+    // Direccion virtual del punto de entrada en espacio de usuario
+    void *entry_point;
+} program_t;
+
+void create_task(program_t prog) {
+    // Aca habria que:
+    // - clonar el pd del kernel o uno de molde,
+    // - ubicar en ese pd paginas para el stack y para el codigo y datos de la
+    //   tarea,
+    // - crear una TSS para la tarea con los datos anteriores
 }
 
 /*
