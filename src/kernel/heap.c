@@ -75,7 +75,7 @@ void heap_configure_type(size_t size, long cache_pages) {
     type_cache_t tmp, *new_cache = &tcache;
 
     if (!tcache.grow_rate)
-      tcache.grow_rate = (long) ALIGN_TO_PAGE(AVG_BUCKETS_PER_PAGE * bucket_size, TRUE);
+      tcache.grow_rate = (long) ALIGN_TO_PAGE(AVG_BUCKETS_PER_PAGE * bucket_size, TRUE)/PAGE_SIZE;
  
     if (cache_lists[CACHE_COUNT - 1].bucket_size != 0)
         kpanic("No puden crearse mas caches");
