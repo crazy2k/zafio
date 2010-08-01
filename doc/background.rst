@@ -367,6 +367,9 @@ Directivas del ensamblador
 
 .. TODO: Hablar de inline assembly en GCC.
    http://ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html
+.. TODO: Hablar sobre los PIC y su inicializacion.
+    http://wiki.osdev.org/PIC
+    http://davmac.org/davpage/PIC.html
 
 Referencias
 -----------
