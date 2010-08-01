@@ -87,10 +87,6 @@ void mmu_init(uint32_t kernel_pd[1024], uint32_t page_tables[][1024],
     // Mapeamos las paginas de toda la memoria que utilizara el kernel,
     // desde el loader hasta cubrir todas las estructuras page_t
     map_kernel_pages(kernel_pd, KVIRTADDR(0x00000000), vmem_limit);
-
-    //Mapear video
-    (*kernel_first_pt)[PTI(VIDEO_PHYS_ADDR)] = PTE_PAGE_BASE(VIDEO_PHYS_ADDR) | PTE_G |
-        PTE_PWT | PTE_RW | PTE_P;
 }
 
 void mbi_gather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
