@@ -65,6 +65,15 @@ tss_t *create_tss(int level, void *pd, void *stack_bottom, void *entry_point) {
     return tss;
 }
 
+void jump_to_segsel(uint16_t segsel) {
+    __asm__ __volatile__("pushl %0\n\t"
+        "pushl $0\n\t"
+        "ljmp *(%%esp)\n\t"
+        "addl $8, %%esp"
+        : : "rm" (segsel));
+}
+
+
 void tasks_test() {
     // un stack a los 10 MB
     //void *stack = new_page(kernel_pd, (void *)0x00A00000, NULL) + PAGE_SIZE;
