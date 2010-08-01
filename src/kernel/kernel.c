@@ -93,6 +93,8 @@ void cmain() {
     welcome_msg();
     debug_prints();
 
+    BOCHS_BREAK;
+
     print_pages();
 
     // Si no ejecutamos un hlt aca, hay un page fault, ya que el codigo que nos
