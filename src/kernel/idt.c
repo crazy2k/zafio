@@ -14,10 +14,6 @@ void idt_init() {
     remap_PIC(PIC1_OFFSET, PIC2_OFFSET);
 
     sti();
-
-    int *a = (int *)0x10;
-    *a = 2;
-
 }
 
 void idt_pf_handler() {
