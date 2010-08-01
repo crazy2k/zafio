@@ -105,11 +105,18 @@ typedef struct {
     void *data_load_addr;
     // Direccion virtual del punto de entrada en espacio de usuario
     void *entry_point;
+    // Nivel de privilegio del programa
+    int level;
 } program_t;
 
 void create_task(program_t prog) {
 
-    clone_pd(kernel_pd);
+    // Clonamos el PD del kernel
+    //uint32_t *new_pd = clone_pd(kernel_pd);
+
+    // Mapeamos una pagina en este nuevo PD para el stack
+    //void *stack_uvaddr = new_page(new_pd, SCHED_TASK_STACK_TOP,
+    //    PTE_RW | PDE_US | PDE_PWT);
 
     // Aca habria que:
     // - clonar el pd del kernel o uno de molde,

@@ -84,5 +84,7 @@ void vm_init();
 
 void *malloc_page();
 
+void *clone_pd(uint32_t pd[]);
+
 #endif
 
