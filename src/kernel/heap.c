@@ -29,10 +29,12 @@ void kfree(void* data) {
 }
 
 static void grow_cache(type_cache_t* cache) {
-  cache_bucket_t *buckets = allocate_pages(cache->grow_rate);
+  for (int j = 0; j < cache->grow_rate; j++) {
+    cache_bucket_t *buckets = malloc_page();
   
-  for (int i = 0; i < CHUNK_TOTAL_BUCKETS(cache); i++)
-    add_bucket(cache, &buckets[i]);
+    for (int i = 0; i < CHUNK_TOTAL_BUCKETS(cache); i++)
+      add_bucket(cache, &buckets[i]);
+  }
 }
 
 //Retorna el cache mas apropiado para guardar un objeto del tamaño 'size'

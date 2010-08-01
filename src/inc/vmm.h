@@ -4,9 +4,6 @@
 
 #define __VMM_H__
 
-#define RELOCATE_PTR_TO(pointer, virtual_dir) \
-	((void*) ( ((uint32_t)(pointer) & 0xFFF) | ((uint32_t)(virtual_dir) & 0xFFFFF000) ))
-
 /* Recibe un puntero a ``page_t``, y devuelve la direccion fisica de la pagina
  * representada por dicha estructura
  */
@@ -17,7 +14,8 @@
  */
 #define PHADDR_TO_PAGE(addr) ((page_t *) (pages + ((uint32_t) (addr))/PAGE_SIZE))
 
-#define IS_ALIGNED(addr) !((uint32_t)(addr) & 0xFFF)
+#define PAGE_TO_KVADDR(page) (KVIRTADDR(PAGE_TO_PHADDR(page)))
+#define KVADDR_TO_PAGE(page) (PHADDR_TO_PAGE(KPHADDR(page)))
 
 #define CACHE_LINE 8
 #define CACHE_LINE_MASK 0xFFFFFFF8
@@ -25,7 +23,6 @@
 #define ALIGN_TO_CACHE(num, ceil) \
 ({  unsigned long __num = (unsigned long)(num); \
     ((__num) & CACHE_LINE_MASK) + (((ceil) && ((__num) & ~CACHE_LINE_MASK)) ? CACHE_LINE : 0); })
-
 
 extern uint32_t kernel_pd[1024];
 
@@ -83,11 +80,9 @@ void invalidate_tlb(void *vaddr);
 
 void invalidate_tlb_pages(void *vstart, int n);
 
-uint32_t count_pages(void *saddr, void *eaddr);
-
 void vm_init();
 
-void* allocate_pages(long);
+void *malloc_page();
 
 #endif
 
