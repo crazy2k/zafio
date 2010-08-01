@@ -42,8 +42,10 @@ typedef struct {
 
 extern memory_info_t memory_info;
 
-extern void* kernel_va_limit;
-extern void* used_mem_limit; 
+//No es mas necesaria bajo el modelo de memoria virtual definitivo
+//extern void* kernel_va_limit;
+
+extern void* used_mem_limit;
 
 void *malloc_page();
 void allocate_page_table(uint32_t page_dir[], void* virtual);

@@ -37,9 +37,6 @@ static void free_pages_setup() {
 
     // Puntero a la siguiente posicion de memoria sin utilizar (alineada a PAGE_SIZE)
     used_mem_limit = memory_info.kernel_used_memory;
- 
-    // Limite actual de la memoria virtual
-    kernel_va_limit = used_mem_limit;
 
     int pages_count = PHADDR_TO_PAGE(KPHADDR(used_mem_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
 
