@@ -60,30 +60,34 @@ void modules_gather(multiboot_info_t *mbi) {
     }
 }
 
-void mmu_init(uint32_t kernel_pd[1024], uint32_t page_tables[][1024], memory_info_t *meminfo) {
+void mmu_init(uint32_t kernel_pd[1024], uint32_t page_tables[][1024],
+    memory_info_t *meminfo) {
 
     // Configurar entries en el directorio de paginas
     uint32_t (*kernel_first_pt)[1024] = &page_tables[0];
 
-    uint32_t pde_entry = PDE_PT_BASE(*kernel_first_pt) | PDE_PWT | PDE_RW| PDE_P;
+    uint32_t pde = PDE_PT_BASE(*kernel_first_pt) | PDE_PWT | PDE_RW| PDE_P;
 
-    kernel_pd[PDI(KERNEL_PHYS_ADDR)] = pde_entry; 
-    kernel_pd[PDI(KERNEL_VIRT_ADDR)] = pde_entry;
+    kernel_pd[PDI(KERNEL_PHYS_ADDR)] = pde;
+    kernel_pd[PDI(KERNEL_VIRT_ADDR)] = pde;
 
-    // No podemos mapear mas memoria que MAX_KERNEL_MEMORY, por la cantidad de tablas
-    // que tenemos. Mapeamos en total toda la memoria fisica o
+    // No podemos mapear mas memoria que MAX_KERNEL_MEMORY, por la cantidad de
+    // tablas que tenemos. Mapeamos en total toda la memoria fisica o
     // MAX_KERNEL_MEMORY, lo que sea mas chico.
-    void* vmemory_limit = ALIGN_TO_4MB(PAGE_TO_PHADDR(meminfo->last_page + 1), TRUE);
-    vmemory_limit = (uint32_t)vmemory_limit > MAX_KERNEL_MEMORY ? LAST_KERNEL_VADDR : KVIRTADDR(vmemory_limit);
+    void *mem_limit = PAGE_TO_PHADDR(meminfo->last_page + 1);
+    void *vmem_limit = (uint32_t)mem_limit > MAX_KERNEL_MEMORY ?
+        KVIRTADDR(MAX_KERNEL_MEMORY) : KVIRTADDR(mem_limit);
 
-    meminfo->tables_count = (unsigned long) vmemory_limit/PAGE_4MB_SIZE;
+    meminfo->tables_count = (unsigned long)vmem_limit/PAGE_4MB_SIZE;
 
     // Apuntamos los PDE a tablas que luego se llenaran
-    map_kernel_tables(kernel_pd, KVIRTADDR(0x00000000), vmemory_limit, page_tables);
+    map_kernel_tables(kernel_pd, KVIRTADDR(0x00000000), vmem_limit,
+        page_tables);
 
-    // Mapeamos las paginas toda la memoria q esta utilizando el kernel, desde el loader hasta
-    // Cubrir todas las estructuras de pages
-    map_kernel_pages(kernel_pd, KVIRTADDR(LOADER_PHYS_ADDR), meminfo->kernel_used_memory);
+    // Mapeamos las paginas de toda la memoria que utilizara el kernel,
+    // desde el loader hasta cubrir todas las estructuras page_t
+    map_kernel_pages(kernel_pd, KVIRTADDR(LOADER_PHYS_ADDR),
+        meminfo->kernel_used_memory);
 
     //Mapear video
     (*kernel_first_pt)[PTI(VIDEO_PHYS_ADDR)] = PTE_PAGE_BASE(VIDEO_PHYS_ADDR) | PTE_G |
