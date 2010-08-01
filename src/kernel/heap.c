@@ -1,4 +1,5 @@
 #include "../inc/heap.h"
+#include "../inc/debug.h"
 #include "../inc/utils.h"
 
 // Una lista con una estructura por cada tamaño de tipo,

@@ -9,7 +9,7 @@
 extern void *tasktest();
 
 // Un EFLAGS con defaults razonables
-#define SCHED_COMMON_EFLAGS 0x3002
+#define SCHED_COMMON_EFLAGS 0x3202
 
 #define SCHED_TASK_STACK_TOP PAGE_SIZE
 
@@ -58,7 +58,7 @@ tss_t *create_tss(int level, void *pd, void *stack_bottom, void *entry_point) {
     uint32_t ds_index = (!level) ? GDT_INDEX_KERNEL_DS : GDT_INDEX_USER_DS;
 
     tss->es = tss->ss = tss->ds = tss->fs = tss->gs =
-        GDT_SEGSEL(level,ds_index);
+        GDT_SEGSEL(level, ds_index);
     tss->cs = GDT_SEGSEL(level, cs_index);
 
     tss->ldt = NULL;
