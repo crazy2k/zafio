@@ -212,3 +212,10 @@ page_t *reserve_page(page_t* page) {
 
     return page;
 }
+
+void *clone_pd(uint32_t pd[]) {
+    uint32_t *new_pd = malloc_page();
+    memcpy(new_pd, pd, PAGE_SIZE);
+    return new_pd;
+}
+

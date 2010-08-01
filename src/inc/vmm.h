@@ -73,5 +73,9 @@ void invalidate_tlb_pages(void *vstart, int n);
 
 void vm_init();
 
+void *malloc_page();
+
+void *clone_pd(uint32_t pd[]);
+
 #endif
 

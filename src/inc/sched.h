@@ -55,4 +55,8 @@ struct task_t {
     int pid; 
 };
 
+void tasks_test();
+
+extern uint64_t gdt[];
+
 #endif

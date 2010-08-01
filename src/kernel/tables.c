@@ -1,5 +1,6 @@
 #include "../inc/mmu.h"
 #include "../inc/memlayout.h"
+#include "../inc/idt.h"
 
 uint32_t kernel_pd[1024] __attribute__((section (".pd"))) = {0};
 
@@ -25,6 +26,9 @@ uint64_t gdt[] __attribute__((aligned(0x08))) = {
     [GDT_INDEX_TSS] = GDT_NULL,
 };
 
-gdtr_t gdtr = { .size = sizeof(gdt) - 1, .addr = KPHADDR(gdt) }; 
+gdtr_t gdtr = { .size = sizeof(gdt) - 1, .addr = KPHADDR(gdt) };
 
+uint64_t idt[256] = {0};
+
+idtr_t idtr = { .size = sizeof(idt) - 1, .addr = idt };
 

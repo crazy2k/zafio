@@ -2,6 +2,8 @@
 #include "../inc/vmm.h"
 #include "../inc/io.h"
 #include "../inc/debug.h"
+#include "../inc/sched.h"
+#include "../inc/idt.h"
 
 void welcome_msg() {
     kputs("                    w\n");
@@ -89,9 +91,12 @@ void cmain() {
     kcls();
 
     vm_init();
+    idt_init();
 
     welcome_msg();
     debug_prints();
+
+    //tasks_test();
 
     print_pages();
 
