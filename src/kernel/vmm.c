@@ -39,9 +39,9 @@ static void free_pages_setup() {
     used_mem_limit = memory_info.kernel_used_memory;
  
     // Limite actual de la memoria virtual
-    kernel_va_limit = kernel_va_limit; 
+    kernel_va_limit = used_mem_limit;
 
-    int pages_count = PHADDR_TO_PAGE(KPHADDR(kernel_va_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
+    int pages_count = PHADDR_TO_PAGE(KPHADDR(used_mem_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
 
     reserve_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
 }
