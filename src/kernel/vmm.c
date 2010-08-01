@@ -15,46 +15,24 @@ memory_info_t memory_info;
 void* kernel_va_limit;
 void* used_mem_limit;
 
+static void update_gdtr();
+
 void vm_init() {
-    // Mapeamos los primeros 4MB fisicos en el higher half; con esto, nos
-    // aseguramos tener las tablas de pagina en nuestro espacio de direcciones
-    // virtual
-    map_kernel_pages(kernel_pd, KVIRTADDR(0x00000000), 1024);
+    update_gdtr();
 
-    // No podemos mapear mas que MAX_KERNEL_MEMORY, por la cantidad de tablas
-    // que tenemos. Mapeamos en total toda la memoria fisica o
-    // MAX_KERNEL_MEMORY, lo que sea mas chico.
-    uint32_t total_memory = (uint32_t)PAGE_TO_PHADDR(memory_info.last_page + 1);
-
-    if (total_memory > MAX_KERNEL_MEMORY)
-        total_memory = MAX_KERNEL_MEMORY;
-
-    total_memory -= PAGE_4MB_SIZE;  // los primeros 4MB ya estan mapeados
-
-    int tables_count = ((uint32_t)ALIGN_TO_4MB(total_memory, TRUE))/PAGE_4MB_SIZE;
-
-    // Vamos a mapear a partir de los 4MB
-    void *mem_vaddr = KVIRTADDR(PAGE_4MB_SIZE);
-
-    // Apuntamos los PDE a tablas que luego se llenaran
-    map_kernel_tables(kernel_pd, mem_vaddr, page_tables, tables_count);
-
-    // Mapeamos las paginas del resto de la memoria a mapear
-    map_kernel_pages(kernel_pd, mem_vaddr, 
-        ((uint32_t)ALIGN_TO_PAGE(total_memory, TRUE))/PAGE_SIZE);
-
+    BOCHS_BREAK;
 
     //Inicializamos, lista de paginas fisicas libres
     page_list = memory_info.first_page;
 
     // Marcamos el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
-    reserve_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_FST_PAGE)), 4 + tables_count);
+    reserve_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_FST_PAGE)), 3 + memory_info.tables_count);
 
     // Puntero a la siguiente posicion de memoria sin utilizar (alineada a 8 bytes)
-    used_mem_limit = (void*) ALIGN_TO_CACHE((memory_info.last_page + 1), TRUE);
-
+    used_mem_limit = memory_info.kernel_used_memory;
+ 
     // Limite actual de la memoria virtual
-    kernel_va_limit = ALIGN_TO_PAGE(used_mem_limit, TRUE);
+    kernel_va_limit = kernel_va_limit; 
 
     int pages_count = PHADDR_TO_PAGE(KPHADDR(kernel_va_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
 
@@ -62,6 +40,11 @@ void vm_init() {
 
     //TODO: Configurar heap
     //heap_configure_type(32, 50);
+}
+
+static void update_gdtr() {
+    gdtr.addr = gdt;
+    __asm__ __volatile__ ( "lgdt %0" : : "m"(gdtr) ); 
 
     // Quitamos el identity map de los primeros 4MB del espacio de direcciones
     // virtual
@@ -111,64 +94,6 @@ void invalidate_tlb_pages(void *vstart, int n) {
         invalidate_tlb(vstart + i*PAGE_SIZE);
 }
 
-/*void page_table_map(uint32_t page_table[], void* virtual, void* phisical, uint32_t flags) {
-	page_table[PTI(virtual)] = PDE_PT_BASE(phisical) | flags;
-}
-
-
-
-void page_dir_map(uint32_t page_dir[], void* virtual, void* phisical, uint32_t flags) {
-	page_dir[PDI(virtual)] = PDE_PT_BASE(phisical) | flags;
-}
-
-*/
-
-
-// TODO: Tomar una decision con respecto al problema de que se precise otra
-// tabla. 
-void map_kernel_pages(uint32_t pd[], void *vstart, int n) {
-    void *vstop = vstart + PAGE_SIZE*n;
-
-    for (void *vaddr = vstart; vaddr < vstop; vaddr += PAGE_SIZE) {
-        uint32_t new_pte = PTE_PAGE_BASE(KPHADDR(vaddr)) | PTE_G | PTE_PWT |
-            PTE_RW | PTE_P;
-
-        uint32_t *pte;
-        // Si no existe una tabla, no podemos seguir, ya que esta funcion se
-        // utiliza cuando aun no tenemos un mecanismo para reservar paginas
-        if (!(pte = get_pte(pd, vaddr)))
-            kpanic("map_kernel_pages: No hay tabla para mapear la direccion");
-
-        if (*pte & PTE_P) {
-            // Si la pagina ya fue mapeada, solo proseguimos si esta mapeada como
-            // queremos. Los bits A y D no nos interesan (son alterados por el
-            // hardware)
-            if ((*pte & ~(PTE_A) & ~(PTE_D)) != new_pte)
-                kpanic("map_kernel_pages: La pagina ya se encuentra" 
-                    " mapeada de manera diferente");
-        }
-        else
-            *pte = new_pte;
-
-        invalidate_tlb(vaddr);
-    }
-}
-
-// Mapea 'n' paginas de tablas para las direcciones virtuales desde 'vaddr'
-// alojandolas desde la direccion refenciada por 'table_addr' 
-void map_kernel_tables(uint32_t pd[], void *vaddr, void *table_addr, int n) {
-    for (int i = 0; i < n; i++, vaddr+= PAGE_4MB_SIZE, table_addr += PAGE_SIZE) {
-        // Llenamos la nueva tabla con ceros
-        memset(table_addr, 0, PAGE_SIZE);
-
-        // Apuntamos el PDE a una tabla nueva
-        pd[PDI(vaddr)] = PDE_PT_BASE(KPHADDR(table_addr)) | PDE_P | PDE_PWT | PDE_RW;
-
-        // Invalidamos la TLB para esta pagina
-        invalidate_tlb(table_addr);
-    }
-}
-
 // Devuelve un puntero a la entrada en la tabla de paginas correspondiente a
 // la direccion virtual ``virt`` usando el directorio ``pd``.
 uint32_t* get_pte(uint32_t pd[], void* vaddr) {
@@ -182,12 +107,32 @@ uint32_t* get_pte(uint32_t pd[], void* vaddr) {
     return &pt[PTI(vaddr)];
 }
 
+void *allocate_pages(int n) {
+    //TODO
+    return NULL;
+}
+
+void *map_kernel_page(page_t* page) {
+    void* page_va = NULL;
+    //TODO
+    return page_va;
+}
+
 // Mapea una pagina fisica nueva para una tabla de paginas de page_dir
-void allocate_pt(uint32_t pd[], void* vaddr) {
-    page_t *p = reserve_page(page_list->next);
-    void *phpage = PAGE_TO_PHADDR(p);
-    pd[PDI(vaddr)] = PDE_PT_BASE(phpage) | PDE_P | PDE_PWT;
-    memset(KVIRTADDR(phpage), 0, PAGE_SIZE);
+void allocate_table(uint32_t pd[], void* vaddr) {
+    page_t *page = reserve_page(page_list->next);
+    void *page_va = map_kernel_page(page);
+
+    pd[PDI(vaddr)] = PDE_PT_BASE(PAGE_TO_PHADDR(page)) | PDE_P | PDE_PWT;
+    memset(page_va, 0, PAGE_SIZE);
+}
+
+// Mapea 'n' paginas fisicas nuevas a apartir de la direccion virtual pasada por parametro 
+void* new_pages(uint32_t pd[], void* vaddr, long n, uint32_t flags) {
+    for (int i = 0; i < n ; i++)
+        new_page(pd, vaddr + PAGE_SIZE*i, flags);
+
+    return vaddr;
 }
 
 // Mapea una pagina fisica nueva para la direccion virtual pasada por parametro 
@@ -196,15 +141,19 @@ void* new_page(uint32_t pd[], void* vaddr, uint32_t flags) {
         kpanic("No hay mas memoria fisica disponible");
 
     vaddr = ALIGN_TO_PAGE(vaddr,FALSE);
+
     // Si la tabla de paginas no estaba presente mapearla
     if (!(pd[PDI(vaddr)] & PDE_P))
-        allocate_pt(pd, vaddr);
+        allocate_table(pd, vaddr);
 
-    page_t *p = reserve_page(page_list->next);
-    void *phpage = PAGE_TO_PHADDR(p);
-
+    page_t *page = reserve_page(page_list->next);
     uint32_t *pte = get_pte(pd, vaddr);
-    *pte = PTE_PAGE_BASE(phpage) | PTE_P | flags;
+
+    if (!(*pte & PDE_P))
+        kpanic("La direccion virtual que se intentaba asignar" 
+            "ya estaba mapeada en el directorio");
+
+    *pte = PTE_PAGE_BASE(PAGE_TO_PHADDR(page)) | PTE_P | flags;
 
     return vaddr; 
 }
@@ -258,8 +207,8 @@ page_t *reserve_page(page_t* page) {
 //En caso de intentar correr el limite hacia atras las funcs no tiene efecto
 long kbrk(void* vaddr) {
     long bytes = ALIGN_TO_PAGE(vaddr, TRUE) - kernel_va_limit;
+
     if (bytes < 0) bytes = 0;
-    
     ksbrk(bytes);
 
     return bytes;
@@ -277,11 +226,4 @@ void* ksbrk(unsigned long bytes) {
 
     return kernel_va_limit;
 }
-
-void* malloc(long int size) {
-    //TODO: Retornar una puntero a memoria de al menos 'size' bytes dentro del 'heap' del kernel
-
-    return NULL;
-}
-
 

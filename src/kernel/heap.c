@@ -18,7 +18,6 @@ void* kmalloc(size_t size) {
         bucket = stacked_malloc(cache->bucket_size);
 
     bucket->type_tag = CACHE_TYPE_TAG(cache);
-
     return BUCKET_TO_DATA(bucket);
 }
 
@@ -58,8 +57,7 @@ static type_cache_t* get_cache(size_t size) {
 static cache_bucket_t* pop_bucket(type_cache_t* cache) {
     cache_bucket_t* result = cache->buckets;
 
-    if (cache->buckets) cache->buckets = result->next;
-
+    if (result) cache->buckets = result->next;
     return result;
 }
 
@@ -81,10 +79,8 @@ void heap_configure_type(size_t size, unsigned preallocate) {
     int i;
     int bucket_size = ALIGN_TO_CACHE(size + 2, TRUE);
      
-    type_cache_t tmp;
-    type_cache_t tcache = { .bucket_size = bucket_size > MIN_BUCKET_SIZE ? bucket_size : MIN_BUCKET_SIZE }; 
-
-    for (i = 0; i < preallocate; i++) add_bucket(&tcache, NULL);
+    type_cache_t tcache = { .bucket_size = bucket_size > MIN_BUCKET_SIZE ? bucket_size : MIN_BUCKET_SIZE };
+    type_cache_t tmp, *new_cache = &tcache;
 
     if (cache_lists[CACHE_COUNT - 1].bucket_size != 0)
         kpanic("No puden crearse mas caches");
@@ -92,14 +88,16 @@ void heap_configure_type(size_t size, unsigned preallocate) {
     //Ubica al cache de forma tal, q los de menor tamaño de bucket van primero
     for (i = 0; i < CACHE_COUNT && cache_lists[i].bucket_size != 0; i++) {
         if (tcache.bucket_size < cache_lists[i].bucket_size)
-            kpanic("Ya se inicializo un cache para ese tamaño");
+           return; // Usar el mismo cache para objetos parecidos 
 
         if (tcache.bucket_size < cache_lists[i].bucket_size) {
             tmp = cache_lists[i];
             cache_lists[i] = tcache;
             tcache = tmp;
         } 
-    }    
+    }
     cache_lists[i] = tcache;
+
+    for (i = 0; i < preallocate; i++) add_bucket(new_cache, NULL);
 }
 

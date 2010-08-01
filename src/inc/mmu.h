@@ -114,6 +114,16 @@
 #define PTE_RW PDE_RW
 #define PTE_P PDE_P
 
+typedef struct { 
+    uint16_t size __attribute__((packed));
+    void *addr __attribute__((packed));
+} gdtr_t; 
+
+extern gdtr_t gdtr;
+
+extern uint64_t gdt[];
+
+
 typedef struct page_t page_t;
 
 struct page_t {
@@ -122,13 +132,13 @@ struct page_t {
     page_t *prev;
 };
 
-#define PAGE_SIZE 0x1000
+#define PAGE_SIZE 0x1000ul
 
-#define PAGE_4MB_SIZE 0x400000
+#define PAGE_4MB_SIZE 0x400000ul
 
 //La mayor cantiad de memoria q muede mapear el kernel
 #define MAX_KERNEL_MEMORY \
-    (((uint32_t)KERNEL_VIRT_ADDR - (uint32_t)page_tables)*1024)
+    (((uint32_t)KERNEL_VIRT_ADDR - (uint32_t)kernel_pts)*1024)
 
 //Ultima direccion virtual q puede utilizar el kernel
 #define LAST_KERNEL_VADDR ((void *)(MAX_KERNEL_MEMORY + KERNEL_OFFSET))

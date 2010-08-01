@@ -28,19 +28,19 @@
 
 
 extern uint32_t kernel_pd[1024];
-extern uint32_t kernel_pt[1024];
 
 extern page_t* page_list;
 extern page_t pages[];
 
-extern uint32_t page_tables[][1024];
+extern uint32_t kernel_pts[][1024];
 
 typedef struct {
     page_t *first_page;
     page_t *last_page;
-    int lower;
-    int upper;
-
+    long lower;
+    long upper;
+    long tables_count;
+    void* kernel_used_memory;
 } memory_info_t;
 
 extern memory_info_t memory_info;
@@ -65,16 +65,13 @@ uint32_t* get_page_table_entry(uint32_t page_dir[], void* virtual);
 void allocate_page_table(uint32_t page_dir[], void* virtual);
 
 void* new_page(uint32_t page_dir[], void* virual_addr, uint32_t flags);
+void* new_pages(uint32_t pd[], void* vaddr, long n, uint32_t flags);
 
 void free_page(uint32_t page_dir[], void* virual_addr);
 
 void return_page(page_t* returned);
 
 page_t *reserve_page(page_t* reserved);
-
-void map_kernel_pages(uint32_t pd[], void *vstart, int n);
-
-void map_kernel_tables(uint32_t pd[], void *vstart, void *tables, int n);
 
 uint32_t* get_pte(uint32_t pd[], void* vaddr);
 
