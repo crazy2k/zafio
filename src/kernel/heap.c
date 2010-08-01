@@ -1,4 +1,5 @@
 #include "../inc/heap.h"
+#include "../inc/debug.h"
 #include "../inc/utils.h"
 
 // Una lista con una estructura por cada tamaño de tipo,
@@ -29,12 +30,10 @@ void kfree(void* data) {
 }
 
 static void grow_cache(type_cache_t* cache) {
-  for (int j = 0; j < cache->grow_rate; j++) {
-    cache_bucket_t *buckets = malloc_page();
+    cache_bucket_t *buckets = malloc_pages(cache->grow_rate);
   
     for (int i = 0; i < CHUNK_TOTAL_BUCKETS(cache); i++)
       add_bucket(cache, &buckets[i]);
-  }
 }
 
 //Retorna el cache mas apropiado para guardar un objeto del tamaño 'size'

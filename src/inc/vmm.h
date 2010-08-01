@@ -42,23 +42,13 @@ typedef struct {
 
 extern memory_info_t memory_info;
 
-extern void* kernel_va_limit;
-extern void* used_mem_limit; 
+//No es mas necesaria bajo el modelo de memoria virtual definitivo
+//extern void* kernel_va_limit;
 
-void reserve_pages(page_t* pages, int n);
+extern void* used_mem_limit;
 
-void link_pages(page_t*, page_t*);
-
-/*void page_table_map(uint32_t[], void* , void* , uint32_t);
-
-void page_table_unmap(uint32_t page_dir[], void* virtual);
-
-void page_dir_map(uint32_t[], void* , void* , uint32_t);
-
-void page_dir_unmap(uint32_t page_dir[], void* vlirtual);*/
-
-uint32_t* get_page_table_entry(uint32_t page_dir[], void* virtual);
-
+void *malloc_page();
+void *malloc_pages(long n);
 void allocate_page_table(uint32_t page_dir[], void* virtual);
 
 void* new_page(uint32_t page_dir[], void* virual_addr, uint32_t flags);
@@ -68,6 +58,7 @@ void free_page(uint32_t page_dir[], void* virual_addr);
 
 void return_page(page_t* returned);
 
+page_t *reserve_pages(page_t* pages, int n);
 page_t *reserve_page(page_t* reserved);
 
 uint32_t* get_pte(uint32_t pd[], void* vaddr);
@@ -81,8 +72,6 @@ void invalidate_tlb(void *vaddr);
 void invalidate_tlb_pages(void *vstart, int n);
 
 void vm_init();
-
-void *malloc_page();
 
 #endif
 
