@@ -10,7 +10,7 @@
 #define SCREEN_END (VIDEO_VIRT_ADDR + SCREEN_ROWS*SCREEN_COLS*SCREEN_CHAR_SIZE)
 
 #define SCREEN_LINE_BEGIN(pos) \
-    (void *)(((((unsigned int)pos - SCREEN_BEGIN)/SCREEN_ROW_SIZE)*\
+    (void *)((((pos - SCREEN_BEGIN)/SCREEN_ROW_SIZE)*\
     SCREEN_ROW_SIZE) + SCREEN_BEGIN)
 
 void *current_pos = (void *)SCREEN_BEGIN;

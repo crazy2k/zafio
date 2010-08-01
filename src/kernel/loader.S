@@ -1,13 +1,15 @@
 global loader
 
 extern kernel_pd
+extern kernel_pts
 extern pages
 extern memory_info
 extern gdtr
 extern verify_multiboot
-extern mbigather
+extern mbi_gather
+extern mmu_init
 extern cmain
-extern _stack_bottom
+extern __stack_bottom
 
 
 %define KERNEL_OFFSET 0xC0000000
@@ -63,13 +65,16 @@ selectors:
     mov ss, dx
 
     ; armamos un stack para el codigo C
-    mov esp, KPHADDR(_stack_bottom)
+    mov esp, KPHADDR(__stack_bottom)
 
     ; morir si no nos cargo un bootloader multiboot
     CCALL verify_multiboot, eax
 
     ; tomar datos del multiboot info y armar estructuras convenientes
-    CCALL mbigather, ebx, KPHADDR(pages), KPHADDR(memory_info)
+    CCALL mbi_gather, ebx, KPHADDR(pages), KPHADDR(memory_info)
+
+    ; configurar directorio y tablas de paginas
+    CCALL mmu_init, KPHADDR(kernel_pd), KPHADDR(kernel_pts), KPHADDR(memory_info)
 
     ; indicamos ubicacion del directorio de paginas
     mov ecx, KPHADDR(kernel_pd)
@@ -81,7 +86,7 @@ selectors:
     mov cr0, ecx
 
     ; actualizamos esp con la direccion virtual del stack y lo limpiamos
-    mov esp, _stack_bottom
+    mov esp, __stack_bottom
     
     call cmain
 

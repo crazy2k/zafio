@@ -3,23 +3,42 @@
 #include "../inc/memlayout.h"
 #include "../inc/types.h"
 #include "../inc/vmm.h"
+#include "../inc/debug.h"
 
 static void kpanic(char *msg) {
     // TODO: Completar
     __asm__ __volatile__("hlt");
 }
 
-void verify_multiboot(unsigned int magic) {
-    if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
-        kpanic("El kernel debe ser cargado por un bootloader Multiboot.");
+static void clear_memory(void *start, void *stop) {
+    for (char *ptr = start; (void*)ptr < stop; ptr++)
+        *ptr = 0;
+}
+
+static void map_kernel_pages(uint32_t pd[], void *vstart, void *vstop) {
+    for (void *vaddr = vstart; vaddr < vstop; vaddr += PAGE_SIZE) {
+        uint32_t new_pte = PTE_PAGE_BASE(KPHADDR(vaddr)) | PTE_G | PTE_PWT |
+            PTE_RW | PTE_P;
+
+        uint32_t *pt = (uint32_t *)PDE_PT_BASE(pd[PDI(vaddr)]);
+        pt[PTI(vaddr)] = new_pte;
     }
 }
 
-void clear_pages(page_t *start, page_t *stop) {
-    for (page_t* page = start; page < stop; page++) {
-        page->next = page->prev = NULL;
-        page->count = 0;
-  }
+static void map_kernel_tables(uint32_t pd[], void *vaddr, void *va_limit, void *table_addr) {
+    for (; vaddr < va_limit; vaddr+= PAGE_4MB_SIZE, table_addr += PAGE_SIZE) {
+
+        // Llenamos la nueva tabla con ceros
+        clear_memory(table_addr, table_addr + PAGE_SIZE);
+
+        // Apuntamos el PDE a una tabla nueva
+        pd[PDI(vaddr)] = PDE_PT_BASE(table_addr) | PDE_P | PDE_PWT | PDE_RW;
+    }
+}
+
+void verify_multiboot(unsigned int magic) {
+    if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
+        kpanic("El kernel debe ser cargado por un bootloader Multiboot.");
 }
 
 // TODO: Terminarla y usarla
@@ -41,7 +60,42 @@ void modules_gather(multiboot_info_t *mbi) {
     }
 }
 
-void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
+void mmu_init(uint32_t kernel_pd[1024], uint32_t page_tables[][1024],
+    memory_info_t *meminfo) {
+
+    // Configurar entries en el directorio de paginas
+    uint32_t (*kernel_first_pt)[1024] = &page_tables[0];
+
+    uint32_t pde = PDE_PT_BASE(*kernel_first_pt) | PDE_PWT | PDE_RW| PDE_P;
+
+    kernel_pd[PDI(KERNEL_PHYS_ADDR)] = pde;
+    kernel_pd[PDI(KERNEL_VIRT_ADDR)] = pde;
+
+    // No podemos mapear mas memoria que MAX_KERNEL_MEMORY, por la cantidad de
+    // tablas que tenemos. Mapeamos en total toda la memoria fisica o
+    // MAX_KERNEL_MEMORY, lo que sea mas chico.
+    void *mem_limit = PAGE_TO_PHADDR(meminfo->last_page + 1);
+    void *vmem_limit = (uint32_t)mem_limit > MAX_KERNEL_MEMORY ?
+        KVIRTADDR(MAX_KERNEL_MEMORY) : KVIRTADDR(mem_limit);
+
+    meminfo->tables_count =
+        (unsigned long)ALIGN_TO_4MB(mem_limit, TRUE)/PAGE_4MB_SIZE;
+
+    // Apuntamos los PDE a tablas que luego se llenaran
+    map_kernel_tables(kernel_pd, KVIRTADDR(0x00000000), vmem_limit,
+        page_tables);
+
+    // Mapeamos las paginas de toda la memoria que utilizara el kernel,
+    // desde el loader hasta cubrir todas las estructuras page_t
+    map_kernel_pages(kernel_pd, KVIRTADDR(LOADER_PHYS_ADDR),
+        meminfo->kernel_used_memory);
+
+    //Mapear video
+    (*kernel_first_pt)[PTI(VIDEO_PHYS_ADDR)] = PTE_PAGE_BASE(VIDEO_PHYS_ADDR) | PTE_G |
+        PTE_PWT | PTE_RW | PTE_P;
+}
+
+void mbi_gather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
     if (!(mbi->flags & (0x1 << 6))) {
         // El mmap no es valido
         kpanic("El kernel precisa informacion sobre la memoria.");
@@ -73,7 +127,7 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
         if (first == NULL) {
             first = start;
             //Dejar en blanco todas las paginas anteriores a first
-            clear_pages(dest, first);
+            clear_memory(dest, first);
         }
 
         // Ubicamos las estructuras
@@ -88,7 +142,7 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
             start->prev = (page_t *)KVIRTADDR(last);
             last->next = (page_t *)KVIRTADDR(start);
             //Dejar en blanco todas las paginas entre last y start
-            clear_pages(last + 1, start);
+            clear_memory(last + 1, start);
         }
 
         last = stop - 1;
@@ -102,6 +156,8 @@ void mbigather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
     meminfo->last_page = (page_t *)KVIRTADDR(last);
     meminfo->lower = mbi->mem_lower;
     meminfo->upper = mbi->mem_upper;
+    meminfo->kernel_used_memory = ALIGN_TO_PAGE(meminfo->last_page + 1, TRUE);
+
 }
 
 
