@@ -121,7 +121,7 @@ void *malloc_pages(long n) {
     do {
         valid = TRUE;
         for (int i = 1; i < n && valid; i++)
-            valid = (page[i].next == NULL && page[i].prev == NULL);
+            valid = (page[i].next != NULL && page[i].prev != NULL);
     } while((page = page->next) != page_list && !valid);
 
     if (!page) kpanic("No hay sufiente memoria disponible");
