@@ -114,14 +114,4 @@ void create_task(program_t prog) {
     // - crear una TSS para la tarea con los datos anteriores
 }
 
-/*
- *
- * - ``kv_start`` es la direccion de inicio del codigo y datos de la tarea en el
- *   espacio de direcciones virtual del kernel
- * - ``size`` es el tamanio del area de codigo y datos de la tarea
- * - ``kv_entry`` es la direccion del punto de entrada de la tarea en el espacio
- *   de direcciones virtual del kernel
- */
-void load_task(void *kv_start, int size, void *kv_entry) {
 
-}
