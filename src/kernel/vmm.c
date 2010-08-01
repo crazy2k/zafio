@@ -33,7 +33,7 @@ static void free_pages_setup() {
     page_list = memory_info.first_page;
 
     // Marcamos el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
-    reserve_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_FST_PAGE)), 3 + memory_info.tables_count);
+    reserve_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_TOP)), 3 + memory_info.tables_count);
 
     // Puntero a la siguiente posicion de memoria sin utilizar (alineada a PAGE_SIZE)
     used_mem_limit = memory_info.kernel_used_memory;
@@ -56,7 +56,8 @@ static void update_gdtr() {
 
     // Quitamos el identity map de los primeros 4MB del espacio de direcciones
     // virtual
-    page_dir_unmap(kernel_pd, (void *)0x00000000);
+    // TODO: Cargar la GDT nuevamente para poder quitar este identity map
+    //page_dir_unmap(kernel_pd, (void *)0x00000000);
 }
 
 void reserve_pages(page_t* page, int n) {

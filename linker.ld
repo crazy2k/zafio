@@ -6,8 +6,7 @@ __kernel_virt_addr = 0xC0200000;
 __kernel_phys_addr = 0x00200000;
 __kernel_addr_offset = __kernel_virt_addr - __kernel_phys_addr;
 
-__ktables_virt_addr = __kernel_virt_addr - 0x1000*253;
-__ktables_phys_addr = __kernel_phys_addr - 0x1000*253;
+__stack_size = 0x1000*2;
 
 /* Definicion del punto de entrada */
 ENTRY (loader)
@@ -24,13 +23,16 @@ SECTIONS {
         obj/loader_helpers.o (.*)
     }
 
-    . = __ktables_virt_addr;
+    . = ALIGN(0x1000) + __kernel_addr_offset;
+
+    /* Tope del stack */
+    __stack_top = .;
 
     /* Principio del stack del loader/kernel al comienzo de 2MB - 8K
      * (crece hacia abajo)
      */
+    . += __stack_size;
     __stack_bottom = .;
-
 
     /* Directorio de paginas inicial */
     .pd : AT(ADDR(.pd) - __kernel_addr_offset) {
