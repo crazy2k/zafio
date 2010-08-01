@@ -2,7 +2,6 @@
 
 #define __MMU_H__
 
-#include <stdint.h>
 #include "types.h"
 
 #define __LOW2_BITS__ 0x00000003

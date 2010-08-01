@@ -2,7 +2,7 @@
 
 #define __SCHED_H__
 
-#include <stdint.h>
+#include "types.h"
 
 typedef struct {
     uint16_t prev;  // Previous Task Link

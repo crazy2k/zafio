@@ -2,7 +2,6 @@
 
 #define __MEMLAYOUT_H__
 
-#include <stdint.h>
 #include "types.h"
 
 extern uint32_t __kernel_addr_offset[];
