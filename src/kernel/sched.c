@@ -11,6 +11,8 @@ extern void *tasktest();
 // Un EFLAGS con defaults razonables
 #define SCHED_COMMON_EFLAGS 0x3002
 
+#define SCHED_TASK_STACK_TOP PAGE_SIZE
+
 /* Crea la TSS para una tarea a ser cargada.
  *
  * - ``pd`` es la direccion fisica del directorio de paginas de la tarea
