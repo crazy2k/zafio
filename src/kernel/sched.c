@@ -24,7 +24,8 @@ void create_tss(void *pd, void *stack_bottom, void *entry_point) {
     tss->prev = NULL;
 
     // Stack para nivel 0
-    tss->esp0 = KERNEL_STACK + PAGE_SIZE;
+    // TODO: El stack tiene que ser uno nuevo por proceso
+    //tss->esp0 = KERNEL_STACK + PAGE_SIZE;
     tss->ss0 = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_DS);
 
     // No nos interesan los stacks de niveles 1 y 2
