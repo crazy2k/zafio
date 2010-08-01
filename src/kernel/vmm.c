@@ -115,21 +115,15 @@ uint32_t* get_pte(uint32_t pd[], void* vaddr) {
     return &pt[PTI(vaddr)];
 }
 
-void *allocate_pages(long n) {
-    //TODO
-    return NULL;
-}
-
-void *map_kernel_page(page_t* page) {
-    void* page_va = NULL;
-    //TODO
-    return page_va;
+// Reserva una pagina fisica de 4K para uso del kernel 
+void *malloc_page() {
+    return PAGE_TO_KVADDR(reserve_page(page_list->next));
 }
 
 // Mapea una pagina fisica nueva para una tabla de paginas de page_dir
 void allocate_page_table(uint32_t pd[], void* vaddr) {
-    page_t *page = reserve_page(page_list->next);
-    void *page_va = map_kernel_page(page);
+    void *page_va = malloc_page();
+    page_t *page = KVADDR_TO_PAGE(page_va);
 
     pd[PDI(vaddr)] = PDE_PT_BASE(PAGE_TO_PHADDR(page)) | PDE_P | PDE_PWT;
     memset(page_va, 0, PAGE_SIZE);

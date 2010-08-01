@@ -27,7 +27,6 @@ static void map_kernel_pages(uint32_t pd[], void *vstart, void *vstop) {
 
 static void map_kernel_tables(uint32_t pd[], void *vaddr, void *va_limit, void *table_addr) {
     for (; vaddr < va_limit; vaddr+= PAGE_4MB_SIZE, table_addr += PAGE_SIZE) {
-
         // Llenamos la nueva tabla con ceros
         clear_memory(table_addr, table_addr + PAGE_SIZE);
 
