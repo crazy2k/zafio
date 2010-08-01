@@ -5,20 +5,23 @@
 #include <stdint.h>
 #include "types.h"
 
+extern uint32_t __kernel_addr_offset[];
+extern uint32_t __kernel_virt_addr[];
+extern uint32_t __loader_phys_addr[];
+extern uint32_t __stack_top[];
+extern uint32_t __stack_size[];
 
 #define KERNEL_OFFSET 0xC0000000ul
 #define KPHADDR(dir) ((void*) (((uint32_t) (dir)) - KERNEL_OFFSET))
 #define KVIRTADDR(dir) ((void*) (((uint32_t) (dir)) + KERNEL_OFFSET))
 
-#define KERNEL_VIRT_ADDR 0xC0200000ul
+#define KERNEL_VIRT_ADDR (void *)__kernel_virt_addr
 #define KERNEL_PHYS_ADDR KPHADDR(KERNEL_VIRT_ADDR)
 
-#define LOADER_PHYS_ADDR 0x00100000ul
+#define LOADER_PHYS_ADDR (void *)__loader_phys_addr
 
-#define KERNEL_STACK_FST_PAGE (KERNEL_VIRT_ADDR - PAGE_SIZE*255)
-#define KERNEL_STACK (KERNEL_VIRT_ADDR - PAGE_SIZE*254)
-#define KERNEL_PAGE_TABLE (KERNEL_VIRT_ADDR - PAGE_SIZE*253)
-#define KERNEL_PAGE_DIRECTORY (KERNEL_VIRT_ADDR - PAGE_SIZE*252)
+#define KERNEL_STACK_TOP (void *)__stack_top
+#define KERNEL_STACK_SIZE (uint32_t)__stack_size
 
 #define VIDEO_PHYS_ADDR 0xB8000ul
 #define VIDEO_VIRT_ADDR KVIRTADDR(VIDEO_PHYS_ADDR)
