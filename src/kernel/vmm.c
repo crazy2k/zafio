@@ -57,7 +57,7 @@ static void update_gdtr() {
     // Quitamos el identity map de los primeros 4MB del espacio de direcciones
     // virtual
     // TODO: Cargar la GDT nuevamente para poder quitar este identity map
-    //page_dir_unmap(kernel_pd, (void *)0x00000000);
+    page_dir_unmap(kernel_pd, (void *)0x00000000);
 }
 
 void reserve_pages(page_t* page, int n) {
