@@ -16,19 +16,25 @@ void* kernel_va_limit;
 void* used_mem_limit;
 
 static void update_gdtr();
+static void free_pages_setup();
+static void heap_setup();
 
 void vm_init() {
     update_gdtr();
 
-    BOCHS_BREAK;
+    free_pages_setup();
 
+    heap_setup();
+}
+
+static void free_pages_setup() {
     //Inicializamos, lista de paginas fisicas libres
     page_list = memory_info.first_page;
 
     // Marcamos el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
     reserve_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_FST_PAGE)), 3 + memory_info.tables_count);
 
-    // Puntero a la siguiente posicion de memoria sin utilizar (alineada a 8 bytes)
+    // Puntero a la siguiente posicion de memoria sin utilizar (alineada a PAGE_SIZE)
     used_mem_limit = memory_info.kernel_used_memory;
  
     // Limite actual de la memoria virtual
@@ -37,9 +43,11 @@ void vm_init() {
     int pages_count = PHADDR_TO_PAGE(KPHADDR(kernel_va_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
 
     reserve_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
+}
 
+static void heap_setup() {
     //TODO: Configurar heap
-    //heap_configure_type(32, 50);
+    //heap_configure_type(size_of(tss), 4);
 }
 
 static void update_gdtr() {
@@ -106,7 +114,7 @@ uint32_t* get_pte(uint32_t pd[], void* vaddr) {
     return &pt[PTI(vaddr)];
 }
 
-void *allocate_pages(int n) {
+void *allocate_pages(long n) {
     //TODO
     return NULL;
 }
@@ -118,7 +126,7 @@ void *map_kernel_page(page_t* page) {
 }
 
 // Mapea una pagina fisica nueva para una tabla de paginas de page_dir
-void allocate_table(uint32_t pd[], void* vaddr) {
+void allocate_page_table(uint32_t pd[], void* vaddr) {
     page_t *page = reserve_page(page_list->next);
     void *page_va = map_kernel_page(page);
 
@@ -143,7 +151,7 @@ void* new_page(uint32_t pd[], void* vaddr, uint32_t flags) {
 
     // Si la tabla de paginas no estaba presente mapearla
     if (!(pd[PDI(vaddr)] & PDE_P))
-        allocate_table(pd, vaddr);
+        allocate_page_table(pd, vaddr);
 
     page_t *page = reserve_page(page_list->next);
     uint32_t *pte = get_pte(pd, vaddr);
@@ -200,29 +208,3 @@ page_t *reserve_page(page_t* page) {
 
     return page;
 }
-
-
-//kbrk y ksbrk, solo corren el limite de la vaddr del kernel hacia adelante, no permite q el kernel ceda paginas
-//En caso de intentar correr el limite hacia atras las funcs no tiene efecto
-long kbrk(void* vaddr) {
-    long bytes = ALIGN_TO_PAGE(vaddr, TRUE) - kernel_va_limit;
-
-    if (bytes < 0) bytes = 0;
-    ksbrk(bytes);
-
-    return bytes;
-}
-
-void* ksbrk(unsigned long bytes) {
-    bytes = (long int) ALIGN_TO_PAGE(bytes, TRUE);
-
-    while (bytes) {
-        new_page(kernel_pd, kernel_va_limit, PTE_G | PTE_PWT | PTE_RW | PTE_P);
-
-        kernel_va_limit += PAGE_SIZE;
-        bytes -= PAGE_SIZE;
-    }
-
-    return kernel_va_limit;
-}
-

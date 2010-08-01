@@ -87,9 +87,7 @@ uint32_t count_pages(void *saddr, void *eaddr);
 
 void vm_init();
 
-long int kbrk(void* vaddr);
-
-void* ksbrk(unsigned long int bytes);
+void* allocate_pages(long);
 
 #endif
 
