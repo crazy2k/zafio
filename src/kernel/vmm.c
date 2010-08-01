@@ -26,7 +26,7 @@ void vm_init() {
     page_list = memory_info.first_page;
 
     // Marcamos el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
-    reserve_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_FST_PAGE)), 3 + memory_info.tables_count);
+    reserve_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_TOP)), 3 + memory_info.tables_count);
 
     // Puntero a la siguiente posicion de memoria sin utilizar (alineada a 8 bytes)
     used_mem_limit = memory_info.kernel_used_memory;
