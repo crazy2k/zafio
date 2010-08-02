@@ -11,7 +11,7 @@ char inb(uint32_t port) {
 }
 
 void lgdt(gdtr_t *gdtr) {
-    __asm__ __volatile__ ("lidt %0" : : "m" (gdtr));
+    __asm__ __volatile__ ("lgdt %0" : : "m" (gdtr));
 }
 
 void lidt(idtr_t idtr) {
