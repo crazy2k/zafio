@@ -24,12 +24,16 @@
 ({  unsigned long __num = (unsigned long)(num); \
     ((__num) & CACHE_LINE_MASK) + (((ceil) && ((__num) & ~CACHE_LINE_MASK)) ? CACHE_LINE : 0); })
 
-extern uint32_t kernel_pd[1024];
+typedef struct page_t page_t;
+
+struct page_t {
+    int count;
+    page_t *next;
+    page_t *prev;
+};
 
 extern page_t* page_list;
 extern page_t pages[];
-
-extern uint32_t kernel_pts[][1024];
 
 typedef struct {
     page_t *first_page;
@@ -58,7 +62,6 @@ void free_page(uint32_t page_dir[], void* virual_addr);
 
 void return_page(page_t* returned);
 
-page_t *reserve_pages(page_t* pages, int n);
 page_t *reserve_page(page_t* reserved);
 
 uint32_t* get_pte(uint32_t pd[], void* vaddr);

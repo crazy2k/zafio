@@ -112,14 +112,8 @@ extern gdtr_t gdtr;
 
 extern uint64_t gdt[];
 
-
-typedef struct page_t page_t;
-
-struct page_t {
-    int count;
-    page_t *next;
-    page_t *prev;
-};
+extern uint32_t kernel_pd[1024];
+extern uint32_t kernel_pts[][1024];
 
 #define PAGE_SIZE 0x1000ul
 
