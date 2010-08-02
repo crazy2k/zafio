@@ -16,6 +16,16 @@
 #define IDT_DESC_OFFSET(offset) ((uint64_t)(__LOW16_BITS__ & (uint32_t)(offset)) | \
     ((uint64_t)(__HIGH16_BITS__ & (uint32_t)(offset)) << 32))
 
+// Codigos de error y datos varios
+
+#define IDT_BAD_INDEX   0x1
+#define IDT_BUSY        0x2
+#define IDT_LAST_INDEX  ((((uint32_t)idtr.size)/sizeof(uint64_t)) - 1)
+
+// Indices de interrupciones y excepciones
+#define IDT_INDEX_GP 13ul
+#define IDT_INDEX_PF 14ul
+
 // Constantes de los PIC y sus ICWs
 
 #define PIC1 0x20
@@ -53,6 +63,8 @@ extern idtr_t idtr;
 void idt_pf_handler();
 
 void idt_init();
+
+int register_handler(uint32_t index, void (*handler)(), uint64_t type);
 
 void remap_PIC(char offset1, char offset2);
 

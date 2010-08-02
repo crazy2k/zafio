@@ -5,15 +5,43 @@
 #include "../inc/x86.h"
 
 void idt_init() {
-    idt[14] = IDT_DESC_SEL(GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_CS)) |
-        IDT_DESC_OFFSET(idt_pf_handler) | IDT_DESC_P | IDT_DESC_DPL(0) |
-        IDT_DESC_D | IDT_DESC_INT;
+
+    register_handler(IDT_INDEX_PF, idt_pf_handler, IDT_DESC_INT);
 
     lidt(idtr);
 
     remap_PIC(PIC1_OFFSET, PIC2_OFFSET);
 
     sti();
+}
+
+/* Registra un handler (``handler``)  para la excepcion/interrupcion cuyo
+ * indice en la IDT es ``index``. ``type`` puede contener alguno de los valores
+ * IDT_DESC_INT, IDT_DESC_TRAP o cero; en ese ultimo caso, se asumira que
+ * ``type`` es IDT_DESC_INT.
+ *
+ * Si el indice pasado es incorrecto, se devuelve IDT_BAD_INDEX. Si la
+ * excepcion/interrupcion ya tiene un handler registrado, devuelve IDT_BUSY. Si
+ * no hay problemas con el registro, se devuelve 0.
+ */
+int register_handler(uint32_t index, void (*handler)(), uint64_t type) {
+    // Chequeamos si el numero de irq es valido
+    if ((index < 0) || (index > IDT_LAST_INDEX))
+        return IDT_BAD_INDEX;
+
+    // Chequeamos si la interrupcion ya esta siendo atendida
+    if (idt[index] & IDT_DESC_P)
+        return IDT_BUSY;
+
+    if (!type)
+        type = IDT_DESC_INT;
+
+    // Escribimos el descriptor en la IDT
+    idt[index] = IDT_DESC_SEL(GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_CS)) |
+        IDT_DESC_OFFSET(handler) | IDT_DESC_P | IDT_DESC_DPL(0) |
+        IDT_DESC_D | type;
+
+    return 0;
 }
 
 void idt_pf_handler() {
@@ -23,8 +51,8 @@ void idt_pf_handler() {
 void remap_PIC(char offset1, char offset2) {
     // Inicializamos PIC1
 
-    // Se envia ICW4, varios 8259A, interrupt vectors de 8 bytes, interrupciones
-    // por flanco e inicializacion (ICW1)
+    // Se envia ICW4, hay varios 8259A, interrupt vectors de 8 bytes,
+    // interrupciones por flanco e inicializacion (ICW1)
     outb(PIC1_COMMAND, ICW1_INIT + ICW1_ICW4);
     outb(PIC1_DATA, offset1);       // Offset de interrupciones a la CPU (ICW2)
     outb(PIC1_DATA, ICW3_MATTACH2); // El slave ingresa por IRQ2 (ICW3)
