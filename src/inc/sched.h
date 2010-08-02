@@ -51,11 +51,43 @@ typedef struct {
     uint16_t io;    // I/O map base address
 } tss_t;
 
-struct task_t {
-    int pid; 
-};
 
-void tasks_test();
+typedef struct {
+    // Registros a ser cargados usando ``popa``
+    uint32_t edi;
+    uint32_t esi;
+    uint32_t ebp;
+    uint32_t :32;   // Espaciado: ``popa`` se saltea estos bits del stack
+    uint32_t ebx;
+    uint32_t edx;
+    uint32_t ecx;
+    uint32_t eax;
+
+    // Registros de segmento
+    uint16_t es;
+    uint16_t :16;
+    uint16_t ds;
+    uint16_t :16;
+
+    // Estado a ser cargado por ``iret``
+    uint32_t eip;
+    uint16_t cs;
+    uint16_t :16;
+    uint32_t eflags;
+
+    // Datos del stack que ``iret`` solo carga si hay cambio de nivel
+    uint32_t esp;
+    uint16_t ss;
+    uint16_t :16;
+} task_state_t;
+
+typedef struct {
+    task_state_t state; // Estructura con el estado de la tarea
+    void *pd;           // Direccion fisica del directorio de paginas
+} task_t;
+
+
+void new_task_test();
 
 extern uint64_t gdt[];
 

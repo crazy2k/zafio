@@ -5,6 +5,8 @@
 #include "../inc/vmm.h"
 #include "../inc/io.h"
 #include "../inc/heap.h"
+#include "../inc/x86.h"
+#include "../inc/debug.h"
 
 extern void *tasktest();
 
@@ -127,4 +129,37 @@ void create_task(program_t prog) {
     // - crear una TSS para la tarea con los datos anteriores
 }
 
+void resume_task(task_t *task) {
+    // Cargamos el PD de la tarea
+    load_cr3((uint32_t)task->pd);
+
+    // Cargamos los registros en la pila
+    load_state(task);
+}
+
+void new_task_test() {
+    BOCHS_BREAK;
+    // Clonamos el PD del kernel
+    uint32_t *new_pd = clone_pd(kernel_pd);
+    task_state_t st;
+    st.eax = NULL;
+    st.ecx = NULL;
+    st.edx = NULL;
+    st.ebx = NULL;
+    st.ebp = NULL;
+    st.esi = NULL;
+    st.edi = NULL;
+    st.es = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_DS);
+    st.ds = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_DS);
+    st.eip = (uint32_t)tasktest;
+    st.cs = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_CS);
+    st.eflags = SCHED_COMMON_EFLAGS;
+    st.esp = 0xC0A00000;
+    st.ds = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_DS);
+
+    task_t *task = kmalloc(sizeof(task_t));
+    task->pd = KPHADDR(new_pd);
+    task->state = st;
+    resume_task(task);
+}
 
