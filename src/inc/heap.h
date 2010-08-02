@@ -34,7 +34,7 @@ typedef struct {
 } type_cache_t;
 
 
-void heap_configure_type(size_t size, long pages);
+void heap_config_type(size_t size, long pages);
 void* kmalloc(size_t size);
 void kfree(void *data);
 
