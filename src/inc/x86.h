@@ -10,6 +10,7 @@ void outb(uint32_t port, char value);
 char inb(uint32_t port);
 
 void lidt(idtr_t idtr);
+void lgdt(gdtr_t *);
 
 void sti();
 

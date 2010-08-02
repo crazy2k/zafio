@@ -47,11 +47,6 @@ typedef struct {
 
 extern memory_info_t memory_info;
 
-//No es mas necesaria bajo el modelo de memoria virtual definitivo
-//extern void* kernel_va_limit;
-
-extern void* heap_start;
-
 void *malloc_page();
 void *malloc_pages(long n);
 void allocate_page_table(uint32_t page_dir[], void* virtual);
@@ -64,9 +59,6 @@ page_t *reserve_page(page_t* reserved);
 void return_page(page_t* returned);
 
 uint32_t* get_pte(uint32_t pd[], void* vaddr);
-
-void page_table_unmap(uint32_t pt[], void* vaddr);
-void page_dir_unmap(uint32_t pd[], void* vaddr);
 
 void invalidate_tlb(void *vaddr);
 void invalidate_tlb_pages(void *vstart, int n);

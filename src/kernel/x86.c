@@ -1,4 +1,3 @@
-
 #include "../inc/x86.h"
 
 void outb(uint32_t port, char value) {
@@ -10,6 +9,11 @@ char inb(uint32_t port) {
     __asm__ __volatile__("inb %w1, %b0" : "=a" (value) : "d" (port));
     return value;
 }
+
+void lgdt(gdtr_t *gdtr) {
+    __asm__ __volatile__ ("lidt %0" : : "m" (gdtr));
+}
+
 void lidt(idtr_t idtr) {
     __asm__ __volatile__ ("lidt %0" : : "m" (idtr));
 }

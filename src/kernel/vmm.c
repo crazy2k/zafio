@@ -1,4 +1,5 @@
 #include "../inc/vmm.h"
+#include "../inc/x86.h"
 #include "../inc/debug.h"
 #include "../inc/mmu.h"
 #include "../inc/utils.h"
@@ -13,7 +14,9 @@ page_t pages[] __attribute__ ((section (".pages"))) = { {} };
 page_t* page_list = NULL;
 
 memory_info_t memory_info;
-void* kernel_va_limit;
+
+void* heap_start;
+void* heap_end;
 void* used_mem_limit;
 
 static void update_gdtr();
@@ -37,28 +40,34 @@ static void free_pages_setup() {
     page_list = memory_info.first_page;
 
     // Marcamos el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
-    reserve_kernel_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_TOP)), 3 + memory_info.tables_count);
+    reserve_kernel_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_TOP)), 
+        1 + KERNEL_STACK_SIZE/PAGE_SIZE + memory_info.tables_count);
 
     int pages_count = PHADDR_TO_PAGE(KPHADDR(used_mem_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
-
     reserve_kernel_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
-
-    // Puntero a la siguiente posicion de memoria sin utilizar (alineada a PAGE_SIZE)
-    heap_start = memory_info.kernel_used_memory;
 }
 
 static void heap_setup() {
+    heap_start = memory_info.kernel_used_memory;
+    used_mem_limit = heap_start;
+    heap_end = KVIRTADDR(memory_info.tables_count * PAGE_4MB_SIZE);
+
     heap_config_type(sizeof(tss_t), 4);
+
+    // Correr el espacio disponible del heap asumiendo q estas estructuras 
+    // ya meapeadas no van a liberarse despues
+    heap_start = used_mem_limit;
 }
 
 static void update_gdtr() {
     gdtr.addr = gdt;
-    __asm__ __volatile__ ( "lgdt %0" : : "m"(gdtr) ); 
+    lgdt(&gdtr);
 
     // Quitamos el identity map de los primeros 4MB del espacio de direcciones
     // virtual
-    // TODO: Cargar la GDT nuevamente para poder quitar este identity map
-    page_dir_unmap(kernel_pd, (void *)0x00000000);
+    void *vaddr = (void *) 0x00000000;
+    kernel_pd[PTI(vaddr)] = 0;
+    invalidate_tlb(vaddr);
 }
 
 static page_t *reserve_kernel_pages(page_t* page, int n) {
@@ -66,17 +75,6 @@ static page_t *reserve_kernel_pages(page_t* page, int n) {
         reserve_page(&page[i]);
 
     return page;
-}
-
-void page_table_unmap(uint32_t pt[], void* vaddr) {
-	  pt[PTI(vaddr)] = 0x0;
-    invalidate_tlb(vaddr);
-}
-
-void page_dir_unmap(uint32_t pd[], void* vaddr) {
-    pd[PDI(vaddr)] = 0x0;
-    // Invalidar la TLB para los 4MB
-    invalidate_tlb_pages(ALIGN_TO_4MB(vaddr, FALSE), 1024);
 }
 
 void invalidate_tlb(void *vaddr) {
