@@ -51,8 +51,8 @@ void idt_pf_handler() {
 void remap_PIC(char offset1, char offset2) {
     // Inicializamos PIC1
 
-    // Se envia ICW4, varios 8259A, interrupt vectors de 8 bytes, interrupciones
-    // por flanco e inicializacion (ICW1)
+    // Se envia ICW4, hay varios 8259A, interrupt vectors de 8 bytes,
+    // interrupciones por flanco e inicializacion (ICW1)
     outb(PIC1_COMMAND, ICW1_INIT + ICW1_ICW4);
     outb(PIC1_DATA, offset1);       // Offset de interrupciones a la CPU (ICW2)
     outb(PIC1_DATA, ICW3_MATTACH2); // El slave ingresa por IRQ2 (ICW3)
