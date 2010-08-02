@@ -87,6 +87,8 @@ typedef struct {
 } task_t;
 
 
+void *get_phys_addr(void *vaddr);
+
 void sched_start();
 
 extern uint64_t gdt[];
