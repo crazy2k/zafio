@@ -65,27 +65,29 @@ void resume_task(task_t *task) {
 
 void new_task_test() {
     BOCHS_BREAK;
+
     // Clonamos el PD del kernel
     uint32_t *new_pd = clone_pd(kernel_pd);
-    task_state_t st;
-    st.eax = NULL;
-    st.ecx = NULL;
-    st.edx = NULL;
-    st.ebx = NULL;
-    st.ebp = NULL;
-    st.esi = NULL;
-    st.edi = NULL;
-    st.es = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_DS);
-    st.ds = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_DS);
-    st.eip = (uint32_t)tasktest;
-    st.cs = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_CS);
-    st.eflags = SCHED_COMMON_EFLAGS;
-    st.esp = 0xC0A00000;
-    st.ds = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_DS);
+
+    task_state_t *st = kmalloc(sizeof(task_state_t));
+    st->eax = NULL;
+    st->ecx = NULL;
+    st->edx = NULL;
+    st->ebx = NULL;
+    st->ebp = NULL;
+    st->esi = NULL;
+    st->edi = NULL;
+    st->es = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_DS);
+    st->ds = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_DS);
+    st->eip = (uint32_t)tasktest;
+    st->cs = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_CS);
+    st->eflags = SCHED_COMMON_EFLAGS;
+    st->esp = 0xC0A00000;
+    st->ds = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_DS);
 
     task_t *task = kmalloc(sizeof(task_t));
     task->pd = KPHADDR(new_pd);
-    task->state = st;
+    task->state = *st;
     resume_task(task);
 }
 
