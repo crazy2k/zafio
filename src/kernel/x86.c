@@ -10,6 +10,7 @@ char inb(uint32_t port) {
     __asm__ __volatile__("inb %w1, %b0" : "=a" (value) : "d" (port));
     return value;
 }
+
 void lidt(idtr_t idtr) {
     __asm__ __volatile__ ("lidt %0" : : "m" (idtr));
 }
