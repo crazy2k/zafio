@@ -15,6 +15,11 @@ void lidt(idtr_t idtr) {
     __asm__ __volatile__ ("lidt %0" : : "m" (idtr));
 }
 
+void ltr(uint16_t segsel) {
+    __asm__ __volatile__ ("ltr %0" : : "r" (segsel));
+}
+
+
 void sti() {
     __asm__ __volatile__ ("sti");
 }

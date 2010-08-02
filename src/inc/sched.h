@@ -87,7 +87,7 @@ typedef struct {
 } task_t;
 
 
-void new_task_test();
+void sched_start();
 
 extern uint64_t gdt[];
 
