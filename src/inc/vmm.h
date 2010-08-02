@@ -50,7 +50,7 @@ extern memory_info_t memory_info;
 //No es mas necesaria bajo el modelo de memoria virtual definitivo
 //extern void* kernel_va_limit;
 
-extern void* used_mem_limit;
+extern void* heap_start;
 
 void *malloc_page();
 void *malloc_pages(long n);

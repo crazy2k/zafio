@@ -66,7 +66,7 @@ static void add_bucket(type_cache_t* cache, cache_bucket_t* bucket) {
 // Crea un tipo de cache nuevo, en la lista cache list, de tamaño size,
 // al crearlo inicializa al cache con preallocate entries vacias 
 // Esta funcion debe ser llamada antes de la primer llamada a kmalloc, y NUNCA despues, durante la ejecucion del SO
-void heap_configure_type(size_t size, long cache_pages) {
+void heap_config_type(size_t size, long cache_pages) {
     int i;
     int bucket_size = ALIGN_TO_CACHE(size + sizeof(long), TRUE);
     

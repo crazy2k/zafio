@@ -80,7 +80,9 @@ void mmu_init(uint32_t kernel_pd[1024], uint32_t page_tables[][1024],
     meminfo->tables_count =
         (unsigned long)ALIGN_TO_4MB(mem_limit, TRUE)/PAGE_4MB_SIZE;
 
-    // Apuntamos los PDE a tablas que luego se llenaran
+    // Asignamos PDE correspondientes a las tablas q luego seran ultilzadas
+    // por el kernel (No podran mapearse luego otras direcciones virtuales 
+    // fuera de este rango)
     map_kernel_tables(kernel_pd, KVIRTADDR(0x00000000), vmem_limit,
         page_tables);
 
@@ -146,6 +148,8 @@ void mbi_gather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
     first->prev = (page_t *)KVIRTADDR(last);
     last->next = (page_t *)KVIRTADDR(first);
 
+    // Todas las direcciones pasadas por parametro en meminfo, 
+    // deben ser virtuales
     meminfo->first_page = (page_t *)KVIRTADDR(first);
     meminfo->last_page = (page_t *)KVIRTADDR(last);
     meminfo->lower = mbi->mem_lower;

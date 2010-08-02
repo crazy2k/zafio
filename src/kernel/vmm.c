@@ -21,6 +21,9 @@ static void free_pages_setup();
 static void heap_setup();
 static page_t *reserve_kernel_pages(page_t* page, int n);
 
+static void link_pages(page_t *fst, page_t *sec);
+static void add_page_to_list(page_t* head, page_t* new);
+
 void vm_init() {
     update_gdtr();
 
@@ -36,16 +39,16 @@ static void free_pages_setup() {
     // Marcamos el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
     reserve_kernel_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_TOP)), 3 + memory_info.tables_count);
 
-    // Puntero a la siguiente posicion de memoria sin utilizar (alineada a PAGE_SIZE)
-    used_mem_limit = memory_info.kernel_used_memory;
-
     int pages_count = PHADDR_TO_PAGE(KPHADDR(used_mem_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
 
     reserve_kernel_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
+
+    // Puntero a la siguiente posicion de memoria sin utilizar (alineada a PAGE_SIZE)
+    heap_start = memory_info.kernel_used_memory;
 }
 
 static void heap_setup() {
-    heap_configure_type(sizeof(tss_t), 4);
+    heap_config_type(sizeof(tss_t), 4);
 }
 
 static void update_gdtr() {
@@ -63,18 +66,6 @@ static page_t *reserve_kernel_pages(page_t* page, int n) {
         reserve_page(&page[i]);
 
     return page;
-}
-
-// Conecta entre si la paginas fst con sec
-void link_pages(page_t *fst, page_t *sec) {
-    fst->next = sec;
-    sec->prev = fst;
-}
-
-// Pone en la lista a la pagina obj despues de la pagina referenciada por list
-void add_page_to_list(page_t* head, page_t* new) {
-    link_pages(new, head->next);
-    link_pages(head, new);
 }
 
 void page_table_unmap(uint32_t pt[], void* vaddr) {
@@ -137,6 +128,18 @@ void allocate_page_table(uint32_t pd[], void* vaddr) {
 
     pd[PDI(vaddr)] = PDE_PT_BASE(PAGE_TO_PHADDR(page)) | PDE_P | PDE_PWT;
     memset(page_va, 0, PAGE_SIZE);
+}
+
+// Conecta entre si la paginas fst con sec
+static void link_pages(page_t *fst, page_t *sec) {
+    fst->next = sec;
+    sec->prev = fst;
+}
+
+// Pone en la lista a la pagina obj despues de la pagina referenciada por list
+static void add_page_to_list(page_t* head, page_t* new) {
+    link_pages(new, head->next);
+    link_pages(head, new);
 }
 
 // Mapea 'n' paginas fisicas nuevas a apartir de la direccion virtual pasada por parametro 
