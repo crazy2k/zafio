@@ -112,25 +112,12 @@ extern gdtr_t gdtr;
 
 extern uint64_t gdt[];
 
-
-typedef struct page_t page_t;
-
-struct page_t {
-    int count;
-    page_t *next;
-    page_t *prev;
-};
+extern uint32_t kernel_pd[1024];
+extern uint32_t kernel_pts[][1024];
 
 #define PAGE_SIZE 0x1000ul
 
 #define PAGE_4MB_SIZE 0x400000ul
-
-//La mayor cantiad de memoria q muede mapear el kernel
-#define MAX_KERNEL_MEMORY \
-    (((uint32_t)KERNEL_VIRT_ADDR - (uint32_t)kernel_pts)*1024)
-
-//Ultima direccion virtual q puede utilizar el kernel
-#define LAST_KERNEL_VADDR ((void *)(MAX_KERNEL_MEMORY + KERNEL_OFFSET))
 
 #define ALIGN_TO_4MB(addr, ceil) ALIGN_TO_N(addr, 0xFFC00000, 0x400000, ceil)
 
@@ -142,5 +129,12 @@ struct page_t {
     if ((ceil) && (__addr & ~__mask)) __addr += __n; \
     (void*) (__addr & __mask); })
 
-#endif
 
+#define CACHE_LINE 8
+#define CACHE_LINE_MASK 0xFFFFFFF8
+
+#define ALIGN_TO_CACHE(num, ceil) \
+({  unsigned long __num = (unsigned long)(num); \
+    ((__num) & CACHE_LINE_MASK) + (((ceil) && ((__num) & ~CACHE_LINE_MASK)) ? CACHE_LINE : 0); })
+
+#endif

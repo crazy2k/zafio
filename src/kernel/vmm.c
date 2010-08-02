@@ -19,6 +19,7 @@ void* used_mem_limit;
 static void update_gdtr();
 static void free_pages_setup();
 static void heap_setup();
+static page_t *reserve_kernel_pages(page_t* page, int n);
 
 void vm_init() {
     update_gdtr();
@@ -33,14 +34,14 @@ static void free_pages_setup() {
     page_list = memory_info.first_page;
 
     // Marcamos el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
-    reserve_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_TOP)), 3 + memory_info.tables_count);
+    reserve_kernel_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_TOP)), 3 + memory_info.tables_count);
 
     // Puntero a la siguiente posicion de memoria sin utilizar (alineada a PAGE_SIZE)
     used_mem_limit = memory_info.kernel_used_memory;
 
     int pages_count = PHADDR_TO_PAGE(KPHADDR(used_mem_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
 
-    reserve_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
+    reserve_kernel_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
 }
 
 static void heap_setup() {
@@ -57,7 +58,7 @@ static void update_gdtr() {
     page_dir_unmap(kernel_pd, (void *)0x00000000);
 }
 
-page_t *reserve_pages(page_t* page, int n) {
+static page_t *reserve_kernel_pages(page_t* page, int n) {
     for (int i = 0; i < n; i++)
         reserve_page(&page[i]);
 
@@ -126,7 +127,7 @@ void *malloc_pages(long n) {
 
     if (!page) kpanic("No hay sufiente memoria disponible");
 
-    return PAGE_TO_KVADDR(reserve_pages(page, n));
+    return PAGE_TO_KVADDR(reserve_kernel_pages(page, n));
 }
 
 // Mapea una pagina fisica nueva para una tabla de paginas de page_dir
