@@ -93,10 +93,10 @@ void cmain() {
     vm_init();
     idt_init();
 
+    //sched_start();
+
     welcome_msg();
     debug_prints();
-
-    //tasks_test();
 
     print_pages();
 
