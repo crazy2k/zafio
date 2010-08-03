@@ -68,8 +68,17 @@ static page_t *reserve_kernel_pages(page_t* page, int n) {
     return page;
 }
 
+void page_table_map(uint32_t pt[], void* vaddr, void* phaddr, uint32_t flags) {
+    pt[PTI(vaddr)] = PDE_PT_BASE(phaddr) | flags;
+}
+
+void page_dir_map(uint32_t pd[], void* vaddr, void* phaddr, uint32_t flags) {
+    pd[PDI(vaddr)] = PDE_PT_BASE(phaddr) | flags;
+}
+
+
 void page_table_unmap(uint32_t pt[], void* vaddr) {
-	  pt[PTI(vaddr)] = 0x0;
+    pt[PTI(vaddr)] = 0x0;
     invalidate_tlb(vaddr);
 }
 

@@ -65,6 +65,8 @@ void return_page(page_t* returned);
 
 uint32_t* get_pte(uint32_t pd[], void* vaddr);
 
+
+void page_table_map(uint32_t pt[], void* vaddr, void* phaddr, uint32_t flags);
 void page_table_unmap(uint32_t pt[], void* vaddr);
 void page_dir_unmap(uint32_t pd[], void* vaddr);
 
