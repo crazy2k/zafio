@@ -93,7 +93,7 @@ void cmain() {
     vm_init();
     idt_init();
 
-    sched_start();
+    //sched_start();
 
     welcome_msg();
     debug_prints();

@@ -14,9 +14,9 @@ void idt_init() {
     lidt(idtr);
 
     remap_PIC(PIC1_OFFSET, PIC2_OFFSET);
-    outb(PIC1_DATA, 0xFC);
+    //outb(PIC1_DATA, 0xFC);
 
-    sti();
+    //sti();
 }
 
 /* Registra un handler (``handler``)  para la excepcion/interrupcion cuyo
