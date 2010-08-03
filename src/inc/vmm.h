@@ -54,7 +54,7 @@ extern void* heap_start;
 
 void *malloc_page();
 void *malloc_pages(long n);
-void allocate_page_table(uint32_t page_dir[], void* virtual);
+void *allocate_page_table(uint32_t page_dir[], void* virtual);
 
 void* new_page(uint32_t pd[], void* vaddr, uint32_t flags);
 void* new_pages(uint32_t pd[], void* vaddr, long n, uint32_t flags);
