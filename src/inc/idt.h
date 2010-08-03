@@ -51,6 +51,8 @@
 #define ICW4_BUFFERED   0x08    // Buffered mode (o nonbuffered)
 #define ICW4_SFNM       0x10    // Fully nested (o not fully nested)
 
+#define OCW2            0x20    // EOI (end-of-interrupt)
+
 #define PIC1_OFFSET 0x20
 #define PIC2_OFFSET 0x28
 
