@@ -30,13 +30,3 @@ void sti() {
 void load_cr3(uint32_t pd) {
     __asm__ __volatile__("mov %0, %%cr3" : : "r" (pd));
 }
-
-void load_state(task_t *task) {
-    __asm__ __volatile__("cli\n"
-        "movl %0,%%esp\n"
-        "\tpopal\n"
-        "\tpopl %%es\n"
-        "\tpopl %%ds\n"
-        "\tiret"
-        : : "g" (task) : "memory");
-}
