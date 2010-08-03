@@ -15,6 +15,7 @@ page_t* page_list = NULL;
 memory_info_t memory_info;
 void* kernel_va_limit;
 void* used_mem_limit;
+void* heap_start;
 
 static void update_gdtr();
 static void free_pages_setup();
