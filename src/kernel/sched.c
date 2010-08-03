@@ -37,23 +37,6 @@ void setup_tss(void *pd) {
     // Cargamos el Task Register con un selector para la TSS
     uint16_t segsel = GDT_SEGSEL(0x0, GDT_INDEX_TSS);
     ltr(segsel);
-
-}
-
-void create_task(void *prog) {
-
-    // Clonamos el PD del kernel
-    //uint32_t *new_pd = clone_pd(kernel_pd);
-
-    // Mapeamos una pagina en este nuevo PD para el stack
-    //void *stack_uvaddr = new_page(new_pd, SCHED_TASK_STACK_TOP,
-    //    PTE_RW | PDE_US | PDE_PWT);
-
-    // Aca habria que:
-    // - clonar el pd del kernel o uno de molde,
-    // - ubicar en ese pd paginas para el stack y para el codigo y datos de la
-    //   tarea,
-    // - crear una TSS para la tarea con los datos anteriores
 }
 
 void resume_task(task_t *task) {
