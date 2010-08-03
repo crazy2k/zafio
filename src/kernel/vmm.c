@@ -90,10 +90,9 @@ void invalidate_tlb_pages(void *vstart, int n) {
         invalidate_tlb(vstart + i*PAGE_SIZE);
 }
 
-//void *get_phaddr(uint32_t pd[], void *vaddr) {
-void *get_phaddr(void *vaddr) {
-//    return (void*) (PTE_PAGE_BASE(*get_pte(pd, vaddr)) | ((uint32_t) vaddr & __LOW12_BITS__));
-    return KPHADDR(vaddr);
+//Traduce una direccion virtual del kernel a su direccion fisica
+void *get_phaddr(void *kvaddr) {
+    return (void*) (PTE_PAGE_BASE(*get_pte(kernel_pd, kvaddr)) | ((uint32_t) kvaddr & __LOW12_BITS__));
 }
 
 // Devuelve un puntero a la entrada en la tabla de paginas correspondiente a
@@ -150,7 +149,7 @@ void *kmalloc_pages(long n) {
 // Mapea una pagina fisica nueva para una tabla de paginas de page_dir
 void *allocate_page_table(uint32_t pd[], void* vaddr) {
     void *page_va = kmalloc_page();
-    page_t *page = KVADDR_TO_PAGE(page_va);
+    page_t *page = PHADDR_TO_PAGE(get_phaddr(page_va));
 
     pd[PDI(vaddr)] = PDE_PT_BASE(PAGE_TO_PHADDR(page)) | PDE_P | PDE_PWT |
         PDE_US | PDE_RW;

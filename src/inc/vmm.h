@@ -22,9 +22,6 @@
  */
 #define PHADDR_TO_PAGE(addr) ((page_t *) (pages + ((uint32_t) (addr))/PAGE_SIZE))
 
-#define PAGE_TO_KVADDR(page) (KVIRTADDR(PAGE_TO_PHADDR(page)))
-#define KVADDR_TO_PAGE(page) (PHADDR_TO_PAGE(KPHADDR(page)))
-
 typedef struct page_t page_t;
 
 struct page_t {
@@ -59,7 +56,7 @@ void free_page(uint32_t pd[], void* vaddr);
 page_t *reserve_page(page_t* reserved);
 void return_page(page_t* returned);
 
-void *get_phaddr(void *vaddr);
+void *get_phaddr(void *kvaddr);
 uint32_t* get_pte(uint32_t pd[], void* vaddr);
 
 void page_table_map(uint32_t pt[], void* vaddr, void* phaddr, uint32_t flags);
