@@ -17,8 +17,7 @@ memory_info_t memory_info;
 
 void* heap_start;
 void* heap_end;
-void* used_mem_limit;
-void* heap_start;
+void* kernel_mem_limit;
 
 static void update_gdtr();
 static void free_pages_setup();
@@ -44,20 +43,20 @@ static void free_pages_setup() {
     reserve_kernel_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_TOP)), 
         1 + KERNEL_STACK_SIZE/PAGE_SIZE + memory_info.tables_count);
 
-    int pages_count = PHADDR_TO_PAGE(KPHADDR(used_mem_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
+    int pages_count = PHADDR_TO_PAGE(KPHADDR(kernel_mem_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
     reserve_kernel_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
 }
 
 static void heap_setup() {
     heap_start = memory_info.kernel_used_memory;
-    used_mem_limit = heap_start;
+    kernel_mem_limit = heap_start;
     heap_end = KVIRTADDR(memory_info.tables_count * PAGE_4MB_SIZE);
 
     heap_config_type(sizeof(tss_t), 4);
 
-    // Correr el espacio disponible del heap asumiendo q estas estructuras 
+    // Correr el espacio disponible del heap asumiendo q las estructuras 
     // ya meapeadas no van a liberarse despues
-    heap_start = used_mem_limit;
+    heap_start = kernel_mem_limit;
 }
 
 static void update_gdtr() {
@@ -67,7 +66,7 @@ static void update_gdtr() {
     // Quitamos el identity map de los primeros 4MB del espacio de direcciones
     // virtual
     void *vaddr = (void *) 0x00000000;
-    kernel_pd[PTI(vaddr)] = 0;
+    kernel_pd[PDI(vaddr)] = 0;
     invalidate_tlb(vaddr);
 }
 
@@ -91,6 +90,12 @@ void invalidate_tlb_pages(void *vstart, int n) {
         invalidate_tlb(vstart + i*PAGE_SIZE);
 }
 
+//void *get_phaddr(uint32_t pd[], void *vaddr) {
+void *get_phaddr(void *vaddr) {
+//    return (void*) (PTE_PAGE_BASE(*get_pte(pd, vaddr)) | ((uint32_t) vaddr & __LOW12_BITS__));
+    return KPHADDR(vaddr);
+}
+
 // Devuelve un puntero a la entrada en la tabla de paginas correspondiente a
 // la direccion virtual ``virt`` usando el directorio ``pd``.
 uint32_t* get_pte(uint32_t pd[], void* vaddr) {
@@ -105,28 +110,41 @@ uint32_t* get_pte(uint32_t pd[], void* vaddr) {
 }
 
 // Reserva una pagina fisica de 4K para uso del kernel 
-void *malloc_page() {
-    return PAGE_TO_KVADDR(reserve_page(page_list->next));
+void *kmalloc_page() {
+    return kmalloc_pages(1);
+//    return PAGE_TO_KVADDR(reserve_page(page_list->next));
 }
 
-void *malloc_pages(long n) {
-    page_t* page = page_list;
-    bool valid;
+void kfree_page(void* vaddr) {
+    free_page(kernel_pd, vaddr);
+}
 
-    do {
-        valid = TRUE;
-        for (int i = 1; i < n && valid; i++)
-            valid = (page[i].next != NULL && page[i].prev != NULL);
-    } while((page = page->next) != page_list && !valid);
+void *kmalloc_pages(long n) {
+    void* vaddr;
+    bool found;
 
-    if (!page) kpanic("No hay sufiente memoria disponible");
+    for (vaddr = kernel_mem_limit; vaddr < heap_end && !found; vaddr += PAGE_SIZE) {
+        found = TRUE;
+        for (int i = 1; i < n && found; i++)
+            found = !(*get_pte(kernel_pd,vaddr) & PTE_P);
+    } 
 
-    return PAGE_TO_KVADDR(reserve_kernel_pages(page, n));
+    for (vaddr = heap_start; vaddr < kernel_mem_limit && !found; vaddr += PAGE_SIZE) {
+        found = TRUE;
+        for (int i = 1; i < n && found; i++)
+            found = !(*get_pte(kernel_pd,vaddr) & PTE_P);
+    } 
+
+    if (!found) kpanic("No hay suficiente espacio virtual disponible contiguo");
+
+    kernel_mem_limit = vaddr + PAGE_SIZE * n;
+
+    return new_pages(kernel_pd, vaddr, n, PTE_G | PTE_PWT | PTE_RW | PTE_P);
 }
 
 // Mapea una pagina fisica nueva para una tabla de paginas de page_dir
 void *allocate_page_table(uint32_t pd[], void* vaddr) {
-    void *page_va = malloc_page();
+    void *page_va = kmalloc_page();
     page_t *page = KVADDR_TO_PAGE(page_va);
 
     pd[PDI(vaddr)] = PDE_PT_BASE(PAGE_TO_PHADDR(page)) | PDE_P | PDE_PWT |
@@ -224,7 +242,7 @@ page_t *reserve_page(page_t* page) {
 }
 
 void *clone_pd(uint32_t pd[]) {
-    uint32_t *new_pd = malloc_page();
+    uint32_t *new_pd = kmalloc_page();
     memcpy(new_pd, pd, PAGE_SIZE);
     return new_pd;
 }

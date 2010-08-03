@@ -71,9 +71,12 @@ void mmu_init(uint32_t kernel_pd[1024], uint32_t page_tables[][1024],
     kernel_pd[PDI(KERNEL_VIRT_ADDR)] = pde;
 
     // No podemos mapear mas memoria que MAX_KERNEL_MEMORY, por la cantidad de
-    // tablas que tenemos. Mapeamos en total toda la memoria fisica o
-    // MAX_KERNEL_MEMORY, lo que sea mas chico.
-    void *mem_limit = PAGE_TO_PHADDR(meminfo->last_page + 1);
+    // tablas que disponemos. Configuramos tablas para poder mapear tanta memoria 
+    // virtual como 4 veces la memoria fisicia para amortizar la fragmentacion
+    // del espacio de direcciones virtual del kernel.
+    // Si este numero supera a MAX_KERNEL_MEMORY, entonces no se mapean mas tablas
+    // de las necesarias para soportar la cantidad indicada por MAX_KERNEL_MEMORY
+    void *mem_limit = (void*) ((uint32_t)PAGE_TO_PHADDR(meminfo->last_page + 1) * 4);
     void *vmem_limit = (uint32_t)mem_limit > MAX_KERNEL_MEMORY ?
         KVIRTADDR(MAX_KERNEL_MEMORY) : KVIRTADDR(mem_limit);
 
@@ -88,7 +91,13 @@ void mmu_init(uint32_t kernel_pd[1024], uint32_t page_tables[][1024],
 
     // Mapeamos las paginas de toda la memoria que utilizara el kernel,
     // desde el loader hasta cubrir todas las estructuras page_t
-    map_kernel_pages(kernel_pd, KVIRTADDR(0x00000000), vmem_limit);
+    map_kernel_pages(kernel_pd, LOADER_VIRT_ADDR, LOADER_VIRT_ADDR +
+        KERNEL_STACK_SIZE + (1 + 1 + meminfo->tables_count )*PAGE_SIZE);
+
+    map_kernel_pages(kernel_pd, KERNEL_VIRT_ADDR, meminfo->kernel_used_memory);
+
+    //Mapear video
+    map_kernel_pages(kernel_pd, VIDEO_VIRT_ADDR, VIDEO_VIRT_ADDR + PAGE_SIZE);
 }
 
 void mbi_gather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {

@@ -47,8 +47,9 @@ typedef struct {
 
 extern memory_info_t memory_info;
 
-void *malloc_page();
-void *malloc_pages(long n);
+void *kmalloc_page();
+void *kmalloc_pages(long n);
+void kfree_page(void* vaddr);
 void *allocate_page_table(uint32_t page_dir[], void* virtual);
 
 void* new_page(uint32_t pd[], void* vaddr, uint32_t flags);
@@ -58,6 +59,7 @@ void free_page(uint32_t pd[], void* vaddr);
 page_t *reserve_page(page_t* reserved);
 void return_page(page_t* returned);
 
+void *get_phaddr(void *vaddr);
 uint32_t* get_pte(uint32_t pd[], void* vaddr);
 
 void page_table_map(uint32_t pt[], void* vaddr, void* phaddr, uint32_t flags);

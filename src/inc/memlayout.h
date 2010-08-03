@@ -18,6 +18,7 @@ extern uint32_t __stack_size[];
 #define KERNEL_PHYS_ADDR KPHADDR(KERNEL_VIRT_ADDR)
 
 #define LOADER_PHYS_ADDR (void *)__loader_phys_addr
+#define LOADER_VIRT_ADDR (KVIRTADDR(LOADER_PHYS_ADDR))
 
 #define KERNEL_STACK_TOP (void *)__stack_top
 #define KERNEL_STACK_SIZE (uint32_t)__stack_size

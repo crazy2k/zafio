@@ -86,8 +86,6 @@ typedef struct {
     void *pd;           // Direccion fisica del directorio de paginas
 } task_t;
 
-void *get_phys_addr(void *vaddr);
-
 void sched_start();
 
 void resume_task(task_t *task);

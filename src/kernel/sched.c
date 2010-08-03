@@ -70,7 +70,7 @@ void initialize_task(int prog, task_t *task) {
 
     // Clonamos el PD del kernel
     uint32_t *new_pd = clone_pd(kernel_pd);
-    task->pd = get_phys_addr(new_pd);
+    task->pd = get_phaddr(new_pd);
 
     task_state_t *st = &task->state;
     
@@ -104,15 +104,11 @@ void initialize_task(int prog, task_t *task) {
     st->esp = (uint32_t)(addr + 4*PAGE_SIZE);
 }
 
-void *get_phys_addr(void *vaddr) {
-    return KPHADDR(vaddr);
-}
-
 task_t *task1;
 task_t *task2;
 
 void sched_start(uint32_t *pd) {
-    setup_tss(get_phys_addr(pd));
+    setup_tss(get_phaddr(pd));
 
     task1 = kmalloc(sizeof(task_t));
     initialize_task(1, task1);
