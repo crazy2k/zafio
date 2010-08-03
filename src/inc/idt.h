@@ -23,8 +23,9 @@
 #define IDT_LAST_INDEX  ((((uint32_t)idtr.size)/sizeof(uint64_t)) - 1)
 
 // Indices de interrupciones y excepciones
-#define IDT_INDEX_GP 13ul
-#define IDT_INDEX_PF 14ul
+#define IDT_INDEX_GP    13ul
+#define IDT_INDEX_PF    14ul
+#define IDT_INDEX_TIMER 32ul
 
 // Constantes de los PIC y sus ICWs
 
@@ -63,6 +64,8 @@ extern uint64_t idt[256];
 extern idtr_t idtr;
 
 void idt_pf_handler();
+
+void idt_timer_handler();
 
 void idt_init();
 

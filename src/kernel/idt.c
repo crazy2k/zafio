@@ -3,14 +3,18 @@
 #include "../inc/memlayout.h"
 #include "../inc/mmu.h"
 #include "../inc/x86.h"
+#include "../inc/io.h"
+#include "../inc/sched.h"
 
 void idt_init() {
 
     register_handler(IDT_INDEX_PF, idt_pf_handler, IDT_DESC_INT);
+    register_handler(IDT_INDEX_TIMER, idt_timer_handler, IDT_DESC_INT);
 
     lidt(idtr);
 
     remap_PIC(PIC1_OFFSET, PIC2_OFFSET);
+    outb(PIC1_DATA, 0xFC);
 
     sti();
 }
@@ -47,6 +51,21 @@ int register_handler(uint32_t index, void (*handler)(), uint64_t type) {
 void idt_pf_handler() {
     BOCHS_BREAK;
 }
+
+extern task_t *task2;
+
+int i = 0;
+void idt_timer_handler() {
+    outb(PIC1_COMMAND, OCW2);
+    i++;
+    BOCHS_BREAK;
+    if (i == 999) {
+
+        resume_task(task2);
+    }
+    __asm__ __volatile__("iret");
+}
+
 
 void remap_PIC(char offset1, char offset2) {
     // Inicializamos PIC1
