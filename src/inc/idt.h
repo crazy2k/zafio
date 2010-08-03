@@ -23,8 +23,9 @@
 #define IDT_LAST_INDEX  ((((uint32_t)idtr.size)/sizeof(uint64_t)) - 1)
 
 // Indices de interrupciones y excepciones
-#define IDT_INDEX_GP 13ul
-#define IDT_INDEX_PF 14ul
+#define IDT_INDEX_GP    13ul
+#define IDT_INDEX_PF    14ul
+#define IDT_INDEX_TIMER 32ul
 
 // Constantes de los PIC y sus ICWs
 
@@ -51,6 +52,8 @@
 #define ICW4_BUFFERED   0x08    // Buffered mode (o nonbuffered)
 #define ICW4_SFNM       0x10    // Fully nested (o not fully nested)
 
+#define OCW2            0x20    // EOI (end-of-interrupt)
+
 #define PIC1_OFFSET 0x20
 #define PIC2_OFFSET 0x28
 
@@ -61,6 +64,8 @@ extern uint64_t idt[256];
 extern idtr_t idtr;
 
 void idt_pf_handler();
+
+void idt_timer_handler();
 
 void idt_init();
 

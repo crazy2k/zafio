@@ -49,7 +49,7 @@ extern memory_info_t memory_info;
 
 void *malloc_page();
 void *malloc_pages(long n);
-void allocate_page_table(uint32_t page_dir[], void* virtual);
+void *allocate_page_table(uint32_t page_dir[], void* virtual);
 
 void* new_page(uint32_t pd[], void* vaddr, uint32_t flags);
 void* new_pages(uint32_t pd[], void* vaddr, long n, uint32_t flags);
@@ -59,6 +59,8 @@ page_t *reserve_page(page_t* reserved);
 void return_page(page_t* returned);
 
 uint32_t* get_pte(uint32_t pd[], void* vaddr);
+
+void page_table_map(uint32_t pt[], void* vaddr, void* phaddr, uint32_t flags);
 
 void invalidate_tlb(void *vaddr);
 void invalidate_tlb_pages(void *vstart, int n);

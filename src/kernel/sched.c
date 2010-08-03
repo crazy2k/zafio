@@ -5,126 +5,122 @@
 #include "../inc/vmm.h"
 #include "../inc/io.h"
 #include "../inc/heap.h"
+#include "../inc/x86.h"
+#include "../inc/debug.h"
+#include "../inc/utils.h"
 
 extern void *tasktest();
+extern void *tasktest2();
 
 // Un EFLAGS con defaults razonables
 #define SCHED_COMMON_EFLAGS 0x3202
 
-#define SCHED_TASK_STACK_TOP PAGE_SIZE
-
-/* Crea la TSS para una tarea a ser cargada.
+/* Configura una TSS con valores para el segmento y offset del stack de nivel
+ * 0, carga un descriptor para ella en la GDT y carga el Task Register con un
+ * selector que la referencia.
  *
- * - ``pd`` es la direccion fisica del directorio de paginas de la tarea
- * - ``stack_bottom`` es la direccion del stack pointer de la tarea en su
- *   espacio de direcciones virtual
- * - ``entry_point`` es la direccion del punto de entrada de la tarea en su
- *   espacio de direcciones virtual
+ * - ``pd`` es la direccion fisica del directorio de paginas del kernel
  */
-tss_t *create_tss(int level, void *pd, void *stack_bottom, void *entry_point) {
+void setup_tss(void *pd) {
     tss_t *tss = (tss_t *)kmalloc(sizeof(tss_t));
+    memset(tss, 0, sizeof(tss_t));
 
-    // De momento, no usamos el Previous Task Link
-    tss->prev = NULL;
-
-    // Stack para nivel 0
-    // TODO: El stack tiene que ser uno nuevo por proceso
-    //tss->esp0 = (uint32_t)stack_bottom;
+    // Solo nos interesan los campos del stack del kernel
     tss->ss0 = GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_DS);
+    tss->esp0 = (uint32_t)(KERNEL_STACK_TOP + KERNEL_STACK_SIZE);
 
-    // No nos interesan los stacks de niveles 1 y 2
-    tss->esp1 = NULL;
-    tss->ss1 = GDT_SEGSEL(0x1, GDT_INDEX_NULL);
-    tss->esp2 = NULL;
-    tss->ss2 = GDT_SEGSEL(0x2, GDT_INDEX_NULL);
+    // Escribimos el descriptor de la TSS en la GDT
+    gdt[GDT_INDEX_TSS] = GDT_DESC_BASE((uint32_t)tss) |
+        GDT_DESC_LIMIT(sizeof(tss_t)) | GDT_DESC_DPL(0x0) |
+        GDT_DESC_TYPE(GDT_F_32BTA) | GDT_DESC_G | GDT_DESC_P;
 
-    tss->cr3 = (uint32_t)pd;
-    tss->eip = (uint32_t)entry_point;
-
-    tss->eflags = SCHED_COMMON_EFLAGS;
-
-    // Registros de proposito general
-    tss->eax = NULL;   
-    tss->ecx = NULL;
-    tss->edx = NULL;
-    tss->ebx = NULL;
-    tss->esp = (uint32_t)stack_bottom;
-    tss->ebp = NULL;
-    tss->esi = NULL;
-    tss->edi = NULL;
-
-    // Registros de segmento
-    uint32_t cs_index = (!level) ? GDT_INDEX_KERNEL_CS : GDT_INDEX_USER_CS;
-    uint32_t ds_index = (!level) ? GDT_INDEX_KERNEL_DS : GDT_INDEX_USER_DS;
-
-    tss->es = tss->ss = tss->ds = tss->fs = tss->gs =
-        GDT_SEGSEL(level, ds_index);
-    tss->cs = GDT_SEGSEL(level, cs_index);
-
-    tss->ldt = NULL;
-
-    tss->t = NULL;  // Debug trap flag
-    tss->io = NULL; // I/O map base address
-    return tss;
-}
-
-void jump_to_segsel(uint16_t segsel) {
-    __asm__ __volatile__("pushl %0\n\t"
-        "pushl $0\n\t"
-        "ljmp *(%%esp)\n\t"
-        "addl $8, %%esp"
-        : : "rm" (segsel));
-}
-
-
-void tasks_test() {
-
-    // Esbozo de lo usado en un test preliminar
-
-    // un stack a los 10 MB
-    //void *stack = new_page(kernel_pd, (void *)0x00A00000, NULL) + PAGE_SIZE;
-    void *stack = malloc_page() + PAGE_SIZE;
-    //void *stack = (void *)KVIRTADDR(0x00A00000);
-    tss_t *tss = create_tss(0x0, KPHADDR(kernel_pd), stack, tasktest);
-
-    gdt[GDT_INDEX_TSS] = GDT_DESC_BASE((uint32_t)tss) | GDT_DESC_LIMIT(0x84) |
-        GDT_DESC_DPL(0x0) | GDT_DESC_TYPE(GDT_F_32BTA) | GDT_DESC_G |
-        GDT_DESC_P;
-
+    // Cargamos el Task Register con un selector para la TSS
     uint16_t segsel = GDT_SEGSEL(0x0, GDT_INDEX_TSS);
-    jump_to_segsel(segsel);
+    ltr(segsel);
 }
 
-typedef struct {
-    // Direcciones virtuales en espacio del kernel de cada seccion
-    void *text;         
-    void *data;
-    // Tamanio de cada seccion
-    uint32_t text_size;
-    uint32_t data_size;
-    // Direccion virtual de carga en espacio de usuario
-    void *text_load_addr;
-    void *data_load_addr;
-    // Direccion virtual del punto de entrada en espacio de usuario
-    void *entry_point;
-    // Nivel de privilegio del programa
-    int level;
-} program_t;
+void resume_task(task_t *task) {
+    // Cargamos el PD de la tarea
+    load_cr3((uint32_t)task->pd);
 
-void create_task(program_t prog) {
+    // Cargamos los registros en la pila
+    BOCHS_BREAK;
+    load_state(task);
+}
+
+void map_pages(uint32_t pd[], void *vaddr_base, void *phaddr_base, int n,
+    uint32_t flags) {
+
+    void *vaddr, *phaddr;
+    for (vaddr = vaddr_base, phaddr = phaddr_base;
+        vaddr < (vaddr_base + n*PAGE_SIZE);
+        vaddr += PAGE_SIZE, phaddr += PAGE_SIZE) {
+
+        uint32_t *pt;
+        if (!(pd[PDI(vaddr)] & PDE_P))
+            pt = allocate_page_table(pd, vaddr);
+        else
+            pt = KVIRTADDR(PDE_PT_BASE(pd[PDI(vaddr)]));
+        page_table_map(pt, vaddr, phaddr, flags);
+    }
+}
+
+
+void initialize_task(int prog, task_t *task) {
 
     // Clonamos el PD del kernel
-    //uint32_t *new_pd = clone_pd(kernel_pd);
+    uint32_t *new_pd = clone_pd(kernel_pd);
+    task->pd = get_phys_addr(new_pd);
 
-    // Mapeamos una pagina en este nuevo PD para el stack
-    //void *stack_uvaddr = new_page(new_pd, SCHED_TASK_STACK_TOP,
-    //    PTE_RW | PDE_US | PDE_PWT);
+    task_state_t *st = &task->state;
+    
+    // Registros de proposito general en cero
+    st->eax = NULL;
+    st->ecx = NULL;
+    st->edx = NULL;
+    st->ebx = NULL;
+    st->ebp = NULL;
+    st->esi = NULL;
+    st->edi = NULL;
 
-    // Aca habria que:
-    // - clonar el pd del kernel o uno de molde,
-    // - ubicar en ese pd paginas para el stack y para el codigo y datos de la
-    //   tarea,
-    // - crear una TSS para la tarea con los datos anteriores
+    // Registros de segmento
+    st->es = GDT_SEGSEL(0x3, GDT_INDEX_USER_DS);
+    st->ds = GDT_SEGSEL(0x3, GDT_INDEX_USER_DS);
+    st->cs = GDT_SEGSEL(0x3, GDT_INDEX_USER_CS);
+    st->ss = GDT_SEGSEL(0x3, GDT_INDEX_USER_DS);
+
+    // Flags
+    st->eflags = SCHED_COMMON_EFLAGS;
+
+    void *task_code = (prog) ? tasktest : tasktest2;
+
+    st->eip = (uint32_t)KPHADDR(task_code);
+
+    void *addr = (void *)ALIGN_TO_PAGE(KPHADDR(task_code), FALSE);
+    map_pages(new_pd, addr, addr, 2, PTE_P | PTE_US);
+    map_pages(new_pd, addr + 2*PAGE_SIZE, addr + 2*PAGE_SIZE, 2, PTE_P
+        | PTE_US | PTE_RW);
+
+    st->esp = (uint32_t)(addr + 4*PAGE_SIZE);
 }
 
+void *get_phys_addr(void *vaddr) {
+    return KPHADDR(vaddr);
+}
 
+task_t *task1;
+task_t *task2;
+
+void sched_start(uint32_t *pd) {
+    setup_tss(get_phys_addr(pd));
+
+    task1 = kmalloc(sizeof(task_t));
+    initialize_task(1, task1);
+
+    task2 = kmalloc(sizeof(task_t));
+    initialize_task(2, task2);
+
+
+    resume_task(task1);
+
+}

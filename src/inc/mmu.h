@@ -65,7 +65,7 @@
 #define GDT_NULL ((uint64_t) 0)
 
 #define GDT_SEGSEL(rpl, index) \
-    (((rpl) && __LOW2_BITS__) | ((index) << 3))
+    (((rpl) & __LOW2_BITS__) | ((index) << 3))
 
 /* Paginacion
  * ==========

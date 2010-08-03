@@ -18,6 +18,7 @@ memory_info_t memory_info;
 void* heap_start;
 void* heap_end;
 void* used_mem_limit;
+void* heap_start;
 
 static void update_gdtr();
 static void free_pages_setup();
@@ -77,6 +78,10 @@ static page_t *reserve_kernel_pages(page_t* page, int n) {
     return page;
 }
 
+void page_table_map(uint32_t pt[], void* vaddr, void* phaddr, uint32_t flags) {
+    pt[PTI(vaddr)] = PDE_PT_BASE(phaddr) | flags;
+}
+
 void invalidate_tlb(void *vaddr) {
     __asm__ __volatile__("invlpg (%0)" : : "r" (vaddr));
 }
@@ -120,12 +125,15 @@ void *malloc_pages(long n) {
 }
 
 // Mapea una pagina fisica nueva para una tabla de paginas de page_dir
-void allocate_page_table(uint32_t pd[], void* vaddr) {
+void *allocate_page_table(uint32_t pd[], void* vaddr) {
     void *page_va = malloc_page();
     page_t *page = KVADDR_TO_PAGE(page_va);
 
-    pd[PDI(vaddr)] = PDE_PT_BASE(PAGE_TO_PHADDR(page)) | PDE_P | PDE_PWT;
+    pd[PDI(vaddr)] = PDE_PT_BASE(PAGE_TO_PHADDR(page)) | PDE_P | PDE_PWT |
+        PDE_US | PDE_RW;
     memset(page_va, 0, PAGE_SIZE);
+
+    return page_va;
 }
 
 // Conecta entre si la paginas fst con sec
