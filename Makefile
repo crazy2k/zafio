@@ -24,16 +24,18 @@ OBJSDIR := obj/
 # Archivos
 #
 
+# Codigo C
 SOURCES := $(shell find $(SRCDIR) -name "*.c")
 HEADERS := $(shell find $(SRCDIR) -name "*.h")
-
 OBJS := $(notdir $(SOURCES:.c=.o))
 OBJS := $(addprefix $(OBJSDIR), $(OBJS))
 
-KERNEL := kernel.bin
+# Codigo assembly
+ASSOURCES := $(shell find $(SRCDIR) -name "*.S")
+ASOBJS := $(notdir $(ASSOURCES:.S=.o))
+ASOBJS := $(addprefix $(OBJSDIR), $(ASOBJS))
 
-LOADER_SRC := $(SRCDIR)/kernel/loader.S
-LOADER_OBJ := $(OBJSDIR)/loader.o
+KERNEL := kernel.bin
 
 # Imagen de disco floppy
 DISKETTE := $(REFTESTDIR)/aux/diskette.img
@@ -46,11 +48,11 @@ DISKETTE := $(REFTESTDIR)/aux/diskette.img
 $(OBJSDIR):
 	mkdir $(OBJSDIR)
 
-$(KERNEL): $(OBJS) $(LOADER_OBJ)
-	$(LD) $(LDFLAGS) $(LOADER_OBJ) $(OBJS) -o $@
+$(KERNEL): $(OBJS) $(ASOBJS)
+	$(LD) $(LDFLAGS) $(ASOBJS) $(OBJS) -o $@
 
-$(LOADER_OBJ): $(LOADER_SRC)
-	$(AS) $(ASFLAGS) $(LOADER_SRC) -o $@
+$(ASOBJS): $(ASSOURCES)
+	$(AS) $(ASFLAGS) $< -o $@
 
 deps: $(SOURCES) $(OBJSDIR)
 	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(OBJSDIR:/=\/)\1/" > $@  
