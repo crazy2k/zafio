@@ -30,7 +30,7 @@ void kfree(void* data) {
 }
 
 static void grow_cache(type_cache_t* cache) {
-    cache_bucket_t *bucket = kmalloc_pages(cache->grow_rate);
+    cache_bucket_t *bucket = new_kernel_pages(cache->grow_rate);
 
     for (int i = 0; i < CHUNK_TOTAL_BUCKETS(cache);
         i++, bucket = (void*) bucket + cache->bucket_size )

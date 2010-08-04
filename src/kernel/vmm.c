@@ -17,15 +17,22 @@ memory_info_t memory_info;
 
 void* heap_start;
 void* heap_end;
-void* kernel_mem_limit;
+void* kernel_va_limit;
 
 static void update_gdtr();
 static void free_pages_setup();
 static void heap_setup();
 static page_t *reserve_kernel_pages(page_t* page, int n);
 
+static void* seek_contiguous_kvaddr(long pages);
+static void shift_kernel_va_limit(long n);
+
 static void link_pages(page_t *fst, page_t *sec);
 static void add_page_to_list(page_t* head, page_t* new);
+
+static page_t *reserve_page(page_t* reserved);
+static void return_page(page_t* returned);
+
 
 void vm_init() {
     update_gdtr();
@@ -38,25 +45,25 @@ void vm_init() {
 static void free_pages_setup() {
     //Inicializamos, lista de paginas fisicas libres
     page_list = memory_info.first_page;
-    kernel_mem_limit = memory_info.kernel_used_memory;
+    kernel_va_limit = memory_info.kernel_used_memory;
 
     // Marcamos el rango de paginas q no pueden reutilizarse durante la ejecucion del kernel
     reserve_kernel_pages(PHADDR_TO_PAGE(KPHADDR(KERNEL_STACK_TOP)), 
         1 + KERNEL_STACK_SIZE/PAGE_SIZE + memory_info.tables_count);
 
-    int pages_count = PHADDR_TO_PAGE(KPHADDR(kernel_mem_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
+    int pages_count = PHADDR_TO_PAGE(KPHADDR(kernel_va_limit)) - PHADDR_TO_PAGE(KERNEL_PHYS_ADDR);
     reserve_kernel_pages(PHADDR_TO_PAGE(KERNEL_PHYS_ADDR), pages_count);
 }
 
 static void heap_setup() {
-    heap_start = kernel_mem_limit;
+    heap_start = kernel_va_limit;
     heap_end = KVIRTADDR(memory_info.tables_count * PAGE_4MB_SIZE);
 
     heap_config_type(sizeof(tss_t), 4);
 
     // Correr el espacio disponible del heap asumiendo q las estructuras 
     // ya meapeadas no van a liberarse despues
-    heap_start = kernel_mem_limit;
+    heap_start = kernel_va_limit;
 }
 
 static void update_gdtr() {
@@ -70,6 +77,7 @@ static void update_gdtr() {
     invalidate_tlb_pages(vaddr,1024);
 }
 
+//Mapea paginas de uso exclusivo del kernel durante el procesos de inicializacion
 static page_t *reserve_kernel_pages(page_t* page, int n) {
     for (int i = 0; i < n; i++)
         reserve_page(&page[i]);
@@ -91,12 +99,13 @@ void invalidate_tlb_pages(void *vstart, int n) {
 }
 
 //Traduce una direccion virtual del kernel a su direccion fisica
-void *get_phaddr(void *kvaddr) {
-    return (void*) (PTE_PAGE_BASE(*get_pte(kernel_pd, kvaddr)) | ((uint32_t) kvaddr & __LOW12_BITS__));
+void *get_kphaddr(void *kvaddr) {
+    return (void*) ( PTE_PAGE_BASE(*get_pte(kernel_pd, kvaddr)) | 
+        ((uint32_t) kvaddr & __LOW12_BITS__) );
 }
 
-// Devuelve un puntero a la entrada en la tabla de paginas correspondiente a
-// la direccion virtual ``virt`` usando el directorio ``pd``.
+// Devuelve un puntero a la entrada de la tabla de paginas correspondiente a
+// la direccion virtual 'vaddr' usando el directorio 'pd'.
 uint32_t* get_pte(uint32_t pd[], void* vaddr) {
     uint32_t pde = pd[PDI(vaddr)];
 
@@ -108,48 +117,10 @@ uint32_t* get_pte(uint32_t pd[], void* vaddr) {
     return &pt[PTI(vaddr)];
 }
 
-// Reserva una pagina fisica de 4K para uso del kernel 
-void *kmalloc_page() {
-    return kmalloc_pages(1);
-//    return PAGE_TO_KVADDR(reserve_page(page_list->next));
-}
-
-void kfree_page(void* vaddr) {
-    free_page(kernel_pd, vaddr);
-}
-
-void *kmalloc_pages(long n) {
-    void *vaddr, *result = NULL;
-
-    for (vaddr = kernel_mem_limit; vaddr < heap_end && !result; vaddr += PAGE_SIZE) {
-        bool avail = TRUE;
-        for (int i = 0; i < n && avail; i++)
-            avail = !(*get_pte(kernel_pd, vaddr + i) & PTE_P);
-        
-        if (avail) result = vaddr;
-    }
-
-    if (!result) {
-        for (vaddr = heap_start; vaddr < kernel_mem_limit && !result; vaddr += PAGE_SIZE) {
-            bool avail = TRUE;
-            for (int i = 0; i < n && avail; i++)
-                avail = !(*get_pte(kernel_pd, vaddr + i) & PTE_P);
-
-            if (avail) result = vaddr;
-        }
-    }
-
-    if (!result) kpanic("No hay suficiente espacio virtual disponible contiguo");
-
-    if (kernel_mem_limit == result) kernel_mem_limit = result + PAGE_SIZE * n;
-
-    return new_pages(kernel_pd, result, n, PTE_G | PTE_PWT | PTE_RW | PTE_P);
-}
-
 // Mapea una pagina fisica nueva para una tabla de paginas de page_dir
-void *allocate_page_table(uint32_t pd[], void* vaddr) {
-    void *page_va = kmalloc_page();
-    page_t *page = PHADDR_TO_PAGE(get_phaddr(page_va));
+void *new_page_table(uint32_t pd[], void* vaddr) {
+    void *page_va = new_kernel_page();
+    page_t *page = PHADDR_TO_PAGE(get_kphaddr(page_va));
 
     pd[PDI(vaddr)] = PDE_PT_BASE(PAGE_TO_PHADDR(page)) | PDE_P | PDE_PWT |
         PDE_US | PDE_RW;
@@ -187,7 +158,7 @@ void* new_page(uint32_t pd[], void* vaddr, uint32_t flags) {
 
     // Si la tabla de paginas no estaba presente mapearla
     if (!(pd[PDI(vaddr)] & PDE_P))
-        allocate_page_table(pd, vaddr);
+        new_page_table(pd, vaddr);
 
     page_t *page = reserve_page(page_list->next);
     uint32_t *pte = get_pte(pd, vaddr);
@@ -211,10 +182,52 @@ void free_page(uint32_t pd[], void* vaddr) {
     *pte = 0;
 }
 
+// Mapea una pagina fisica nueva sobre una direccion virtual libre en espacio virutal del kernel
+void *new_kernel_page() {
+    return new_kernel_pages(1);
+}
+
+// Mapea 'n' paginas fisicas nuevas sobre direcciones virtuales libres en espacio virtual del kernel
+void *new_kernel_pages(long n) {
+    void *vaddr = seek_contiguous_kvaddr(n);
+    if (!vaddr) kpanic("No hay suficiente espacio virtual disponible contiguo");
+
+    if (kernel_va_limit == vaddr) shift_kernel_va_limit(n);
+
+    return new_pages(kernel_pd, vaddr, n, PTE_G | PTE_PWT | PTE_RW | PTE_P);
+}
+
+static void shift_kernel_va_limit(long n) {
+    kernel_va_limit += PAGE_SIZE * n;
+}
+
+static void* seek_contiguous_kvaddr(long n) {
+    void *vaddr, *result = NULL;
+
+    for (vaddr = kernel_va_limit; vaddr < heap_end && !result; vaddr += PAGE_SIZE) {
+        bool avail = TRUE;
+        for (int i = 0; i < n && avail; i++)
+            avail = !(*get_pte(kernel_pd, vaddr + i) & PTE_P);
+        
+        if (avail) result = vaddr;
+    }
+
+    if (!result) {
+        for (vaddr = heap_start; vaddr < kernel_va_limit && !result; vaddr += PAGE_SIZE) {
+            bool avail = TRUE;
+            for (int i = 0; i < n && avail; i++)
+                avail = !(*get_pte(kernel_pd, vaddr + i) & PTE_P);
+
+            if (avail) result = vaddr;
+        }
+    }
+
+    return result;
+}
 
 // Decrementa el contador de referencias y retorna la pagina a la lista de
 // paginas libres si este llego a cero
-void return_page(page_t* reserved) {
+static void return_page(page_t* reserved) {
     (reserved->count)--;
     if (reserved->count == 0) {
         if (page_list)
@@ -226,7 +239,7 @@ void return_page(page_t* reserved) {
 
 // Saca a la pagina de la lista de paginas libres e incrementa su contador de
 // referencias
-page_t *reserve_page(page_t* page) {
+static page_t *reserve_page(page_t* page) {
     // Si tiene nodos adyacentes enlazarlos entre si
     if (page->next && page->prev)
         link_pages(page->prev, page->next);
@@ -246,7 +259,7 @@ page_t *reserve_page(page_t* page) {
 }
 
 void *clone_pd(uint32_t pd[]) {
-    uint32_t *new_pd = kmalloc_page();
+    uint32_t *new_pd = new_kernel_page();
     memcpy(new_pd, pd, PAGE_SIZE);
     return new_pd;
 }

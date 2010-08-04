@@ -58,7 +58,7 @@ void map_pages(uint32_t pd[], void *vaddr_base, void *phaddr_base, int n,
 
         uint32_t *pt;
         if (!(pd[PDI(vaddr)] & PDE_P))
-            pt = allocate_page_table(pd, vaddr);
+            pt = new_page_table(pd, vaddr);
         else
             pt = KVIRTADDR(PDE_PT_BASE(pd[PDI(vaddr)]));
         page_table_map(pt, vaddr, phaddr, flags);
@@ -70,7 +70,7 @@ void initialize_task(int prog, task_t *task) {
 
     // Clonamos el PD del kernel
     uint32_t *new_pd = clone_pd(kernel_pd);
-    task->pd = get_phaddr(new_pd);
+    task->pd = get_kphaddr(new_pd);
 
     task_state_t *st = &task->state;
     
@@ -108,7 +108,7 @@ task_t *task1;
 task_t *task2;
 
 void sched_start(uint32_t *pd) {
-    setup_tss(get_phaddr(pd));
+    setup_tss(get_kphaddr(pd));
 
     task1 = kmalloc(sizeof(task_t));
     initialize_task(1, task1);
