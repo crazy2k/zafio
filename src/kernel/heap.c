@@ -37,7 +37,7 @@ static void grow_cache(type_cache_t* cache) {
         add_bucket(cache, bucket);
 }
 
-//Retorna el cache mas apropiado para guardar un objeto del tamaño 'size'
+// Retorna el cache mas apropiado para guardar un objeto del tamaño 'size'
 static type_cache_t* get_cache(size_t size) {
     for (int i = 0; i < CACHE_COUNT && cache_lists[0].bucket_size > 0; i++) {
         if (BUCKET_DATA_SIZE(&cache_lists[i]) > size)
@@ -64,9 +64,12 @@ static void add_bucket(type_cache_t* cache, cache_bucket_t* bucket) {
 } 
 
 
-// Crea un tipo de cache nuevo, en la lista cache list, de tamaño size,
-// al crearlo inicializa al cache con preallocate entries vacias 
-// Esta funcion debe ser llamada antes de la primer llamada a kmalloc, y NUNCA despues, durante la ejecucion del SO
+// Crea un tipo de cache nuevo, en la lista cache list, para estructuras de 
+// tamaño 'size', al crearlo inicializa al cache con 'cache_pages' paginas vacias.
+// Si el parametro 'cache_pages' es NULL se le asigna un valor por defecto 
+// de acuerdo al tamaño pasado en 'size'.
+// Esta funcion debe ser llamada antes de la primer llamada a kmalloc, 
+// y NUNCA despues, durante la ejecucion del SO.
 void heap_config_type(size_t size, long cache_pages) {
     int i;
     int bucket_size = ALIGN_TO_CACHE(size + sizeof(long), TRUE);

@@ -25,7 +25,7 @@ static void heap_setup();
 static page_t *reserve_kernel_pages(page_t* page, int n);
 
 static void* seek_contiguous_kvaddr(long pages);
-static void shift_kernel_va_limit(long n);
+static void shift_kernel_va_limit(void *vaddr);
 
 static void link_pages(page_t *fst, page_t *sec);
 static void add_page_to_list(page_t* head, page_t* new);
@@ -192,19 +192,26 @@ void *new_kernel_pages(long n) {
     void *vaddr = seek_contiguous_kvaddr(n);
     if (!vaddr) kpanic("No hay suficiente espacio virtual disponible contiguo");
 
-    if (kernel_va_limit == vaddr) shift_kernel_va_limit(n);
+    new_pages(kernel_pd, vaddr, n, PTE_G | PTE_PWT | PTE_RW | PTE_P);
+    shift_kernel_va_limit(vaddr + (PAGE_SIZE*n));
 
-    return new_pages(kernel_pd, vaddr, n, PTE_G | PTE_PWT | PTE_RW | PTE_P);
+    return vaddr;
 }
 
-static void shift_kernel_va_limit(long n) {
-    kernel_va_limit += PAGE_SIZE * n;
+static void shift_kernel_va_limit(void *vaddr) {
+    if (get_kphaddr(kernel_va_limit) != NULL)
+        kernel_va_limit = vaddr;
+    
+    if (kernel_va_limit == heap_end)
+        kernel_va_limit = heap_start;
 }
 
+// Busca en el espacio de direcciones virtuales del kernel, 'n' paginas contiguas libres
 static void* seek_contiguous_kvaddr(long n) {
-    void *vaddr, *result = NULL;
+    void *result = NULL;
 
-    for (vaddr = kernel_va_limit; vaddr < heap_end && !result; vaddr += PAGE_SIZE) {
+    //Busco en el espacio entre kernel_va_limit y heap_end
+    for (void *vaddr = kernel_va_limit; vaddr < heap_end && !result; vaddr += PAGE_SIZE) {
         bool avail = TRUE;
         for (int i = 0; i < n && avail; i++)
             avail = !(*get_pte(kernel_pd, vaddr + i) & PTE_P);
@@ -212,14 +219,15 @@ static void* seek_contiguous_kvaddr(long n) {
         if (avail) result = vaddr;
     }
 
-    if (!result) {
-        for (vaddr = heap_start; vaddr < kernel_va_limit && !result; vaddr += PAGE_SIZE) {
-            bool avail = TRUE;
-            for (int i = 0; i < n && avail; i++)
-                avail = !(*get_pte(kernel_pd, vaddr + i) & PTE_P);
+    if (result) return result;
 
-            if (avail) result = vaddr;
-        }
+    //Si no encuentro, busco en el espacio entre heap_start y kernel_va_limit
+    for (void *vaddr = heap_start; vaddr < kernel_va_limit && !result; vaddr += PAGE_SIZE) {
+        bool avail = TRUE;
+        for (int i = 0; i < n && avail; i++)
+            avail = !(*get_pte(kernel_pd, vaddr + i) & PTE_P);
+
+        if (avail) result = vaddr;
     }
 
     return result;
