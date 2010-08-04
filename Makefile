@@ -10,6 +10,9 @@ ASFLAGS := -f elf
 LD := ld
 LDFLAGS := -T linker.ld
 
+# Linkeo "parcial" de elf files como binary
+LDPARTFLAGS := -s -r  
+
 #
 # Directorios
 #
@@ -17,18 +20,25 @@ LDFLAGS := -T linker.ld
 SRCDIR := src/
 REFTESTDIR := reftest/
 OBJSDIR := obj/
-#USRCDIR := usr/src/
-#UOBJSDIR := usr/obj/
+PROG_OBJSDIR := progobj/
+PROG_DIR := prog/
 
 #
 # Archivos
 #
 
-SOURCES := $(shell find $(SRCDIR) -name "*.c")
-HEADERS := $(shell find $(SRCDIR) -name "*.h")
+SOURCES := $(shell find $(SRCDIR)/kernel -name "*.c")
+HEADERS := $(shell find $(SRCDIR)/kernel/inc -name "*.h")
 
 OBJS := $(notdir $(SOURCES:.c=.o))
 OBJS := $(addprefix $(OBJSDIR), $(OBJS))
+
+PROG_SOURCES := $(shell find $(SRCDIR)/kernel -name "*.c")
+
+PROG_OBJS := $(notdir $(PROG_SOURCES:.c=.o))
+PROG_OBJS := $(addprefix $(PROG_OBJSDIR), $(PROG_OBJS))
+
+PROGS := $(addprefix $(PROG_DIR), $(PROG_OBJS:.o=))
 
 KERNEL := kernel.bin
 
@@ -43,6 +53,14 @@ DISKETTE := $(REFTESTDIR)/aux/diskette.img
 # Reglas
 #
 
+all: diskette.img
+
+$(PROG_OBJSDIR):
+	mkdir $(PROG_OBJSDIR)
+
+$(PROG_DIR):
+	mkdir $(PROG_DIR)
+
 $(OBJSDIR):
 	mkdir $(OBJSDIR)
 
@@ -52,12 +70,15 @@ $(KERNEL): $(OBJS) $(LOADER_OBJ)
 $(LOADER_OBJ): $(LOADER_SRC)
 	$(AS) $(ASFLAGS) $(LOADER_SRC) -o $@
 
-deps: $(SOURCES) $(OBJSDIR)
+deps: $(SOURCES) $(OBJSDIR) $(PROG_SOURCES) $(PROG_OBJSDIR)
 	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(OBJSDIR:/=\/)\1/" > $@  
 -include deps
 
-obj/%.o:
+$(OBJSDIR)%.o:
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(PROG_OBJSDIR)%.o:
+	$(LD) $(LDPARTFLAGS) -b binary $< -o $@
 
 .PHONY: clean new diskette.img
 
