@@ -2,7 +2,7 @@
 # Configuracion de herramientas
 #
 CC := gcc
-CFLAGS := -std=gnu99 -Wall -Werror -nostdlib -nostartfiles -nodefaultlibs 
+CFLAGS := -std=gnu99 -Wall -Werror -nostdlib -nostartfiles -nodefaultlibs -nostdinc  
 
 AS := nasm
 ASFLAGS := -f elf 
