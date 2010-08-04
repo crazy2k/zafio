@@ -20,7 +20,6 @@ LDPARTFLAGS := -s -r
 SRCDIR := src/
 REFTESTDIR := reftest/
 OBJSDIR := obj/
-PROG_OBJSDIR := progobj/
 PROG_DIR := prog/
 
 #
@@ -55,9 +54,6 @@ DISKETTE := $(REFTESTDIR)/aux/diskette.img
 
 all: diskette.img
 
-$(PROG_OBJSDIR):
-	mkdir $(PROG_OBJSDIR)
-
 $(PROG_DIR):
 	mkdir $(PROG_DIR)
 
@@ -78,6 +74,9 @@ $(OBJSDIR)%.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(PROG_OBJSDIR)%.o:
+	$(CC) $(CPROGSFLAGS) $< -o $@
+
+$(PROG_DIR)%:
 	$(LD) $(LDPARTFLAGS) -b binary $< -o $@
 
 .PHONY: clean new diskette.img

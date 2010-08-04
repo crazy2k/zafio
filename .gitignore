@@ -2,7 +2,7 @@
 kernel.bin
 _build/
 obj/
-progobj/
+progs/
 reftest/diskette.img
 deps
 tags
