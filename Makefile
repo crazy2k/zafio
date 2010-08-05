@@ -55,7 +55,7 @@ $(ASOBJS): $(ASSOURCES)
 	$(AS) $(ASFLAGS) $(shell find $(SRCDIR) -name "$(notdir $(patsubst %.o, %.S, $@))") -o $@
 
 deps: $(SOURCES) $(OBJSDIR)
-	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(OBJSDIR:/=\/)\1/" > $@  
+	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(OBJSDIR:/=\/)\1/" > $@
 -include deps
 
 obj/%.o:
