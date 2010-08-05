@@ -52,7 +52,7 @@ $(KERNEL): $(OBJS) $(ASOBJS)
 	$(LD) $(LDFLAGS) $(ASOBJS) $(OBJS) -o $@
 
 $(ASOBJS): $(ASSOURCES)
-	$(AS) $(ASFLAGS) $< -o $@
+	$(AS) $(ASFLAGS) $(shell find $(SRCDIR) -name "$(notdir $(patsubst %.o, %.S, $@))") -o $@
 
 deps: $(SOURCES) $(OBJSDIR)
 	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(OBJSDIR:/=\/)\1/" > $@  
