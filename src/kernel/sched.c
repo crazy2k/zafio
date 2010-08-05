@@ -19,7 +19,7 @@ task_t *task_list = NULL;
 
 static void link_tasks(task_t *fst, task_t *sec);
 
-static void add_task(task_t *task);
+void add_task(task_t *task);
 static void initialize_task_state(task_state_t *st, void *entry_point,
     void *stack_pointer);
 static void switch_stack_pointers(void **old_stack_top, void
@@ -71,7 +71,7 @@ static void link_tasks(task_t *fst, task_t *sec) {
     sec->prev = fst;
 }
 
-static void add_task(task_t *task) {
+void add_task(task_t *task) {
     if (!task_list) {
         task_list = task;
         link_tasks(task, task);
