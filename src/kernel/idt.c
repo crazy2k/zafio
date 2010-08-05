@@ -6,29 +6,70 @@
 #include "../inc/io.h"
 #include "../inc/sched.h"
 
+
+static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st);
+static void keyboard_isr(uint32_t index, uint32_t error_code, task_state_t *st);
+
+static void remap_PIC(char offset1, char offset2);
+
+// Arreglo de rutinas de atencion de excepciones/interrupciones
+isr_t isrs[IDT_LENGTH] = {NULL};
+
 void idt_init() {
 
-    register_handler(IDT_INDEX_PF, idt_pf_handler, IDT_DESC_INT);
-    register_handler(IDT_INDEX_TIMER, idt_timer_handler, IDT_DESC_INT);
+    // Configuramos los handlers en la IDT
+    set_handlers();
 
+    // Registramos rutinas de atencion
+    register_isr(IDT_INDEX_KB, keyboard_isr);
+
+    // Cargamos la IDT
     lidt(idtr);
 
     remap_PIC(PIC1_OFFSET, PIC2_OFFSET);
-    //outb(PIC1_DATA, 0xFC);
 
-    //sti();
+    // Desenmascaramos interrupciones en el PIC
+    outb(PIC1_DATA, ~PIC_KB);
+    kputui32((uint32_t)~PIC_KB);
+
+    // Activamos el IF
+    sti();
+}
+
+/* Registra una rutina de atencion ``isr`` para la excepcion/interrupcion cuyo
+ * indice en la IDT es ``index``.
+ *
+ * Si el indice pasado es incorrecto, se devuelve IDT_BAD_INDEX. Si la
+ * excepcion/interrupcion ya tiene una rutina de atencion registrada, devuelve
+ * IDT_BUSY. Si no hay problemas con el registro, devuelve 0.
+ */
+int register_isr(uint32_t index, isr_t isr) {
+
+    // Chequeamos si el numero de irq es valido
+    if ((index < 0) || (index > IDT_LAST_INDEX))
+        return IDT_BAD_INDEX;
+
+    // Chequeamos si la interrupcion ya esta siendo atendida
+    if (isrs[index] != NULL)
+        return IDT_BUSY;
+
+    isrs[index] = isr;
+
+    return 0;
 }
 
 /* Registra un handler (``handler``)  para la excepcion/interrupcion cuyo
- * indice en la IDT es ``index``. ``type`` puede contener alguno de los valores
- * IDT_DESC_INT, IDT_DESC_TRAP o cero; en ese ultimo caso, se asumira que
- * ``type`` es IDT_DESC_INT.
+ * indice en la IDT es ``index``.
  *
  * Si el indice pasado es incorrecto, se devuelve IDT_BAD_INDEX. Si la
  * excepcion/interrupcion ya tiene un handler registrado, devuelve IDT_BUSY. Si
  * no hay problemas con el registro, se devuelve 0.
+ *
+ * El handler se registra como Interrupt Gate, de manera que el IF se limpia
+ * antes del comienzo de la ejecucion del handler y es responsabilidad de la
+ * rutina de servicio la activacion de este si asi lo quiere.
  */
-int register_handler(uint32_t index, void (*handler)(), uint64_t type) {
+int set_handler(uint32_t index, void (*handler)()) {
     // Chequeamos si el numero de irq es valido
     if ((index < 0) || (index > IDT_LAST_INDEX))
         return IDT_BAD_INDEX;
@@ -37,37 +78,24 @@ int register_handler(uint32_t index, void (*handler)(), uint64_t type) {
     if (idt[index] & IDT_DESC_P)
         return IDT_BUSY;
 
-    if (!type)
-        type = IDT_DESC_INT;
-
     // Escribimos el descriptor en la IDT
     idt[index] = IDT_DESC_SEL(GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_CS)) |
         IDT_DESC_OFFSET(handler) | IDT_DESC_P | IDT_DESC_DPL(0) |
-        IDT_DESC_D | type;
+        IDT_DESC_D | IDT_DESC_INT;
 
     return 0;
 }
 
-void idt_pf_handler() {
-    BOCHS_BREAK;
-}
+void idt_handle(uint32_t index, uint32_t error_code, task_state_t *st) {
+    if (isrs[index] == NULL)
+        default_isr(index, error_code, st);
+    else
+        isrs[index](index, error_code, st);
 
-extern task_t *task2;
-
-int i = 0;
-void idt_timer_handler() {
     outb(PIC1_COMMAND, OCW2);
-    i++;
-    BOCHS_BREAK;
-    if (i == 999) {
-
-        resume_task(task2);
-    }
-    __asm__ __volatile__("iret");
 }
 
-
-void remap_PIC(char offset1, char offset2) {
+static void remap_PIC(char offset1, char offset2) {
     // Inicializamos PIC1
 
     // Se envia ICW4, hay varios 8259A, interrupt vectors de 8 bytes,
@@ -89,4 +117,21 @@ void remap_PIC(char offset1, char offset2) {
     
     // Enmascaramos las interrupciones del PIC2
     outb(PIC2_DATA, 0xFF);
+}
+
+static void keyboard_isr(uint32_t index, uint32_t error_code,
+    task_state_t *st) {
+
+    kputs("Teclado \n");
+    char c = inb(0x60);
+    kputui32((uint32_t)c);
+    kputs("\n");
+    BOCHS_BREAK;
+}
+
+static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
+    kputs("Interrupcion sin rutina de atencion: ");
+    kputui32(index);
+    kputs("\n");
+    BOCHS_BREAK;
 }
