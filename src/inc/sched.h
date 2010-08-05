@@ -81,15 +81,26 @@ typedef struct {
     uint16_t :16;
 } task_state_t;
 
-typedef struct {
+typedef struct task_t task_t;
+
+struct task_t {
     task_state_t state; // Estructura con el estado de la tarea
     void *pd;           // Direccion fisica del directorio de paginas
-} task_t;
-
-void sched_start();
-
-void resume_task(task_t *task);
+    void *kernel_stack;
+    void *kernel_stack_top;
+    task_t *next;
+    task_t *prev;
+};
 
 extern uint64_t gdt[];
+
+void sched_init();
+
+void setup_tss(uint32_t kernel_stack);
+
+task_t *create_task(uint32_t pd[], int level, void *entry_point,
+    void *stack_pointer);
+
+void resched();
 
 #endif

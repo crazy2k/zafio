@@ -2,6 +2,7 @@ extern set_handler
 extern idt_handle
 
 global set_handlers
+global load_state
 
 
 %define IDT_LENGTH      256
@@ -59,11 +60,7 @@ idt_handler_%1:
     call idt_handle
     add esp, 3*4
 
-    popa
-    pop es
-    pop ds
-
-    iret
+    jmp load_state
 
 section .data
 error_code_%1: dd 0x0
@@ -79,4 +76,13 @@ error_code_%1: dd 0x0
     %endif
     %assign i (i + 1)
 %endrep
+
+; Carga el estado guardado en la pila.
+section .text
+load_state:
+    popa
+    pop es
+    pop ds
+
+    iret
 
