@@ -9,6 +9,7 @@
 
 static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 static void keyboard_isr(uint32_t index, uint32_t error_code, task_state_t *st);
+static void timer_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 
 static void remap_PIC(char offset1, char offset2);
 
@@ -21,6 +22,7 @@ void idt_init() {
     set_handlers();
 
     // Registramos rutinas de atencion
+    register_isr(IDT_INDEX_TIMER, timer_isr);
     register_isr(IDT_INDEX_KB, keyboard_isr);
 
     // Cargamos la IDT
@@ -119,6 +121,13 @@ static void remap_PIC(char offset1, char offset2) {
     outb(PIC2_DATA, 0xFF);
 }
 
+static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
+    kputs("Interrupcion sin rutina de atencion: ");
+    kputui32(index);
+    kputs("\n");
+    BOCHS_BREAK;
+}
+
 static void keyboard_isr(uint32_t index, uint32_t error_code,
     task_state_t *st) {
 
@@ -129,9 +138,10 @@ static void keyboard_isr(uint32_t index, uint32_t error_code,
     BOCHS_BREAK;
 }
 
-static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
-    kputs("Interrupcion sin rutina de atencion: ");
-    kputui32(index);
-    kputs("\n");
+static void timer_isr(uint32_t index, uint32_t error_code,
+    task_state_t *st) {
+
+    kputs("Timer \n");
     BOCHS_BREAK;
 }
+
