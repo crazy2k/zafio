@@ -68,7 +68,7 @@ static void heap_setup() {
 
 static void update_gdtr() {
     gdtr.addr = gdt;
-    lgdt(&gdtr);
+    lgdt(gdtr);
 
     // Quitamos el identity map de los primeros 4MB del espacio de direcciones
     // virtual

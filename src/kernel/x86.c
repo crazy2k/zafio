@@ -10,7 +10,7 @@ char inb(uint32_t port) {
     return value;
 }
 
-void lgdt(gdtr_t *gdtr) {
+void lgdt(gdtr_t gdtr) {
     __asm__ __volatile__ ("lgdt %0" : : "m" (gdtr));
 }
 
