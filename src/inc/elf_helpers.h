@@ -5,6 +5,6 @@
 #include "elf.h"
 #include "types.h"
 
-void load_elf_image(void *elf_file, uint32_t pd[]) {
+void load_elf_image(void *elf_file, uint32_t pd[]);
 
 #endif
