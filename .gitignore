@@ -3,6 +3,7 @@ kernel.bin
 _build/
 obj/
 progs/
+src/kernel/all_progs.c
 reftest/diskette.img
 deps
 tags
