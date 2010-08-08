@@ -21,4 +21,8 @@ void load_cr3(uint32_t cr3);
 
 void load_state(task_t *task);
 
+uint32_t disable_interrupts();
+
+void restore_eflags(uint32_t eflags);
+
 #endif

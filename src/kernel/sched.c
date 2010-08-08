@@ -150,28 +150,31 @@ task_t *create_task(uint32_t pd[], int level, void *entry_point,
     return task;
 }
 
-static void switch_stack_pointers(void **old_stack_top, void *new_stack_top) {
-    __asm__ __volatile__("mov %%esp, %0" : "=m" (old_stack_top): );
-    __asm__ __volatile__("mov %0, %%esp" : : "m" (old_stack_top));
-}
-
 static void switch_context(task_t *old_task, task_t *new_task) {
 
     // Cargamos el PD de la tarea
     load_cr3((uint32_t)new_task->pd);
 
-    // Actualizamos la TSS
-    setup_tss((uint32_t)new_task->kernel_stack_top);
-
     // Guardamos el stack pointer y cargamos el de la nueva tarea
     switch_stack_pointers(&old_task->kernel_stack_top,
-        new_task->kernel_stack_top);
+        &new_task->kernel_stack_top);
+
+    // Actualizamos la TSS
+    setup_tss((uint32_t)new_task->kernel_stack_top);
 }
 
-void resched() {
-    task_t *old_task = task_list;
+task_t *current_task() {
+    return task_list;
+}
+
+void switch_tasks() {
+    uint32_t eflags = disable_interrupts();
+
+    task_t *old_task = current_task();
     task_list = old_task->next;
 
-    switch_context(old_task, task_list);
+    switch_context(old_task, current_task());
+
+    restore_eflags(eflags);
 }
 
