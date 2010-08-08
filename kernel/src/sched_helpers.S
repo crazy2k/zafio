@@ -1,4 +1,4 @@
-%include "./src/inc/nasm_macros.inc"
+%include "./kernel/inc/nasm_macros.inc"
 
 global switch_stack_pointers
 

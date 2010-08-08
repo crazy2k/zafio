@@ -1,9 +1,9 @@
 *.swp
-kernel.bin
+kernel/kernel.bin
 _build/
-obj/
+kernel/obj/
 progs/
-src/kernel/all_progs.c
+kernel/src/all_progs.c
 reftest/diskette.img
 deps
 tags

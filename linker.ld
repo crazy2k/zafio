@@ -20,7 +20,7 @@ SECTIONS {
      */
     .textloader ALIGN(0x4) : {
         *(.textloader)
-        obj/loader_helpers.o (.*)
+        kernel/obj/loader_helpers.o (.*)
     }
 
     . = ALIGN(0x1000) + __kernel_addr_offset;

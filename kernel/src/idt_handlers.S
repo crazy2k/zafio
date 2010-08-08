@@ -1,4 +1,4 @@
-%include "./src/inc/nasm_macros.inc"
+%include "./kernel/inc/nasm_macros.inc"
 
 extern set_handler
 extern idt_handle
