@@ -2,9 +2,11 @@
 #include "../inc/heap.h"
 #include "../inc/utils.h"
 #include "../inc/memlayout.h"
+#include "../inc/vmm.h"
 #include "../inc/x86.h"
 #include "../inc/debug.h"
 #include "../inc/io.h"
+#include "../inc/init.h"
 
 // Un EFLAGS con defaults razonables
 #define SCHED_COMMON_EFLAGS 0x3202
@@ -22,15 +24,28 @@ static void link_tasks(task_t *fst, task_t *sec);
 void add_task(task_t *task);
 static void initialize_task_state(task_state_t *st, void *entry_point,
     void *stack_pointer);
-static void switch_stack_pointers(void **old_stack_top, void
-    *new_stack_top);
 static void switch_context(task_t *old_task, task_t *new_task);
 
 void sched_init() {
-    // Alojamos un stack para el kernel en la TSS
-    void *kernel_stack = new_kernel_page();
-    void *kernel_stack_top = kernel_stack + PAGE_SIZE;
-    setup_tss((uint32_t)kernel_stack_top);
+
+    // Creamos la tarea ``init``
+    task_t *init = kmalloc(sizeof(task_t));
+    init->pd = get_kphaddr(kernel_pd);
+
+    init->kernel_stack = KERNEL_STACK_BOTTOM;
+
+    // El stack de nivel 0 no interesa. Deberia sobreescribirse al cambiar de
+    // tarea. Ademas, como estamos en espacio de kernel, no se deberia utilizar
+    // el valor del stack de nivel 0 que esta en la TSS.
+    init->kernel_stack_top = NULL;
+    setup_tss(NULL);
+
+    add_task(init);
+
+    sti();
+
+    init_task();
+
 }
 
 /* Si no existe la TSS, crea una y la configura con los valores para el

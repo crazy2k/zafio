@@ -1,9 +1,18 @@
-#include "../inc/mmu.h"
 #include "../inc/vmm.h"
 #include "../inc/io.h"
-#include "../inc/debug.h"
-#include "../inc/sched.h"
-#include "../inc/idt.h"
+
+
+static void welcome_msg();
+static void debug_prints();
+static void print_page(int i, page_t *page);
+static void print_pages();
+
+void init_task() {
+    welcome_msg();
+    debug_prints();
+
+    print_pages();
+}
 
 void welcome_msg() {
     kputs("                    w\n");
@@ -63,7 +72,7 @@ void debug_prints() {
 
 void print_page(int i, page_t *page) {
     kputs("page_t ");
-    kputui32((uint32_t)i);
+    kputd(i);
     kputs(": ");
     kputui32((uint32_t)page);
     kputs(" - corresponde a la pagina ");
@@ -85,19 +94,3 @@ void print_pages() {
         print_page(i, curr_page);
     }
 }
-
-
-void cmain() {
-    kcls();
-
-    vm_init();
-    idt_init();
-    sched_init();
-
-    // Si no ejecutamos un hlt aca, hay un page fault, ya que el codigo que nos
-    // llamo ya no esta mapeado en el espacio de memoria virtual
-    __asm__ __volatile__("hlt");
-
-}
-
-

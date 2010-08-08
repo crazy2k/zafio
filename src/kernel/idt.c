@@ -33,9 +33,6 @@ void idt_init() {
     // Desenmascaramos interrupciones en el PIC
     outb(PIC1_DATA, ~PIC_KB);
     kputui32((uint32_t)~PIC_KB);
-
-    // Activamos el IF
-    sti();
 }
 
 /* Registra una rutina de atencion ``isr`` para la excepcion/interrupcion cuyo
