@@ -48,30 +48,3 @@ void proc_map_vaddr(Elf32_Phdr* ph, void *file, uint32_t pd[], void *vaddr) {
         }
     }
 }
-
-void print_prog(program_t *prog) {
-    kputs("program name: ");
-    kputs(prog->name);
-    kputs("\n");
-
-    Elf32_Ehdr* header = ELFH(prog->file);
-
-    kputs("cantidad: ");
-    kputd(header->e_phnum);
-    kputs("\ntamanio: ");
-    kputd(header->e_phentsize);
-    kputs("\n");
-
-    for (int i = 0; i < header->e_phnum; i++) {
-        kputs("array: ");
-        kputui32((uint32_t) (&ELFPHS(prog->file)[i]));
-        kputs("\ntipo: ");
-        kputd(ELFPHS(prog->file)[i].p_type);
-        kputs("\nvaddr: ");
-        kputd(ELFPHS(prog->file)[i].p_vaddr);
-        kputs("\nmem size: ");
-        kputd(ELFPHS(prog->file)[i].p_memsz);
-        kputs("\n");
-    }
-}
-

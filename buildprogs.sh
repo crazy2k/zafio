@@ -1,6 +1,6 @@
 #!/bin/sh
-
-echo "#include \"../inc/elf_helpers.h\""
+echo "#include \"../inc/progs.h\""
+echo "#include \"../inc/types.h\""
 echo
 
 for FILE in `ls progs`
