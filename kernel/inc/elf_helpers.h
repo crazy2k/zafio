@@ -29,6 +29,8 @@ extern long programs_size;
 
 void* elf_entry_point(void *file);
 
+void* elf_stack_bottom(void *file);
+
 uint32_t page_flags_for(uint32_t flags);
 
 void load_elf_proc_image(void *file, uint32_t pd[]);

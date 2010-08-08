@@ -4,8 +4,13 @@
 #include "../inc/utils.h"
 #include "../inc/io.h"
 
-void* elf_entry_point(void *file) {
+void *elf_entry_point(void *file) {
     return (void *)ELFH(file)->e_entry;
+}
+
+void* elf_stack_bottom(void *file) {
+    //TODO: Stub, completar
+    return (void *) 0x40000000;
 }
 
 void load_elf_proc_image(void *file, uint32_t pd[]) {
