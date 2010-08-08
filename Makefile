@@ -83,7 +83,7 @@ $(OBJSDIR)%.o:
 $(PROG_OBJS):
 	$(LD) $(LDPARTFLAGS) -b binary $(patsubst $(OBJSDIR)/%.o,$(PROGS_DIR)/%,$@) -o $@
 
-.PHONY: clean new diskette.img
+.PHONY: clean new diskette.img all
 
 clean:
 	rm -f $(ALL_PROGS_SOURCE)	
