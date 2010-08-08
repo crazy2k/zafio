@@ -81,7 +81,7 @@ static void update_gdtr() {
 static page_t *reserve_kernel_pages(page_t* page, int n) {
     for (int i = 0; i < n; i++) {
         reserve_page(&page[i]);
-        page[i].vaddr = KVIRTADDR(PAGE_TO_PHADDR(&page[i]));
+        page[i].kvaddr = KVIRTADDR(PAGE_TO_PHADDR(&page[i]));
     }
 
     return page;
@@ -102,7 +102,7 @@ void invalidate_tlb_pages(void *vstart, int n) {
 
 //Traduce una direccion virtual del kernel a su direccion fisica
 void *get_kvaddr(void *kphaddr) {
-    return (void *) ((uint32_t) PHADDR_TO_PAGE(PDE_PT_BASE(kphaddr))->vaddr | 
+    return (void *) ((uint32_t) PHADDR_TO_PAGE(PDE_PT_BASE(kphaddr))->kvaddr | 
         ((uint32_t) kphaddr & __LOW12_BITS__));
 }
 
@@ -169,7 +169,7 @@ void* new_page(uint32_t pd[], void* vaddr, uint32_t flags) {
         new_page_table(pd, vaddr);
 
     page_t *page = reserve_page(page_list->next);
-    page->vaddr = vaddr;
+    page->kvaddr = vaddr;
     uint32_t *pte = get_pte(pd, vaddr);
 
     if (*pte & PDE_P)
