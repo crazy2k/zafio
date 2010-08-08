@@ -56,6 +56,7 @@ void *new_kernel_pages(long n);
 
 uint32_t* get_pte(uint32_t pd[], void* vaddr);
 void *get_kphaddr(void *kvaddr);
+void *get_kvaddr(void *kphaddr);
 
 void page_table_map(uint32_t pt[], void* vaddr, void* phaddr, uint32_t flags);
 

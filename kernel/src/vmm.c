@@ -101,6 +101,12 @@ void invalidate_tlb_pages(void *vstart, int n) {
 }
 
 //Traduce una direccion virtual del kernel a su direccion fisica
+void *get_kvaddr(void *kphaddr) {
+    return (void *) ((uint32_t) PHADDR_TO_PAGE(PDE_PT_BASE(kphaddr))->vaddr | 
+        ((uint32_t) kphaddr & __LOW12_BITS__));
+}
+
+//Traduce una direccion virtual del kernel a su direccion fisica
 void *get_kphaddr(void *kvaddr) {
     return (void*) ( PTE_PAGE_BASE(*get_pte(kernel_pd, kvaddr)) | 
         ((uint32_t) kvaddr & __LOW12_BITS__) );
@@ -115,7 +121,7 @@ uint32_t* get_pte(uint32_t pd[], void* vaddr) {
     if (!(pde & PDE_P))
         return NULL;
 
-    uint32_t *pt = PHADDR_TO_PAGE(PDE_PT_BASE(pde))->vaddr;
+    uint32_t *pt = get_kvaddr((void *)PDE_PT_BASE(pde));
     return &pt[PTI(vaddr)];
 }
 
