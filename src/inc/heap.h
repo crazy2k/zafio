@@ -1,6 +1,6 @@
-#ifndef __SLAB_H__
+#ifndef __HEAP_H__
 
-#define __SLAB_H__
+#define __HEAP_H__
 
 #include "../inc/types.h"
 #include "../inc/vmm.h"

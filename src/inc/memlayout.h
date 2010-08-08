@@ -7,6 +7,7 @@
 extern uint32_t __kernel_addr_offset[];
 extern uint32_t __kernel_virt_addr[];
 extern uint32_t __loader_phys_addr[];
+extern uint32_t __stack_bottom[];
 extern uint32_t __stack_top[];
 extern uint32_t __stack_size[];
 
@@ -20,6 +21,7 @@ extern uint32_t __stack_size[];
 #define LOADER_PHYS_ADDR (void *)__loader_phys_addr
 #define LOADER_VIRT_ADDR (KVIRTADDR(LOADER_PHYS_ADDR))
 
+#define KERNEL_STACK_BOTTOM (void *)__stack_bottom
 #define KERNEL_STACK_TOP (void *)__stack_top
 #define KERNEL_STACK_SIZE (uint32_t)__stack_size
 

@@ -28,7 +28,7 @@ uint64_t gdt[] __attribute__((aligned(0x08))) = {
 
 gdtr_t gdtr = { .size = sizeof(gdt) - 1, .addr = KPHADDR(gdt) };
 
-uint64_t idt[256] = {0};
+uint64_t idt[IDT_LENGTH] = {0};
 
 idtr_t idtr = { .size = sizeof(idt) - 1, .addr = idt };
 

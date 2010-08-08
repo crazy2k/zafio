@@ -10,7 +10,7 @@ char inb(uint32_t port) {
     return value;
 }
 
-void lgdt(gdtr_t *gdtr) {
+void lgdt(gdtr_t gdtr) {
     __asm__ __volatile__ ("lgdt %0" : : "m" (gdtr));
 }
 
@@ -21,6 +21,21 @@ void lidt(idtr_t idtr) {
 void ltr(uint16_t segsel) {
     __asm__ __volatile__ ("ltr %0" : : "r" (segsel));
 }
+
+uint32_t disable_interrupts() {
+    uint32_t eflags;
+    __asm__ __volatile__("pushf");
+    __asm__ __volatile__("pop %0" : "=a" (eflags) :);
+    __asm__ __volatile__("cli");
+
+    return eflags;
+}
+
+void restore_eflags(uint32_t eflags) {
+    __asm__ __volatile__("push %0" : : "r" (eflags));
+    __asm__ __volatile__("popf");
+}
+
 
 
 void sti() {

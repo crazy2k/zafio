@@ -28,19 +28,23 @@ BUILD_ALL_PROGS := ./buildprogs.sh
 ALL_PROGS_SOURCE := $(SRCDIR)kernel/all_progs.c
 ALL_PROGS_OBJ := $(OBJSDIR)all_progs.o
 
+# Codigo C
 SOURCES := $(shell find $(SRCDIR)/kernel -name "*.c")
 HEADERS := $(shell find $(SRCDIR)/kernel -name "*.h")
 
 OBJS := $(notdir $(SOURCES:.c=.o))
 OBJS := $(addprefix $(OBJSDIR), $(OBJS))
 
+# Codigo assembly
+ASSOURCES := $(shell find $(SRCDIR) -name "*.S")
+ASOBJS := $(notdir $(ASSOURCES:.S=.o))
+ASOBJS := $(addprefix $(OBJSDIR), $(ASOBJS))
+
+
 PROGS := $(wildcard $(PROGS_DIR)/*)
 PROG_OBJS := $(addsuffix .o, $(subst $(PROGS_DIR),$(OBJSDIR),$(PROGS)))
 
 KERNEL := kernel.bin
-
-LOADER_SRC := $(SRCDIR)/kernel/loader.S
-LOADER_OBJ := $(OBJSDIR)/loader.o
 
 # Imagen de disco floppy
 DISKETTE := $(REFTESTDIR)/aux/diskette.img
@@ -63,14 +67,14 @@ $(ALL_PROGS_SOURCE): $(PROGS_DIR) $(BUILD_ALL_PROGS)
 
 $(ALL_PROGS_OBJ): $(ALL_PROGS_SOURCE) 
 
-$(KERNEL): $(OBJS) $(LOADER_OBJ) $(PROGS_DIR) $(PROG_OBJS) $(ALL_PROGS_OBJ)
-	$(LD) $(LDFLAGS) $(LOADER_OBJ) $(OBJS) $(PROG_OBJS) -o $@
+$(KERNEL): $(OBJS) $(ASOBJS) $(PROGS_DIR) $(PROG_OBJS) $(ALL_PROGS_OBJ)
+	$(LD) $(LDFLAGS) $(ASOBJS) $(OBJS) $(PROG_OBJS) -o $@
 
-$(LOADER_OBJ): $(LOADER_SRC)
-	$(AS) $(ASFLAGS) $(LOADER_SRC) -o $@
+$(ASOBJS): $(ASSOURCES)
+	$(AS) $(ASFLAGS) $(shell find $(SRCDIR) -name "$(notdir $(patsubst %.o, %.S, $@))") -o $@
 
 deps: $(SOURCES) $(OBJSDIR) $(PROG_SOURCES) $(PROG_OBJSDIR)
-	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(OBJSDIR:/=\/)\1/" > $@  
+	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(OBJSDIR:/=\/)\1/" > $@
 -include deps
 
 $(OBJSDIR)%.o:

@@ -4,6 +4,7 @@
 
 #include "types.h"
 #include "mmu.h"
+#include "sched.h"
 
 // Campos de descriptores de la IDT
 
@@ -20,12 +21,17 @@
 
 #define IDT_BAD_INDEX   0x1
 #define IDT_BUSY        0x2
-#define IDT_LAST_INDEX  ((((uint32_t)idtr.size)/sizeof(uint64_t)) - 1)
+
+// Recordar que puede hacer falta actualizar estos valores en idt_handlers.S si
+// son alterados aqui
+#define IDT_LENGTH      256
+#define IDT_LAST_INDEX  (IDT_LENGTH - 1)
 
 // Indices de interrupciones y excepciones
 #define IDT_INDEX_GP    13ul
 #define IDT_INDEX_PF    14ul
 #define IDT_INDEX_TIMER 32ul
+#define IDT_INDEX_KB    33ul
 
 // Constantes de los PIC y sus ICWs
 
@@ -57,20 +63,26 @@
 #define PIC1_OFFSET 0x20
 #define PIC2_OFFSET 0x28
 
-typedef gdtr_t idtr_t;
+#define PIC_TIMER       0x1
+#define PIC_KB          0x2
 
-extern uint64_t idt[256];
+// Funciones
 
-extern idtr_t idtr;
-
-void idt_pf_handler();
-
-void idt_timer_handler();
+typedef void (*isr_t)(uint32_t index, uint32_t error_code, task_state_t *st);
 
 void idt_init();
 
-int register_handler(uint32_t index, void (*handler)(), uint64_t type);
+int register_isr(uint32_t index, isr_t isr);
 
-void remap_PIC(char offset1, char offset2);
+void idt_handle(uint32_t index, uint32_t error_code, task_state_t *st);
+int set_handler(uint32_t index, void (*handler)());
+
+typedef gdtr_t idtr_t;
+
+extern idtr_t idtr;
+
+extern uint64_t idt[IDT_LENGTH];
+
+extern void set_handlers();
 
 #endif
