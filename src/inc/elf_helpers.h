@@ -5,13 +5,18 @@
 #include "elf.h"
 #include "types.h"
 
-#define ELFH(file) ((Elf32_Ehdr*)(file))
-#define ELFPHS(file) ((Elf32_Phdr*)ELF(file)->e_phoff) 
+#define ELFH(file) ((Elf32_Ehdr*) (file))
 
-#define ELFPH(file, idx) ({ \
-    Elf32_Ehdr *__elf = ELF(file); \
-    long __idx = idx; \
-    (Elf32_Phdr*) (__elf->e_phoff + __elf->e_phentsize * __idx)  }) 
+#define ELFPHS(file) ({ \
+        void* __file = (file); \
+        (Elf32_Phdr*) (__file + ELFH(__file)->e_phoff); })
+
+
+#define ELFPH_OFFSET(file, ph) ((void *) ((file) + (ph)->p_offset))
+
+#define ELFSHS(file) ({ \
+        void* __file = (file); \
+        (Elf32_Shdr*) (__file + ELFH(__file)->e_shoff); })
 
 typedef struct {
     char *name;
@@ -22,9 +27,16 @@ typedef struct {
 extern program_t programs[];
 extern long programs_size;
 
-void load_elf_image(void *elf_file, uint32_t pd[]);
-void* elf_entry(void *file);
+void* elf_entry_point(void *file);
 
-void print_prog(program_t *file);
+uint32_t page_flags_for(uint32_t flags);
+
+void load_elf_proc_image(void *file, uint32_t pd[]);
+
+void proc_map_vaddr(Elf32_Phdr* ph, void *file, uint32_t pd[], void *vaddr);
+
+// TODO: Si ya se, esto no va aca
+#define CODE_PAGE_FLAGS (PTE_P | PTE_PWT | PTE_US)
+#define DATA_PAGE_FLAGS (PTE_P | PTE_PWT | PTE_US | PTE_RW) 
 
 #endif
