@@ -92,6 +92,7 @@ struct task_t {
 };
 
 extern uint64_t gdt[];
+extern void switch_stack_pointers(void **old_stack_top, void **new_stack_top);
 
 void sched_init();
 
