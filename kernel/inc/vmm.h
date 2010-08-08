@@ -28,7 +28,7 @@ struct page_t {
     int count;
     page_t *next;
     page_t *prev;
-    void *vaddr;
+    void *kvaddr;
 };
 
 extern page_t* page_list;
