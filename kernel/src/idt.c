@@ -10,6 +10,7 @@
 static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 static void keyboard_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 static void timer_isr(uint32_t index, uint32_t error_code, task_state_t *st);
+static void pf_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 
 static void remap_PIC(char offset1, char offset2);
 
@@ -142,3 +143,38 @@ static void timer_isr(uint32_t index, uint32_t error_code,
     BOCHS_BREAK;
 }
 
+#define PF_P       0x1
+#define PF_WR      0x2
+#define PF_US      0x4
+#define PF_RSVD    0x8
+#define PF_ID      0xC
+static void pf_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
+    kputs("Fallo de pagina:\n");
+    if (!(error_code & PF_P))
+        kputs("- La falla fue causada por una pagina no presente.\n");
+    else
+        kputs("- La falla fue causada por una violacion de proteccion a nivel"
+            "de pagina.\n");
+
+    if (!(error_code & PF_WR))
+        kputs("- El acceso que causo el error fue una lectura.\n");
+    else
+        kputs("- El acceso que causo el error fue una escritura.\n");
+
+    if (!(error_code & PF_US))
+        kputs("- El acceso ocurrio ejecutando en espacio de supervisor.\n");
+    else
+        kputs("- El acceso ocurrio ejecutando en espacio de usuario.\n");
+
+    if (!(error_code & PF_RSVD))
+        kputs("- La falla no fue causada por una violacion de bit"
+            "reservado.\n");
+    else
+        kputs("- La falla no fue causada por una violacion de bit"
+            "reservado.\n");
+
+    if (!(error_code & PF_ID))
+        kputs("- La falla no fue causada por un fetch de instruccion.\n");
+    else
+        kputs("- La falla fue causada por un fetch de instruccion.\n");
+}
