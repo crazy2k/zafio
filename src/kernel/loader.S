@@ -46,7 +46,7 @@ loader:
     ; - ebx contiene la direccion fisica de la estructura con informacion
     ;   que nos dejo el bootloader (multiboot info)
 
-    xchg bx, bx     ; magic breakpoint para bochs
+    ;xchg bx, bx     ; magic breakpoint para bochs
     cli
 
     ; cargamos la GDT
