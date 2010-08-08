@@ -377,3 +377,5 @@ Referencias
 
 .. [Multiboot]
     http://www.gnu.org/software/grub/manual/multiboot/multiboot.html
+.. [Bochs]
+    http://bochs.sourceforge.net/
