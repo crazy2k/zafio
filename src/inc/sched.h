@@ -84,8 +84,7 @@ typedef struct {
 typedef struct task_t task_t;
 
 struct task_t {
-    task_state_t state; // Estructura con el estado de la tarea
-    void *pd;           // Direccion fisica del directorio de paginas
+    void *pd;               // Direccion fisica del directorio de paginas
     void *kernel_stack;
     void *kernel_stack_top;
     task_t *next;
