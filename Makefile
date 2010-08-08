@@ -58,7 +58,7 @@ DISKETTE := $(REFTESTDIR)/aux/diskette.img
 #
 all: diskette.img
 
-deps: $(SOURCES) $(OBJSDIR) $(PROG_SOURCES) $(PROG_OBJSDIR) $(ALL_PROGS_OBJ)
+deps: $(SOURCES) $(OBJSDIR) $(PROG_SOURCES) $(PROG_OBJSDIR) $(ALL_PROGS_SOURCE)
 	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(subst /,\/, $(OBJSDIR))\1/" > $@
 -include deps
 
