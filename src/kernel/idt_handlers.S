@@ -1,3 +1,5 @@
+%include "./src/inc/nasm_macros.inc"
+
 extern set_handler
 extern idt_handle
 
@@ -13,11 +15,7 @@ global load_state
 ; uno a uno los handlers creados.
 section .text
 set_handlers:
-    push ebp
-    mov ebp, esp
-    push edi
-    push esi
-    push ebx
+    c_enter
 
 %assign i 0
 %rep (IDT_LAST_INDEX + 1)
@@ -28,13 +26,7 @@ set_handlers:
     %assign i (i + 1)
 %endrep
 
-    pop ebx
-    pop esi
-    pop edi
-
-    pop ebp
-    ret
-
+    c_leave
 
 ; Macro que crea un handler para una entrada en la IDT.
 ; - %1 es el indice de la IDT en el que se ubicara una referencia a el
