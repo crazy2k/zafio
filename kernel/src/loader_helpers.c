@@ -138,6 +138,7 @@ void mbi_gather(multiboot_info_t *mbi, page_t *dest, memory_info_t *meminfo) {
         // Ubicamos las estructuras
         for (page_t* current = start; current < stop; current++) {
             current->count = 0;
+            current->vaddr = NULL;
             current->prev = (page_t *)KVIRTADDR((current - 1));
             current->next = (page_t *)KVIRTADDR((current + 1));
         }

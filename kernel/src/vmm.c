@@ -79,8 +79,10 @@ static void update_gdtr() {
 
 //Mapea paginas de uso exclusivo del kernel durante el procesos de inicializacion
 static page_t *reserve_kernel_pages(page_t* page, int n) {
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < n; i++) {
         reserve_page(&page[i]);
+        page[i].vaddr = KVIRTADDR(PAGE_TO_PHADDR(&page[i]));
+    }
 
     return page;
 }
@@ -113,7 +115,7 @@ uint32_t* get_pte(uint32_t pd[], void* vaddr) {
     if (!(pde & PDE_P))
         return NULL;
 
-    uint32_t *pt = KVIRTADDR(PDE_PT_BASE(pde));
+    uint32_t *pt = PHADDR_TO_PAGE(PDE_PT_BASE(pde))->vaddr;
     return &pt[PTI(vaddr)];
 }
 
@@ -161,6 +163,7 @@ void* new_page(uint32_t pd[], void* vaddr, uint32_t flags) {
         new_page_table(pd, vaddr);
 
     page_t *page = reserve_page(page_list->next);
+    page->vaddr = vaddr;
     uint32_t *pte = get_pte(pd, vaddr);
 
     if (*pte & PDE_P)
