@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 echo "#include \"../inc/elf_helpers.h\""
 echo
