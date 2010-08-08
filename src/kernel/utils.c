@@ -21,6 +21,14 @@ void *memset (void *s, int c, size_t n) {
     return s;
 }
 
+long max(long var1, long var2) {
+    return var1 < var2 ? var2 : var1;
+}
+
+long min(long var1, long var2) {
+    return var1 > var2 ? var2 : var1;
+}
+
 void kpanic(char *msg) {
     kputs("PANIC: ");
     kputs(msg);
