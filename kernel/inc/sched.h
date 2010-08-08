@@ -3,6 +3,7 @@
 #define __SCHED_H__
 
 #include "types.h"
+#include "progs.h"
 
 typedef struct {
     uint16_t prev;  // Previous Task Link
@@ -84,6 +85,7 @@ typedef struct {
 typedef struct task_t task_t;
 
 struct task_t {
+    program_t prog;
     void *pd;               // Direccion fisica del directorio de paginas
     void *kernel_stack;
     void *kernel_stack_top;
