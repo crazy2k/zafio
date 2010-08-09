@@ -25,6 +25,7 @@ void idt_init() {
     // Registramos rutinas de atencion
     register_isr(IDT_INDEX_TIMER, timer_isr);
     register_isr(IDT_INDEX_KB, keyboard_isr);
+    register_isr(IDT_INDEX_PF, pf_isr);
 
     // Cargamos la IDT
     lidt(idtr);
