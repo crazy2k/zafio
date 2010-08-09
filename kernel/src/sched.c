@@ -30,7 +30,7 @@ void sched_init() {
 
     // Creamos la tarea ``init``
     task_t *init = kmalloc(sizeof(task_t));
-    init->pd = get_kphaddr(kernel_pd);
+    init->pd = kernel_pd;
 
     init->kernel_stack = KERNEL_STACK_BOTTOM;
 
