@@ -143,9 +143,11 @@ static void initialize_task_state(task_state_t *st, void *entry_point,
  *   de direcciones virtual.
  */
 task_t *create_task(uint32_t pd[], int level, void *entry_point,
-    void *stack_pointer) {
+    void *stack_pointer, program_t *prog) {
 
     task_t *task = kmalloc(sizeof(task_t));
+
+    task->prog = prog;
 
     task->pd = pd;
 
