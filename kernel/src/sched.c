@@ -31,6 +31,10 @@ void sched_init() {
 
     // Creamos la tarea ``init``
     task_t *init = kmalloc(sizeof(task_t));
+
+    init->prog = kmalloc(sizeof(program_t));
+    init->prog->name = "init";
+
     init->pd = kernel_pd;
 
     init->kernel_stack = KERNEL_STACK_BOTTOM;
