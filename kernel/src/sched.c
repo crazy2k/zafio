@@ -12,6 +12,7 @@
 #define SCHED_COMMON_EFLAGS 0x3202
 
 extern void load_state();
+extern void initialize_task(task_t *task);
 
 // TSS del sistema. Su valor de esp0 se actualiza en los cambios de contexto.
 tss_t *tss = NULL;
@@ -160,9 +161,11 @@ task_t *create_task(uint32_t pd[], int level, void *entry_point,
     task_state_t *st = (task_state_t *)task->kernel_stack_top;
     initialize_task_state(st, entry_point, stack_pointer);
 
-    // Al tope de la pila va la direccion de la rutina que carga el estado
+    // Al tope de la pila va la direccion de la rutina que inicializa la tarea
     --(task->kernel_stack_top);
-    task->kernel_stack_top = load_state;
+    task->kernel_stack_top = task;
+    --(task->kernel_stack_top);
+    task->kernel_stack_top = initialize_task;
 
     return task;
 }
