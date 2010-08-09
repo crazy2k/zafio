@@ -6,6 +6,7 @@
 #include "../inc/x86.h"
 #include "../inc/debug.h"
 #include "../inc/io.h"
+#include "../inc/elf_helpers.h"
 #include "../inc/init.h"
 
 // Un EFLAGS con defaults razonables
