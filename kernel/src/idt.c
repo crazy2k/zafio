@@ -87,12 +87,12 @@ int set_handler(uint32_t index, void (*handler)()) {
 }
 
 void idt_handle(uint32_t index, uint32_t error_code, task_state_t *st) {
+    outb(PIC1_COMMAND, OCW2);
+
     if (isrs[index] == NULL)
         default_isr(index, error_code, st);
     else
         isrs[index](index, error_code, st);
-
-    outb(PIC1_COMMAND, OCW2);
 }
 
 static void remap_PIC(char offset1, char offset2) {
