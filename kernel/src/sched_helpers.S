@@ -3,6 +3,7 @@
 global switch_stack_pointers
 global initialize_task
 
+extern load_task_stack
 extern load_task_image
 extern load_state
 
@@ -24,7 +25,8 @@ switch_stack_pointers:
 
 initialize_task:
     ; El task_t ya se encuentra en el stack, por lo que no hace falta hacer
-    ; push para pasarlo como parametro
+    ; push para pasarlo como parametro (le pasamos a las dos funciones lo mismo)
+    CCALL load_task_stack
     CCALL load_task_image
     add esp, 4
 
