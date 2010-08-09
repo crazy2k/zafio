@@ -110,4 +110,6 @@ void switch_tasks();
 
 void add_task(task_t *task);
 
+task_t *current_task();
+
 #endif
