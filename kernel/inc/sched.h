@@ -84,8 +84,10 @@ typedef struct {
 
 typedef struct task_t task_t;
 
+struct program_t;
+
 struct task_t {
-    program_t *prog;
+    struct program_t *prog;
     // Direccion virtual del directorio de paginas en el espacio de direcciones
     // del kernel
     void *pd;
@@ -103,7 +105,7 @@ void sched_init();
 void setup_tss(uint32_t kernel_stack);
 
 task_t *create_task(uint32_t pd[], int level, void *entry_point,
-    void *stack_pointer, program_t *prog);
+    void *stack_pointer, struct program_t *prog);
 
 void switch_tasks();
 
