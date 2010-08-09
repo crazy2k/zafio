@@ -9,17 +9,22 @@ extern load_state
 
 section .text
 
-%define old_stack_top_ptr [esp + 4]
-%define new_stack_top_ptr [esp + 8]
+%define old_stack_top_ptr [ebp + 8]
+%define new_stack_top_ptr [ebp + 12]
 switch_stack_pointers:
+    push ebp
+    mov ebp, esp
+
+    mov eax, old_stack_top_ptr
+    mov ecx, new_stack_top_ptr
 
     ; Guardamos el esp de la tarea vieja
-    mov eax, old_stack_top_ptr
     mov [eax], esp
 
     ; Cargamos el esp de la tarea a la que vamos
-    mov eax, new_stack_top_ptr
-    mov esp, [eax]
+    mov esp, [ecx]
+
+    pop ebp
 
     ret
 
