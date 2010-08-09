@@ -138,13 +138,8 @@ static void initialize_task_state(task_state_t *st, void *entry_point,
 
 /* Crea una nueva tarea lista para ser ejecutada.
  * - ``pd`` es la direccion virtual del directorio de paginas de la tarea;;
- * - ``entry_point`` es el punto de entrada de la tarea en su espacio de
- *   direcciones virtual;
- * - ``stack_pointer`` es el stack pointer inicial de la tarea en su espacio
- *   de direcciones virtual.
  */
-task_t *create_task(uint32_t pd[], int level, void *entry_point,
-    void *stack_pointer, program_t *prog) {
+task_t *create_task(uint32_t pd[], struct program_t *prog) {
 
     task_t *task = kmalloc(sizeof(task_t));
 
@@ -157,6 +152,8 @@ task_t *create_task(uint32_t pd[], int level, void *entry_point,
     task->kernel_stack_top = task->kernel_stack + PAGE_SIZE;
 
     // Escribimos el task_state_t en la pila del kernel
+    void *stack_pointer = elf_stack_bottom(prog->file);
+    void *entry_point = elf_entry_point(prog->file);
     task->kernel_stack_top -= sizeof(task_state_t);
     task_state_t *st = (task_state_t *)task->kernel_stack_top;
     initialize_task_state(st, entry_point, stack_pointer);
