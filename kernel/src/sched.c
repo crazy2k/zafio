@@ -12,6 +12,7 @@
 #define SCHED_COMMON_EFLAGS 0x3202
 
 extern void load_state();
+extern void initialize_task(task_t *task);
 
 // TSS del sistema. Su valor de esp0 se actualiza en los cambios de contexto.
 tss_t *tss = NULL;
@@ -21,7 +22,6 @@ task_t *task_list = NULL;
 
 static void link_tasks(task_t *fst, task_t *sec);
 
-void add_task(task_t *task);
 static void initialize_task_state(task_state_t *st, void *entry_point,
     void *stack_pointer);
 static void switch_context(task_t *old_task, task_t *new_task);
@@ -136,16 +136,13 @@ static void initialize_task_state(task_state_t *st, void *entry_point,
 }
 
 /* Crea una nueva tarea lista para ser ejecutada.
- * - ``pd`` es la direccion fisica del directorio de paginas de la tarea;;
- * - ``entry_point`` es el punto de entrada de la tarea en su espacio de
- *   direcciones virtual;
- * - ``stack_pointer`` es el stack pointer inicial de la tarea en su espacio
- *   de direcciones virtual.
+ * - ``pd`` es la direccion virtual del directorio de paginas de la tarea;;
  */
-task_t *create_task(uint32_t pd[], int level, void *entry_point,
-    void *stack_pointer) {
+task_t *create_task(uint32_t pd[], struct program_t *prog) {
 
     task_t *task = kmalloc(sizeof(task_t));
+
+    task->prog = prog;
 
     task->pd = pd;
 
@@ -154,13 +151,17 @@ task_t *create_task(uint32_t pd[], int level, void *entry_point,
     task->kernel_stack_top = task->kernel_stack + PAGE_SIZE;
 
     // Escribimos el task_state_t en la pila del kernel
+    void *stack_pointer = elf_stack_bottom(prog->file);
+    void *entry_point = elf_entry_point(prog->file);
     task->kernel_stack_top -= sizeof(task_state_t);
     task_state_t *st = (task_state_t *)task->kernel_stack_top;
     initialize_task_state(st, entry_point, stack_pointer);
 
-    // Al tope de la pila va la direccion de la rutina que carga el estado
-    --(task->kernel_stack_top);
-    task->kernel_stack_top = load_state;
+    // Al tope de la pila va la direccion de la rutina que inicializa la tarea
+    task->kernel_stack_top -= 4;
+    *((void **)task->kernel_stack_top) = task;
+    task->kernel_stack_top -= 4;
+    *((void **)task->kernel_stack_top) = initialize_task;
 
     return task;
 }
@@ -168,7 +169,7 @@ task_t *create_task(uint32_t pd[], int level, void *entry_point,
 static void switch_context(task_t *old_task, task_t *new_task) {
 
     // Cargamos el PD de la tarea
-    load_cr3((uint32_t)new_task->pd);
+    load_cr3((uint32_t)get_kphaddr(new_task->pd));
 
     // Guardamos el stack pointer y cargamos el de la nueva tarea
     switch_stack_pointers(&old_task->kernel_stack_top,

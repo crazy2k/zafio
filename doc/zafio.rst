@@ -145,8 +145,8 @@ estuviera libre para, por ejemplo, alojarla como memoria dinámica para
 algún subsistema del kernel.
 
 Por último, se definen los valores límite para el *heap*, es decir, el
-espacio de memoria a utilizar para satisfacer las futuras necesidades
-de memoria de los distintos subsistemas.
+espacio de memoria virtual a utilizar para satisfacer las futuras
+necesidades de memoria de los distintos subsistemas del kernel.
 
 ``idt.c``
 ~~~~~~~~~

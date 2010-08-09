@@ -20,3 +20,14 @@
 
     ret
 %endmacro
+
+; Llama a la funcion de C en %1 pasandole los parametros %2, %3, ...
+%macro CCALL 1-*
+    %rep (%0 - 1)
+        %rotate -1
+        push %1
+    %endrep
+    %rotate -1
+    call %1
+    add esp, 4*(%0 - 1) ; asumimos que los parametros son de 32 bits
+%endmacro

@@ -1,3 +1,5 @@
+%include "./kernel/inc/nasm_macros.inc"
+
 global loader
 
 extern kernel_pd
@@ -15,22 +17,10 @@ extern __stack_bottom
 %define KERNEL_OFFSET 0xC0000000
 %define KPHADDR(dir) ((dir) - KERNEL_OFFSET)
 
-; Llama a la funcion de C en %1 pasandole los parametros %2, %3, ...
-%macro CCALL 1-*
-    %rep (%0 - 1)
-        %rotate -1
-        push %1
-    %endrep
-    %rotate -1
-    call %1
-    add esp, 4*(%0 - 1) ; asumimos que los parametros son de 32 bits
-%endmacro
-
 ; Datos para usar en el header Multiboot
 MAGIC equ 0x1BADB002 ; la especificacion requiere este numero magico
-ALIGN_MODS equ (0x1 << 0)   ; flag de alineacion de modulos
 MEMINFO equ (0x1 << 1)      ; flag de informacion de memoria
-FLAGS equ (ALIGN_MODS | MEMINFO)
+FLAGS equ MEMINFO
 CHECKSUM equ (- MAGIC - FLAGS)
 
 
