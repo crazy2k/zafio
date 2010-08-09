@@ -136,7 +136,7 @@ static void initialize_task_state(task_state_t *st, void *entry_point,
 }
 
 /* Crea una nueva tarea lista para ser ejecutada.
- * - ``pd`` es la direccion fisica del directorio de paginas de la tarea;;
+ * - ``pd`` es la direccion virtual del directorio de paginas de la tarea;;
  * - ``entry_point`` es el punto de entrada de la tarea en su espacio de
  *   direcciones virtual;
  * - ``stack_pointer`` es el stack pointer inicial de la tarea en su espacio
@@ -170,7 +170,7 @@ task_t *create_task(uint32_t pd[], int level, void *entry_point,
 static void switch_context(task_t *old_task, task_t *new_task) {
 
     // Cargamos el PD de la tarea
-    load_cr3((uint32_t)new_task->pd);
+    load_cr3((uint32_t)get_kphaddr(new_task->pd));
 
     // Guardamos el stack pointer y cargamos el de la nueva tarea
     switch_stack_pointers(&old_task->kernel_stack_top,
