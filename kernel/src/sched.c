@@ -158,10 +158,10 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
     initialize_task_state(st, entry_point, stack_pointer);
 
     // Al tope de la pila va la direccion de la rutina que inicializa la tarea
-    --(task->kernel_stack_top);
-    task->kernel_stack_top = task;
-    --(task->kernel_stack_top);
-    task->kernel_stack_top = initialize_task;
+    task->kernel_stack_top -= 4;
+    *((void **)task->kernel_stack_top) = task;
+    task->kernel_stack_top -= 4;
+    *((void **)task->kernel_stack_top) = initialize_task;
 
     return task;
 }
