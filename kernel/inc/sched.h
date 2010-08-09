@@ -92,7 +92,7 @@ struct task_t {
     // del kernel
     void *pd;
     void *kernel_stack;
-    void *kernel_stack_top;
+    void *kernel_stack_pointer;
     task_t *next;
     task_t *prev;
 };

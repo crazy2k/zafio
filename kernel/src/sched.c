@@ -37,7 +37,7 @@ void sched_init() {
     // El stack de nivel 0 no interesa. Deberia sobreescribirse al cambiar de
     // tarea. Ademas, como estamos en espacio de kernel, no se deberia utilizar
     // el valor del stack de nivel 0 que esta en la TSS.
-    init->kernel_stack_top = NULL;
+    init->kernel_stack_pointer = NULL;
     setup_tss(NULL);
 
     add_task(init);
@@ -148,20 +148,23 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
 
     // Alojamos memoria para el stack del kernel de la tarea
     task->kernel_stack = new_kernel_page();
-    task->kernel_stack_top = task->kernel_stack + PAGE_SIZE;
+    task->kernel_stack_pointer = task->kernel_stack + PAGE_SIZE;
 
     // Escribimos el task_state_t en la pila del kernel
     void *stack_pointer = elf_stack_bottom(prog->file);
     void *entry_point = elf_entry_point(prog->file);
-    task->kernel_stack_top -= sizeof(task_state_t);
-    task_state_t *st = (task_state_t *)task->kernel_stack_top;
+    task->kernel_stack_pointer -= sizeof(task_state_t);
+    task_state_t *st = (task_state_t *)task->kernel_stack_pointer;
     initialize_task_state(st, entry_point, stack_pointer);
 
     // Al tope de la pila va la direccion de la rutina que inicializa la tarea
-    task->kernel_stack_top -= 4;
-    *((void **)task->kernel_stack_top) = task;
-    task->kernel_stack_top -= 4;
-    *((void **)task->kernel_stack_top) = initialize_task;
+    task->kernel_stack_pointer -= 4;
+    *((void **)task->kernel_stack_pointer) = task;
+    task->kernel_stack_pointer -= 4;
+    *((void **)task->kernel_stack_pointer) = initialize_task;
+    task->kernel_stack_pointer -= 4;
+    *((void **)task->kernel_stack_pointer) = NULL;
+
 
     return task;
 }
@@ -171,12 +174,12 @@ static void switch_context(task_t *old_task, task_t *new_task) {
     // Cargamos el PD de la tarea
     load_cr3((uint32_t)get_kphaddr(new_task->pd));
 
-    // Guardamos el stack pointer y cargamos el de la nueva tarea
-    switch_stack_pointers(&old_task->kernel_stack_top,
-        &new_task->kernel_stack_top);
-
     // Actualizamos la TSS
-    setup_tss((uint32_t)new_task->kernel_stack_top);
+    setup_tss((uint32_t)new_task->kernel_stack_pointer);
+
+    // Guardamos el stack pointer y cargamos el de la nueva tarea
+    switch_stack_pointers(&old_task->kernel_stack_pointer,
+        &new_task->kernel_stack_pointer);
 }
 
 task_t *current_task() {
