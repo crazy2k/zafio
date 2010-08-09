@@ -177,4 +177,6 @@ static void pf_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
         kputs("- La falla no fue causada por un fetch de instruccion.\n");
     else
         kputs("- La falla fue causada por un fetch de instruccion.\n");
+
+    kpanic("Fallo de pagina!");
 }
