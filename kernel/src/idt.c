@@ -33,8 +33,7 @@ void idt_init() {
     remap_PIC(PIC1_OFFSET, PIC2_OFFSET);
 
     // Desenmascaramos interrupciones en el PIC
-    outb(PIC1_DATA, ~PIC_KB);
-    kputui32((uint32_t)~PIC_KB);
+    outb(PIC1_DATA, 0xFF);
 }
 
 /* Registra una rutina de atencion ``isr`` para la excepcion/interrupcion cuyo
