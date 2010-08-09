@@ -5,11 +5,13 @@
 #include "sched.h"
 #include "elf_helpers.h"
 
-typedef struct {
+struct program_t {
     char *name;
     void *file;
     long size;
-} program_t;
+};
+
+typedef struct program_t program_t;
 
 extern program_t programs[];
 extern long programs_size;

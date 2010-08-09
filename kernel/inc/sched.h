@@ -84,8 +84,10 @@ typedef struct {
 
 typedef struct task_t task_t;
 
+struct program_t;
+
 struct task_t {
-    program_t *prog;
+    struct program_t *prog;
     // Direccion virtual del directorio de paginas en el espacio de direcciones
     // del kernel
     void *pd;
