@@ -108,4 +108,6 @@ task_t *create_task(uint32_t pd[], struct program_t *prog);
 
 void switch_tasks();
 
+void add_task(task_t *task);
+
 #endif

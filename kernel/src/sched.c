@@ -22,7 +22,6 @@ task_t *task_list = NULL;
 
 static void link_tasks(task_t *fst, task_t *sec);
 
-void add_task(task_t *task);
 static void initialize_task_state(task_state_t *st, void *entry_point,
     void *stack_pointer);
 static void switch_context(task_t *old_task, task_t *new_task);
