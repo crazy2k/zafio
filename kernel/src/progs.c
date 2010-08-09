@@ -9,7 +9,7 @@ void load_task_image(task_t * task) {
 }
 
 void load_task_stack(task_t* task) {
-    void *stack_page = ALIGN_TO_PAGE(elf_stack_bottom(task->prog->file), FALSE) -
+    void *stack_page = ALIGN_TO_PAGE(elf_stack_bottom(task->prog->file), TRUE) -
         PAGE_SIZE;
     new_page(task->pd, stack_page, STACK_PAGE_FLAGS);
 }
