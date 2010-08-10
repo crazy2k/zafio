@@ -14,7 +14,6 @@ void init_task() {
         uint32_t *pd = clone_pd(kernel_pd);
         add_task(create_task(pd, &programs[i]));
     }
-    BOCHS_BREAK;
 
     while(1)
         ;
