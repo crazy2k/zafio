@@ -222,8 +222,6 @@ void switch_if_needed(uint32_t ticks) {
     kputs("\n");
     kputd(current->rem_quantum);
     kputs("\n");
-    for (int i = 0; i < 9999; i++)
-        ;
 
     if (!current->rem_quantum) {
         restart_quantum(current);
