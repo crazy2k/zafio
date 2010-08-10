@@ -37,7 +37,8 @@ void sched_init() {
 
     init->pd = kernel_pd;
 
-    init->kernel_stack = KERNEL_STACK_BOTTOM;
+    init->kernel_stack = KERNEL_STACK_TOP;
+    init->kernel_stack_limit = KERNEL_STACK_BOTTOM;
 
     // El stack de nivel 0 no interesa. Deberia sobreescribirse al cambiar de
     // tarea. Ademas, como estamos en espacio de kernel, no se deberia utilizar
@@ -153,7 +154,8 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
 
     // Alojamos memoria para el stack del kernel de la tarea
     task->kernel_stack = new_kernel_page();
-    task->kernel_stack_pointer = task->kernel_stack + PAGE_SIZE;
+    task->kernel_stack_limit = task->kernel_stack + PAGE_SIZE;
+    task->kernel_stack_pointer = task->kernel_stack_limit;
 
     // Escribimos el task_state_t en la pila del kernel
     void *stack_pointer = elf_stack_bottom(prog->file);
@@ -180,7 +182,7 @@ static void switch_context(task_t *old_task, task_t *new_task) {
     load_cr3((uint32_t)get_kphaddr(new_task->pd));
 
     // Actualizamos la TSS
-    setup_tss((uint32_t)new_task->kernel_stack_pointer);
+    setup_tss((uint32_t)new_task->kernel_stack_limit);
 
     // Guardamos el stack pointer y cargamos el de la nueva tarea
     switch_stack_pointers(&old_task->kernel_stack_pointer,
