@@ -136,32 +136,13 @@ static void keyboard_isr(uint32_t index, uint32_t error_code,
     BOCHS_BREAK;
 }
 
+static uint32_t timer_count = 0;
 static void timer_isr(uint32_t index, uint32_t error_code,
     task_state_t *st) {
 
-    kputs("Timer: ");
-    kputs(current_task()->prog->name);
-    kputs(" -> ");
-    kputs(current_task()->next->prog->name);
-    kputs("\n");
+    timer_count++;
 
-    task_t *first = current_task();
-    kputs(first->prog->name);
-    kputs(" tiene kernel_stack_pointer: ");
-    kputui32((uint32_t)first->kernel_stack_pointer);
-    kputs("\n");
-
-    for (task_t *task = first->next; task != first; task = task->next) {
-        kputs(task->prog->name);
-        kputs(" tiene kernel_stack_pointer: ");
-        kputui32((uint32_t)task->kernel_stack_pointer);
-        kputs("\nDireccion virtual del PD: ");
-        kputui32((uint32_t)task->pd);
-        kputs("\nDireccion fisica del PD:");
-        kputui32((uint32_t)get_kphaddr(task->pd));
-        kputs("\n");
-    }
-    switch_tasks();
+    switch_if_needed(timer_count);
 }
 
 #define PF_P       0x1

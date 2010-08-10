@@ -26,6 +26,7 @@ static void link_tasks(task_t *fst, task_t *sec);
 static void initialize_task_state(task_state_t *st, void *entry_point,
     void *stack_pointer);
 static void switch_context(task_t *old_task, task_t *new_task);
+static void restart_quantum(task_t *task);
 
 void sched_init() {
 
@@ -39,6 +40,9 @@ void sched_init() {
 
     init->kernel_stack = KERNEL_STACK_TOP;
     init->kernel_stack_limit = KERNEL_STACK_BOTTOM;
+
+    init->quantum = SCHED_QUANTUM;
+    restart_quantum(init);
 
     // El stack de nivel 0 no interesa. Deberia sobreescribirse al cambiar de
     // tarea. Ademas, como estamos en espacio de kernel, no se deberia utilizar
@@ -141,6 +145,10 @@ static void initialize_task_state(task_state_t *st, void *entry_point,
     st->esp = (uint32_t)stack_pointer;
 }
 
+static void restart_quantum(task_t *task) {
+    task->rem_quantum = task->quantum;
+}
+
 /* Crea una nueva tarea lista para ser ejecutada.
  * - ``pd`` es la direccion virtual del directorio de paginas de la tarea;;
  */
@@ -151,6 +159,9 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
     task->prog = prog;
 
     task->pd = pd;
+
+    task->quantum = SCHED_QUANTUM;
+    restart_quantum(task);
 
     // Alojamos memoria para el stack del kernel de la tarea
     task->kernel_stack = new_kernel_page();
@@ -202,5 +213,21 @@ void switch_tasks() {
     switch_context(old_task, current_task());
 
     restore_eflags(eflags);
+}
+
+void switch_if_needed(uint32_t ticks) {
+    task_t *current = current_task();
+    current->rem_quantum--;
+    kputs(current->prog->name);
+    kputs("\n");
+    kputd(current->rem_quantum);
+    kputs("\n");
+    for (int i = 0; i < 9999; i++)
+        ;
+
+    if (!current->rem_quantum) {
+        restart_quantum(current);
+        switch_tasks();
+    }
 }
 

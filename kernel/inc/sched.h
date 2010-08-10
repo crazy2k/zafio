@@ -87,6 +87,7 @@ typedef struct task_t task_t;
 struct program_t;
 
 struct task_t {
+    // Informacion sobre el programa asociado a la tarea
     struct program_t *prog;
     // Direccion virtual del directorio de paginas en el espacio de direcciones
     // del kernel
@@ -95,10 +96,15 @@ struct task_t {
     void *kernel_stack;
     void *kernel_stack_pointer;
     void *kernel_stack_limit;
+    // Informacion para el scheduling
+    uint32_t quantum;
+    uint32_t rem_quantum;
 
     task_t *next;
     task_t *prev;
 };
+
+#define SCHED_QUANTUM 20
 
 extern uint64_t gdt[];
 extern void switch_stack_pointers(void **old_stack_top, void **new_stack_top);
@@ -110,6 +116,8 @@ void setup_tss(uint32_t kernel_stack);
 task_t *create_task(uint32_t pd[], struct program_t *prog);
 
 void switch_tasks();
+
+void switch_if_needed(uint32_t ticks);
 
 void add_task(task_t *task);
 
