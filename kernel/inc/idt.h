@@ -32,6 +32,7 @@
 #define IDT_INDEX_PF    14ul
 #define IDT_INDEX_TIMER 32ul
 #define IDT_INDEX_KB    33ul
+#define IDT_INDEX_SYSC  0x80ul
 
 // Constantes de los PIC y sus ICWs
 

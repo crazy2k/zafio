@@ -5,12 +5,15 @@
 #include "../inc/x86.h"
 #include "../inc/io.h"
 #include "../inc/sched.h"
+#include "../inc/utils.h"
 
 
 static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 static void keyboard_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 static void timer_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 static void pf_isr(uint32_t index, uint32_t error_code, task_state_t *st);
+static void syscalls_isr(uint32_t index, uint32_t error_code,
+    task_state_t *st);
 
 static void remap_PIC(char offset1, char offset2);
 
@@ -26,6 +29,7 @@ void idt_init() {
     register_isr(IDT_INDEX_TIMER, timer_isr);
     register_isr(IDT_INDEX_KB, keyboard_isr);
     register_isr(IDT_INDEX_PF, pf_isr);
+    register_isr(IDT_INDEX_SYSC, syscalls_isr);
 
     // Cargamos la IDT
     lidt(idtr);
@@ -78,10 +82,13 @@ int set_handler(uint32_t index, void (*handler)()) {
     if (idt[index] & IDT_DESC_P)
         return IDT_BUSY;
 
+    uint64_t dpl = (index == IDT_INDEX_SYSC) ? IDT_DESC_DPL(3) :
+        IDT_DESC_DPL(0);
+
     // Escribimos el descriptor en la IDT
     idt[index] = IDT_DESC_SEL(GDT_SEGSEL(0x0, GDT_INDEX_KERNEL_CS)) |
-        IDT_DESC_OFFSET(handler) | IDT_DESC_P | IDT_DESC_DPL(0) |
-        IDT_DESC_D | IDT_DESC_INT;
+        IDT_DESC_OFFSET(handler) | IDT_DESC_P | IDT_DESC_D | IDT_DESC_INT |
+        dpl;
 
     return 0;
 }
@@ -145,40 +152,46 @@ static void timer_isr(uint32_t index, uint32_t error_code,
     switch_if_needed(timer_count);
 }
 
-#define PF_P       0x1
-#define PF_WR      0x2
-#define PF_US      0x4
-#define PF_RSVD    0x8
-#define PF_ID      0xC
+#define PF_ISR_P       0x1
+#define PF_ISR_WR      0x2
+#define PF_ISR_US      0x4
+#define PF_ISR_RSVD    0x8
+#define PF_ISR_ID      0xC
 static void pf_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
     kputs("Fallo de pagina:\n");
-    if (!(error_code & PF_P))
+    if (!(error_code & PF_ISR_P))
         kputs("- La falla fue causada por una pagina no presente.\n");
     else
         kputs("- La falla fue causada por una violacion de proteccion a nivel"
             "de pagina.\n");
 
-    if (!(error_code & PF_WR))
+    if (!(error_code & PF_ISR_WR))
         kputs("- El acceso que causo el error fue una lectura.\n");
     else
         kputs("- El acceso que causo el error fue una escritura.\n");
 
-    if (!(error_code & PF_US))
+    if (!(error_code & PF_ISR_US))
         kputs("- El acceso ocurrio ejecutando en espacio de supervisor.\n");
     else
         kputs("- El acceso ocurrio ejecutando en espacio de usuario.\n");
 
-    if (!(error_code & PF_RSVD))
+    if (!(error_code & PF_ISR_RSVD))
         kputs("- La falla no fue causada por una violacion de bit"
             "reservado.\n");
     else
         kputs("- La falla no fue causada por una violacion de bit"
             "reservado.\n");
 
-    if (!(error_code & PF_ID))
+    if (!(error_code & PF_ISR_ID))
         kputs("- La falla no fue causada por un fetch de instruccion.\n");
     else
         kputs("- La falla fue causada por un fetch de instruccion.\n");
 
     kpanic("Fallo de pagina!");
+}
+
+#define SYSCALLS_ISR_PUTS 1
+static void syscalls_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
+    if (st->eax == SYSCALLS_ISR_PUTS)
+        kputs((char *)st->ebx);
 }
