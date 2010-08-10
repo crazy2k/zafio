@@ -91,8 +91,11 @@ struct task_t {
     // Direccion virtual del directorio de paginas en el espacio de direcciones
     // del kernel
     void *pd;
+    // Datos sobre el stack en espacio de kernel
     void *kernel_stack;
     void *kernel_stack_pointer;
+    void *kernel_stack_limit;
+
     task_t *next;
     task_t *prev;
 };
