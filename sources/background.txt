@@ -139,6 +139,7 @@ de pasar de uno a otro:
 .. graphviz::
 
     digraph modos {
+        nodesep=1.7
         "Modo real" -> "Modo protegido" [label="PE=1"];
         "Modo real" -> "Modo de 'gestión del sistema'" [label="SMI#"];
         "Modo protegido" -> "Modo real" [label="Reset o PE=0"];
@@ -367,9 +368,14 @@ Directivas del ensamblador
 
 .. TODO: Hablar de inline assembly en GCC.
    http://ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html
+.. TODO: Hablar sobre los PIC y su inicializacion.
+    http://wiki.osdev.org/PIC
+    http://davmac.org/davpage/PIC.html
 
 Referencias
 -----------
 
 .. [Multiboot]
     http://www.gnu.org/software/grub/manual/multiboot/multiboot.html
+.. [Bochs]
+    http://bochs.sourceforge.net/

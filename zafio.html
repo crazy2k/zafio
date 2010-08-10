@@ -48,17 +48,187 @@
             
   <div class="section" id="zafio-por-dentro">
 <h1>Zafio por dentro<a class="headerlink" href="#zafio-por-dentro" title="Enlazar permanentemente con este título">¶</a></h1>
-<div class="section" id="el-bootloader">
-<h2>El <em>bootloader</em><a class="headerlink" href="#el-bootloader" title="Enlazar permanentemente con este título">¶</a></h2>
-<p>Decidimos utilizar GRUB (&#8220;Legacy&#8221;) como nuestro <em>bootloader</em> de
+<div class="section" id="la-estructura-de-directorios">
+<h2>La estructura de directorios<a class="headerlink" href="#la-estructura-de-directorios" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Si bien la parte más importante de Zafio está escrita en C, en realidad,
+el proyecto también se compone de archivos con código <em>assembly</em> de x86,
+<em>scripts</em> de utilidad y de configuración de herramientas, archivos
+binarios y documentación. Todo estos archivos están organizados en una
+estructura de directorios que facilita su búsqueda.</p>
+<p>Observemos una síntesis de la estructura de directorios del proyecto:</p>
+<p class="graphviz">
+<img src="images/graphviz-08b98acb4380b54d3bca105acbedb4e723602855.png" alt="digraph direcciones {
+    &quot;raíz&quot; [shape=box]
+    &quot;doc/&quot; [shape=box]
+    &quot;kernel/&quot; [shape=box]
+    &quot;user/&quot; [shape=box]
+    &quot;progs/&quot; [shape=box]
+    &quot;reftest/&quot; [shape=box]
+    &quot;raíz&quot; -&gt; &quot;doc/&quot;
+    &quot;raíz&quot; -&gt; &quot;kernel/&quot;
+    &quot;raíz&quot; -&gt; &quot;user/&quot;
+    &quot;raíz&quot; -&gt; &quot;progs/&quot;
+    &quot;raíz&quot; -&gt; &quot;reftest/&quot;
+}" />
+</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="17%" />
+<col width="83%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Directorio</th>
+<th class="head">Contenido</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><strong>raíz</strong></td>
+<td>representa la base de la estructura de directorios. Además
+de contener al resto de los directorios, posee archivos de
+alcance global en el proyecto.</td>
+</tr>
+<tr><td><strong>doc/</strong></td>
+<td>contiene los fuentes de la documentación y algunas
+utilidades para construirla.</td>
+</tr>
+<tr><td><strong>kernel/</strong></td>
+<td>posee los encabezados y el código del kernel, y además
+alberga los archivos objeto resultantes de su compilación.</td>
+</tr>
+<tr><td><strong>user/</strong></td>
+<td>es análogo a <em>kernel/</em>, sólo que para código de usuario.</td>
+</tr>
+<tr><td><strong>progs/</strong></td>
+<td>contiene ejecutables que Zafio puede ejecutar una vez
+cargado.</td>
+</tr>
+<tr><td><strong>reftest/</strong></td>
+<td>es el directorio en el que se encuentra nuestro entorno de
+pruebas de referencia para el kernel.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="la-memoria">
+<h2>La memoria<a class="headerlink" href="#la-memoria" title="Enlazar permanentemente con este título">¶</a></h2>
+</div>
+<div class="section" id="el-arranque">
+<h2>El arranque<a class="headerlink" href="#el-arranque" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Dado que entendimos que nuestro foco principal estaría puesto en los
+problemas del sistema operativo en sí y no tanto en su carga, y dada la
+vasta cantidad de <em>bootloaders</em> disponibles, optamos por no emplear
+trabajo en escribir uno.</p>
+<p>Decidimos que nuestro kernel sea cargado por un <em>bootloader</em> compatible
+con la especificación Multiboot <a class="reference external" href="background.html#multiboot">[Multiboot]</a>. La especificación nos pareció
+razonable y relativamente sencilla, y existen implementaciones estables de
+la misma. Además, la especificación nos asegura algunas características
+interesantes que tendrán los <em>bootloaders</em>, como la obligación de
+prepararnos un estado inicial en modo protegido con la <em>gate A20</em> activada
+y la capacidad de brindarnos información sobre la memoria disponible, entre
+otras.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Decidimos utilizar GRUB (&#8220;Legacy&#8221;) como nuestro <em>bootloader</em> de
 referencia, aunque nuestro sistema operativo debería poder ser
 arrancado por cualquier <em>bootloader</em> que cumpla la especificación
 Multiboot <a class="reference external" href="background.html#multiboot">[Multiboot]</a>.</p>
-<p>GRUB es un <em>bootloader</em> muy completo, y la especificación Multiboot nos
-parece relativamente sencilla y razonable. Como entendemos que nuestro
-foco principal está puesto en el sistema operativo en sí, y tenemos a
-nuestro alcance una herramienta como esta, optamos por aprovecharla en
-lugar de escribir nuestro propio <em>bootloader</em> desde cero.</p>
+</div>
+</div>
+<div class="section" id="el-loader">
+<h2>El <em>loader</em><a class="headerlink" href="#el-loader" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>En el archivo <tt class="docutils literal"><span class="pre">loader.S</span></tt> se encuentra el <em>header</em> Multiboot. Este
+<em>header</em> nos permite indicarle al <em>bootloader</em> que requerimos
+información de la memoria disponible, aunque puede usarse para
+especificarle también otros pedidos.</p>
+<p>En ese mismo archivo se encuentra el punto de entrada de nuestro
+kernel. El código en <tt class="docutils literal"><span class="pre">loader.S</span></tt> se ocupa, luego de silenciar las
+interrupciones, de cargar una GDT para el sistema y cargar los
+registros de segmento. Esta GDT será la GDT definitiva del sistema.
+Consta de dos segmentos de código y dos segmentos de datos; uno para
+cada nivel de privilegio que usamos en el kernel (0 y 3). Además posee
+una entrada que será utilizada para el descriptor de TSS del sistema.</p>
+<p>Luego se encarga de establecer el <em>stack pointer</em> de manera que pueda
+utilizarse el <em>stack del kernel</em> y sea posible realizar llamadas a
+código C. Una vez hecho esto, llama a tres funciones de C que se
+encargan de:</p>
+<ul class="simple">
+<li>detener la ejecución si el kernel no fue cargado con un
+<em>bootloader</em> Multiboot,</li>
+<li>tomar datos de las estructuras con información que provee el
+bootloader e inicializar estructuras para el manejo de la memoria y</li>
+<li>establecer las correspondencias en directorios y tablas de páginas
+para que, una vez activada la paginación, todo lo que el kernel
+requiera inicialmente se encuentre presente en el espacio de
+direcciones virtual.</li>
+</ul>
+<p>Ahora sí puede activarse la paginación de memoria. El mapa de memoria
+virtual ahora tiene 4MB con <em>identity-mapping</em> al principio (para poder
+seguir ejecutando el código en <tt class="docutils literal"><span class="pre">loader.S</span></tt> con normalidad) y toda la
+memoria que el kernel mínimamente va a requerir ubicada por encima de
+los 3GB en el espacio de direcciones virtual (<em>higher half</em>).</p>
+<p>Ya es tiempo de actualizar el <em>stack pointer</em> y saltar a código de C
+cuyas direcciones de reubicación apuntan a memoria alta.</p>
+</div>
+<div class="section" id="el-kernel">
+<h2>El <em>kernel</em><a class="headerlink" href="#el-kernel" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Una vez en memoria alta, comienza la ejecución de la función
+<tt class="docutils literal"><span class="pre">cmain()</span></tt>. Esta función simplemente inicializa los diferentes módulos
+usando las funciones <tt class="docutils literal"><span class="pre">vm_init()</span></tt>, <tt class="docutils literal"><span class="pre">idt_init()</span></tt> y <tt class="docutils literal"><span class="pre">sched_init()</span></tt>.
+Esta última, una vez llamada, nunca devolverá el control, ya que
+dará paso a la ejecución de las tareas.</p>
+<div class="section" id="vmm-c">
+<h3><tt class="docutils literal"><span class="pre">vmm.c</span></tt><a class="headerlink" href="#vmm-c" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Cuando <tt class="docutils literal"><span class="pre">cmain()</span></tt> llama a <tt class="docutils literal"><span class="pre">vm_init()</span></tt> comienza la inicialización del
+módulo encargado del manejo de memoria.</p>
+<p>Lo primero que se hace es actualizar el registro <tt class="docutils literal"><span class="pre">gdtr</span></tt> que alberga
+la dirección lineal de la GDT. Como queremos usar la dirección virtual
+en memoria alta de la GDT, necesitamos modificar este registro para no
+depender más de las referencias a memoria baja. Una vez hecho esto, ya
+podemos quitar el <em>identit-mapping</em> de los primeros 4MB de la memoria
+virtual.</p>
+<p>Lo segundo que hacemos es, en pocas palabras, avisarle a nuestro
+manejador de memoria que tiene que asumir que la memoria que está
+utilizando el kernel está reservada, y que no puede utilizarla como si
+estuviera libre para, por ejemplo, alojarla como memoria dinámica para
+algún subsistema del kernel.</p>
+<p>Por último, se definen los valores límite para el <em>heap</em>, es decir, el
+espacio de memoria virtual a utilizar para satisfacer las futuras
+necesidades de memoria de los distintos subsistemas del kernel.</p>
+</div>
+<div class="section" id="idt-c">
+<h3><tt class="docutils literal"><span class="pre">idt.c</span></tt><a class="headerlink" href="#idt-c" title="Enlazar permanentemente con este título">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">idt_init()</span></tt> se encuentra en <tt class="docutils literal"><span class="pre">idt.c</span></tt> y se encarga de inicializar el
+módulo de manejo de interrupciones.</p>
+<p>Su primer tarea es escribir todos los descriptores en la IDT para las
+interrupciones que se manejarán. Las rutinas que se corresponden con
+cada entrada en la IDT son generadas en <tt class="docutils literal"><span class="pre">kernel/src/idt_handlers.S</span></tt>.
+Estas rutinas se encargan de guardar el estado del código en ejecución,
+y luego llaman a una función común, llamada <tt class="docutils literal"><span class="pre">idt_handle()</span></tt> pasándole
+a este el índice en la IDT de la interrupción ocurrida, un código de
+error si existiera y el estado guardado.</p>
+<p>De allí en más, <tt class="docutils literal"><span class="pre">idt_handle()</span></tt> es quien se encarga de delegar el
+manejo de la interrupción en rutinas de servicio, escritas en C,
+debidamente registradas a través de <tt class="docutils literal"><span class="pre">register_isr()</span></tt>.</p>
+<p>Una vez que <tt class="docutils literal"><span class="pre">idt_init()</span></tt> escribió la IDT y registró algunas rutinas
+de servicio (las no registradas se manejan con una rutina de servicio
+por omisión), entonces ya puede dar aviso al procesador de que tiene la
+IDT lista.</p>
+<p>Por último, configura los PIC y desenmascara sólo las interrupciones de
+<em>hardware</em> que le interesarán al kernel.</p>
+</div>
+<div class="section" id="sched-c">
+<h3><tt class="docutils literal"><span class="pre">sched.c</span></tt><a class="headerlink" href="#sched-c" title="Enlazar permanentemente con este título">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">sched_init()</span></tt> es la función que inicializa el módulo de
+<em>scheduling</em>. Básicamente, se ocupa de crear una nueva tarea, conocida
+como <tt class="docutils literal"><span class="pre">init</span></tt>, y agregarla a la lista de tareas en ejecución.</p>
+<p>Luego, se activan las interrupciones y se da paso a la ejecución de la
+tarea <tt class="docutils literal"><span class="pre">init</span></tt>.</p>
+</div>
+<div class="section" id="init">
+<h3><tt class="docutils literal"><span class="pre">init</span></tt><a class="headerlink" href="#init" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>La tarea <tt class="docutils literal"><span class="pre">init</span></tt> es la primera tarea que se carga en Zafio. Su función
+es la de crear otras tareas.</p>
+</div>
 </div>
 <div class="section" id="convenciones">
 <h2>Convenciones<a class="headerlink" href="#convenciones" title="Enlazar permanentemente con este título">¶</a></h2>
@@ -74,7 +244,17 @@ lugar de escribir nuestro propio <em>bootloader</em> desde cero.</p>
             <h3><a href="index.html">Contenidos</a></h3>
             <ul>
 <li><a class="reference external" href="#">Zafio por dentro</a><ul>
-<li><a class="reference external" href="#el-bootloader">El <em>bootloader</em></a></li>
+<li><a class="reference external" href="#la-estructura-de-directorios">La estructura de directorios</a></li>
+<li><a class="reference external" href="#la-memoria">La memoria</a></li>
+<li><a class="reference external" href="#el-arranque">El arranque</a></li>
+<li><a class="reference external" href="#el-loader">El <em>loader</em></a></li>
+<li><a class="reference external" href="#el-kernel">El <em>kernel</em></a><ul>
+<li><a class="reference external" href="#vmm-c"><tt class="docutils literal"><span class="pre">vmm.c</span></tt></a></li>
+<li><a class="reference external" href="#idt-c"><tt class="docutils literal"><span class="pre">idt.c</span></tt></a></li>
+<li><a class="reference external" href="#sched-c"><tt class="docutils literal"><span class="pre">sched.c</span></tt></a></li>
+<li><a class="reference external" href="#init"><tt class="docutils literal"><span class="pre">init</span></tt></a></li>
+</ul>
+</li>
 <li><a class="reference external" href="#convenciones">Convenciones</a></li>
 </ul>
 </li>
