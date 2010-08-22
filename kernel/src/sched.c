@@ -175,14 +175,19 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
     task_state_t *st = (task_state_t *)task->kernel_stack_pointer;
     initialize_task_state(st, entry_point, stack_pointer);
 
-    // Al tope de la pila va la direccion de la rutina que inicializa la tarea
+    // Direccion del task_t correspondiente a la tarea
     task->kernel_stack_pointer -= 4;
     *((void **)task->kernel_stack_pointer) = task;
+    // Direccion de la rutina que inicializa la tarea
     task->kernel_stack_pointer -= 4;
     *((void **)task->kernel_stack_pointer) = initialize_task;
+
+    // El valor de esta entrada en el stack no deberia tener ninguna
+    // importancia. Es el valor que adquiere ebp al cambiar el contexto al
+    // de la tarea nueva. Este registro no es usado hasta que adquiere el valor
+    // que indica el task_state_t inicial de la tarea.
     task->kernel_stack_pointer -= 4;
     *((void **)task->kernel_stack_pointer) = NULL;
-
 
     return task;
 }
