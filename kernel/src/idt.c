@@ -190,7 +190,8 @@ static void pf_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
     kpanic("Fallo de pagina!");
 }
 
-#define SYSCALLS_ISR_PUTS 1
+#define SYSCALLS_ISR_EXIT 1
+#define SYSCALLS_ISR_PUTS 4
 static void syscalls_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
     if (st->eax == SYSCALLS_ISR_PUTS)
         kputs((char *)st->ebx);
