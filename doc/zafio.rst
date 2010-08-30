@@ -18,6 +18,8 @@ Observemos una síntesis de la estructura de directorios del proyecto:
 .. graphviz::
 
     digraph direcciones {
+        ranksep=0.3
+
         "raíz" [shape=box]
         "doc/" [shape=box]
         "kernel/" [shape=box]
