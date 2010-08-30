@@ -14,6 +14,7 @@
 
 extern void load_state();
 extern void initialize_task(task_t *task);
+extern void start_task(int (*main)());
 
 // TSS del sistema. Su valor de esp0 se actualiza en los cambios de contexto.
 tss_t *tss = NULL;
@@ -170,10 +171,10 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
 
     // Escribimos el task_state_t en la pila del kernel
     void *stack_pointer = elf_stack_bottom(prog->file);
-    void *entry_point = elf_entry_point(prog->file);
+    void *start_task_routine = START_TASK_VIRT_ADDR;
     task->kernel_stack_pointer -= sizeof(task_state_t);
     task_state_t *st = (task_state_t *)task->kernel_stack_pointer;
-    initialize_task_state(st, entry_point, stack_pointer);
+    initialize_task_state(st, start_task_routine, stack_pointer - 8);
 
     // Direccion del task_t correspondiente a la tarea
     task->kernel_stack_pointer -= 4;

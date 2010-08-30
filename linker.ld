@@ -48,7 +48,11 @@ SECTIONS {
         *(.text)
     }
 
-    .rodata : AT(ADDR(.rodata) - __kernel_addr_offset) {
+    .starttask ALIGN(0x1000) : AT(ADDR(.starttask) - __kernel_addr_offset) {
+        *(.starttask)
+    }
+
+    .rodata ALIGN(0x1000) : AT(ADDR(.rodata) - __kernel_addr_offset) {
         *(.rodata)
     }
 
