@@ -6,6 +6,7 @@
 #include "../inc/io.h"
 #include "../inc/sched.h"
 #include "../inc/utils.h"
+#include "../inc/syscalls.h"
 
 
 static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st);
@@ -193,6 +194,8 @@ static void pf_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
 #define SYSCALLS_ISR_EXIT 1
 #define SYSCALLS_ISR_PUTS 4
 static void syscalls_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
+    if (st->eax == SYSCALLS_ISR_EXIT)
+        sys_exit(current_task());
     if (st->eax == SYSCALLS_ISR_PUTS)
-        kputs((char *)st->ebx);
+        sys_puts((char *)st->ebx);
 }
