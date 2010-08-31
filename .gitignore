@@ -4,6 +4,7 @@ _build/
 kernel/obj/
 progs/
 kernel/src/all_progs.c
-reftest/diskette.img
+reftest/diskette.img 
 deps
+user/*/deps
 tags
