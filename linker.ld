@@ -48,8 +48,8 @@ SECTIONS {
         *(.text)
     }
 
-    .starttask ALIGN(0x1000) : AT(ADDR(.starttask) - __kernel_addr_offset) {
-        *(.starttask)
+    .textuser ALIGN(0x1000) : AT(ADDR(.textuser) - __kernel_addr_offset) {
+        *(.textuser)
     }
 
     .rodata ALIGN(0x1000) : AT(ADDR(.rodata) - __kernel_addr_offset) {

@@ -1,3 +1,4 @@
+#include "../inc/memlayout.h"
 #include "../inc/progs.h"
 #include "../inc/elf_helpers.h"
 #include "../inc/mmu.h"
@@ -13,6 +14,12 @@ void load_task_stack(task_t* task) {
     void *stack_page = ALIGN_TO_PAGE(elf_stack_bottom(task->prog->file), TRUE) -
         PAGE_SIZE;
     new_page(task->pd, stack_page, STACK_PAGE_FLAGS);
+}
+
+void load_start_task(task_t* task) {
+    uint32_t *pt = new_page_table(task->pd, START_TASK_VIRT_ADDR);
+    void *start_task_pha = get_kphaddr(ALIGN_TO_PAGE(&start_task, FALSE));
+    page_table_map(pt, START_TASK_VIRT_ADDR, start_task_pha, CODE_PAGE_FLAGS);
 }
 
 void push_entry_point(task_t *task) {
