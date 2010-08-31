@@ -2,6 +2,7 @@ CC := gcc
 CFLAGS := -std=gnu99 -Wall -nostdlib -nostdinc -nostartfiles -nodefaultlibs
 
 LD := ld
+LDFLAGS :=
 
 PROGS_DIR := ../../progs/
 BINARY := $(shell basename `pwd`)
@@ -14,6 +15,8 @@ HEADERS := $(wildcard *.h)
 OBJS := $(SOURCES:.c=.o)
 PROG_FILE := $(PROGS_DIR)/$(BINARY)
 
+all: $(BINARY)
+
 deps: $(SOURCES)
 	$(CC) $(CFLAGS) -MM $(SOURCES) > $@
 
@@ -22,13 +25,11 @@ deps: $(SOURCES)
 %.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
-all: $(BINARY)
-
 $(BINARY): $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $@ --entry=$(ENTRY)
 
 install: $(BINARY)
-	cp $(BINARY) $(PROGS_DIR)
+	mv $(BINARY) $(PROGS_DIR)
 
 clean: 
 	rm -f *.o
