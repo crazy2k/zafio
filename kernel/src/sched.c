@@ -108,6 +108,11 @@ void add_task(task_t *task) {
     }
 }
 
+void remove_task(task_t *task) {
+    task->next->prev = task->prev;
+    task->prev->next = task->next;
+}
+
 /* Inicializa un estado de tarea con los siguientes valores iniciales:
  * - los registros de proposito general en 0;
  * - los registros de segmento tienen como valor un selector que
