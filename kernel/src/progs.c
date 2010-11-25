@@ -24,7 +24,7 @@ void load_start_task(task_t* task) {
 
 void push_entry_point(task_t *task) {
     void *stack_bottom = elf_stack_bottom(task->prog->file);
-    *((void **)stack_bottom - 4) = elf_entry_point(task->prog->file);
+    *((void **)(stack_bottom - 4)) = elf_entry_point(task->prog->file);
 }
 
 void start_task(int (*main)()) {
