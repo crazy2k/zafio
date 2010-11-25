@@ -6,6 +6,7 @@ global initialize_task
 extern load_task_image
 extern load_task_stack
 extern push_entry_point
+extern load_start_task
 extern load_state
 
 section .text
@@ -36,6 +37,7 @@ initialize_task:
     CCALL load_task_stack
     CCALL push_entry_point
     CCALL load_task_image
+    CCALL load_start_task
     add esp, 4
 
     ; Ahora que tenemos listo nuestro espacio de memoria virtual, cargamos el
