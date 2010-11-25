@@ -174,6 +174,10 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
     void *start_task_routine = START_TASK_VIRT_ADDR;
     task->kernel_stack_pointer -= sizeof(task_state_t);
     task_state_t *st = (task_state_t *)task->kernel_stack_pointer;
+    // El stack pointer arranca en 2 posiciones abajo del tope. Una es para
+    // la direccion de retorno a la que start_task deberia volver. La otra es
+    // para el parametro de start_task, que sera justamente el punto de
+    // entrada de la tarea.
     initialize_task_state(st, start_task_routine, stack_pointer - 8);
 
     // Direccion del task_t correspondiente a la tarea
