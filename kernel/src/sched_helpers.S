@@ -31,7 +31,6 @@ switch_stack_pointers:
     ret
 
 initialize_task:
-    xchg bx, bx
     ; El task_t ya se encuentra en el stack, por lo que no hace falta hacer
     ; push para pasarlo como parametro (le pasamos a las dos funciones lo mismo)
     CCALL load_task_stack

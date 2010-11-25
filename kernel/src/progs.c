@@ -28,8 +28,6 @@ void push_entry_point(task_t *task) {
 }
 
 void start_task(int (*main)()) {
-    BOCHS_BREAK;
-
     main();
 
     // Llamada al sistema 1 (exit)
