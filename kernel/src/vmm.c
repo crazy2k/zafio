@@ -100,7 +100,7 @@ void invalidate_tlb_pages(void *vstart, int n) {
         invalidate_tlb(vstart + i*PAGE_SIZE);
 }
 
-//Traduce una direccion virtual del kernel a su direccion fisica
+//Traduce una direccion fisica del kernel a su direccion virtual 
 void *get_kvaddr(void *kphaddr) {
     return (void *) ((uint32_t) PHADDR_TO_PAGE(PDE_PT_BASE(kphaddr))->kvaddr | 
         ((uint32_t) kphaddr & __LOW12_BITS__));
