@@ -1,7 +1,9 @@
+#include "../inc/memlayout.h"
 #include "../inc/progs.h"
 #include "../inc/elf_helpers.h"
 #include "../inc/mmu.h"
 #include "../inc/vmm.h"
+#include "../inc/debug.h"
 
 
 void load_task_image(task_t * task) {
@@ -24,4 +26,24 @@ void free_user_memory(uint32_t pd[]) {
             }
         }
     }
+
+void load_start_task(task_t* task) {
+    uint32_t *pt = new_page_table(task->pd, START_TASK_VIRT_ADDR);
+    void *start_task_pha = get_kphaddr(ALIGN_TO_PAGE(&start_task, FALSE));
+    page_table_map(pt, START_TASK_VIRT_ADDR, start_task_pha, CODE_PAGE_FLAGS);
+}
+
+void push_entry_point(task_t *task) {
+    void *stack_bottom = elf_stack_bottom(task->prog->file);
+    *((void **)(stack_bottom - 4)) = elf_entry_point(task->prog->file);
+}
+
+void start_task(int (*main)()) {
+    main();
+
+    // Llamada al sistema 1 (exit)
+    __asm__ __volatile__("mov %0, %%eax" : : "i" (1));
+    // Llamar
+    __asm__ __volatile__("int $0x80" : :);
+
 }

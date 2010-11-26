@@ -48,7 +48,11 @@ SECTIONS {
         *(.text)
     }
 
-    .rodata : AT(ADDR(.rodata) - __kernel_addr_offset) {
+    .textuser ALIGN(0x1000) : AT(ADDR(.textuser) - __kernel_addr_offset) {
+        *(.textuser)
+    }
+
+    .rodata ALIGN(0x1000) : AT(ADDR(.rodata) - __kernel_addr_offset) {
         *(.rodata)
     }
 

@@ -207,6 +207,10 @@ void *new_kernel_pages(long n) {
     return vaddr;
 }
 
+void free_kernel_page(void *vaddr) {
+    free_page(kernel_pd, vaddr);
+}
+
 static void shift_kernel_va_limit(void *vaddr) {
     if (get_kphaddr(kernel_va_limit) != NULL)
         kernel_va_limit = vaddr;

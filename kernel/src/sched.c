@@ -14,12 +14,16 @@
 
 extern void load_state();
 extern void initialize_task(task_t *task);
+extern void start_task(int (*main)());
 
 // TSS del sistema. Su valor de esp0 se actualiza en los cambios de contexto.
 tss_t *tss = NULL;
 
 // Lista de tareas. Inicialmente vacia.
 task_t *task_list = NULL;
+
+// Tarea para ser removida. Inicialmente ninguna.
+task_t *zombie_task = NULL;
 
 static void link_tasks(task_t *fst, task_t *sec);
 
@@ -107,6 +111,24 @@ void add_task(task_t *task) {
     }
 }
 
+void remove_task(task_t *task) {
+    task->next->prev = task->prev;
+    task->prev->next = task->next;
+}
+
+void put_zombie(task_t *task) {
+    zombie_task = task;
+}
+
+void kill_zombies() {
+    if (zombie_task) {
+        free_kernel_page(zombie_task->pd);
+        free_kernel_page(zombie_task->kernel_stack);
+        kfree(zombie_task);
+        zombie_task = NULL;
+    }
+}
+
 /* Inicializa un estado de tarea con los siguientes valores iniciales:
  * - los registros de proposito general en 0;
  * - los registros de segmento tienen como valor un selector que
@@ -170,10 +192,14 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
 
     // Escribimos el task_state_t en la pila del kernel
     void *stack_pointer = elf_stack_bottom(prog->file);
-    void *entry_point = elf_entry_point(prog->file);
+    void *start_task_routine = START_TASK_VIRT_ADDR;
     task->kernel_stack_pointer -= sizeof(task_state_t);
     task_state_t *st = (task_state_t *)task->kernel_stack_pointer;
-    initialize_task_state(st, entry_point, stack_pointer);
+    // El stack pointer arranca en 2 posiciones abajo del tope. Una es para
+    // la direccion de retorno a la que start_task deberia volver. La otra es
+    // para el parametro de start_task, que sera justamente el punto de
+    // entrada de la tarea.
+    initialize_task_state(st, start_task_routine, stack_pointer - 8);
 
     // Direccion del task_t correspondiente a la tarea
     task->kernel_stack_pointer -= 4;

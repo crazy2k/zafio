@@ -6,4 +6,6 @@ progs/
 kernel/src/all_progs.c
 reftest/diskette.img
 deps
+user/*/deps
+user/**/*.o
 tags

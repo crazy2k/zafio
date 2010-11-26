@@ -21,13 +21,16 @@ INCDIR := kernel/src/
 REFTESTDIR := reftest/
 OBJSDIR := kernel/obj/
 PROGS_DIR := progs/
+USER_DIR := user/
+USER_PROG_DIRS := $(wildcard $(USER_DIR)/*/Makefile)
+USER_PROG_DIRS := $(USER_PROG_DIRS:/Makefile=)
 
 #
 # Archivos
 #
 BUILD_ALL_PROGS := ./buildprogs.sh
 
-PROGS := $(wildcard $(PROGS_DIR)/*)
+PROGS = $(wildcard $(PROGS_DIR)/*)
 PROG_OBJS := $(addsuffix .o, $(subst $(PROGS_DIR),$(OBJSDIR),$(PROGS)))
 
 # Codigo C
@@ -82,7 +85,12 @@ $(ASOBJS): $(ASSOURCES)
 $(OBJSDIR)%.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(PROG_OBJS):
+install_user_progs:
+	for DIR in $(USER_PROG_DIRS); do    \
+		$(MAKE) -C $$DIR install;       \
+	done
+
+$(PROG_OBJS): install_user_progs
 	$(LD) $(LDPARTFLAGS) -b binary $(patsubst $(OBJSDIR)/%.o,$(PROGS_DIR)/%,$@) -o $@
 
 .PHONY: clean new diskette.img all
@@ -93,6 +101,9 @@ clean:
 	rm -f $(KERNEL)
 	rm -f deps
 	rm -f $(REFTESTDIR)/diskette.img
+	for DIR in $(USER_PROG_DIRS); do    \
+		$(MAKE) -C $$DIR clean;         \
+	done
 
 new: 
 	make clean 

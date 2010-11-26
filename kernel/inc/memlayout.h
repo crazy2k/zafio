@@ -28,6 +28,8 @@ extern uint32_t __stack_size[];
 #define VIDEO_PHYS_ADDR 0xB8000ul
 #define VIDEO_VIRT_ADDR KVIRTADDR(VIDEO_PHYS_ADDR)
 
+#define START_TASK_VIRT_ADDR (void *)0x60000000
+
 #define GDT_INDEX_NULL 0x0
 #define GDT_INDEX_KERNEL_CS 0x1
 #define GDT_INDEX_KERNEL_DS 0x2
