@@ -18,14 +18,15 @@ void load_task_stack(task_t* task) {
 
 //Liberar memoria en el espacio de usuario del page directory en pd
 void free_user_memory(uint32_t pd[]) {
-    for (int i = 0; i < 0x300) {
+    for (int i = 0; i < 0x300; i++) {
         if (pd[i] | PDE_P) {
-            for (int j = 0; j < 0x400) {
-                void *dir (void*) (PAGE_4MB_SIZE) + (PAGE_SIZE) * j;
+            for (int j = 0; j < 0x400; j++) {
+                void *dir = (void*) (PAGE_4MB_SIZE * i) + (PAGE_SIZE * j);
                 free_page(pd,dir);
             }
         }
     }
+}
 
 void load_start_task(task_t* task) {
     uint32_t *pt = new_page_table(task->pd, START_TASK_VIRT_ADDR);
