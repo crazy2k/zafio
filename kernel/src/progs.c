@@ -22,7 +22,8 @@ void free_user_memory(uint32_t pd[]) {
         if (pd[i] | PDE_P) {
             for (int j = 0; j < 0x400; j++) {
                 void *dir = (void*) (PAGE_4MB_SIZE * i) + (PAGE_SIZE * j);
-                free_page(pd,dir);
+                if (*get_pte(pd,dir) | PTE_P) 
+                    free_page(pd,dir);
             }
         }
     }
