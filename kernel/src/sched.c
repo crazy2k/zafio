@@ -22,6 +22,9 @@ tss_t *tss = NULL;
 // Lista de tareas. Inicialmente vacia.
 task_t *task_list = NULL;
 
+// Tarea para ser removida. Inicialmente ninguna.
+task_t *zombie_task = NULL;
+
 static void link_tasks(task_t *fst, task_t *sec);
 
 static void initialize_task_state(task_state_t *st, void *entry_point,
@@ -111,6 +114,19 @@ void add_task(task_t *task) {
 void remove_task(task_t *task) {
     task->next->prev = task->prev;
     task->prev->next = task->next;
+}
+
+void put_zombie(task_t *task) {
+    zombie_task = task;
+}
+
+void kill_zombies() {
+    if (zombie_task) {
+        free_kernel_page(zombie_task->pd);
+        free_kernel_page(zombie_task->kernel_stack);
+        kfree(zombie_task);
+        zombie_task = NULL;
+    }
 }
 
 /* Inicializa un estado de tarea con los siguientes valores iniciales:
