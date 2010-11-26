@@ -122,6 +122,7 @@ void put_zombie(task_t *task) {
 
 void kill_zombies() {
     if (zombie_task) {
+        free_user_memory(zombie_task->pd);
         free_kernel_page(zombie_task->pd);
         free_kernel_page(zombie_task->kernel_stack);
         kfree(zombie_task);
