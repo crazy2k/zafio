@@ -3,6 +3,18 @@
 Zafio por dentro
 ================
 
+Zafio es un sistema operativo básico y poco sofisticado. Algunas de sus
+características salientes son:
+
+* **carga de programas** desde ejecutables ELF
+* **protección de memoria** utilizando paginación y espacios de memoria
+  diferentes para las tareas
+* manejador de interrupciones que permite el **registro de
+  handlers en tiempo de ejecución**
+* **scheduling de procesos utilizando round-robin** con un quantum fijo
+* **task-switching por software**
+* atención de **llamadas al sistema**
+
 
 La estructura de directorios
 ----------------------------
@@ -53,7 +65,57 @@ Directorio   Contenido
 La memoria
 ----------
 
-.. TODO: Hablar sobre el mapa de memoria final
+Espacio de memoria virtual de una tarea::
+
+    +----------------------------+ 0x00000000   \
+    | ...                        |               |
+    +----------------------------+ 0x08048000    |
+    | Código y datos de la tarea |               |
+    +----------------------------+ ~0x0804A000   |
+    | ...                        |               |
+    | ...                        |               |
+    +----------------------------+ 0x3FFFF000    |
+    | Stack de la tarea          |               |
+    +----------------------------+ 0x40000000    |
+    | ...                        |               |
+    | ...                        |               |
+    +----------------------------+ 0x60000000    |  Lower half (usuario)
+    | start_task(main)           |               |
+    +----------------------------+ 0x60001000    |
+    | ...                        |               |
+    | ...                        |               |
+    | ...                        |               |
+    | ...                        |               |
+    | ...                        |               |
+    | ...                        |              /
+    +----------------------------+ 0xC0000000       <--- 3GB
+    | ...                        |              \
+    +----------------------------+ 0xC00B8000    |
+    | Memoria de video           |               |
+    +----------------------------+ 0xC00B9000    |
+    | ...                        |               |
+    +----------------------------+ 0xC0100000    |
+    | Loader                     |               |
+    +----------------------------+ 0xC0101000    |
+    | Stack del kernel           |               |
+    +----------------------------+ 0xC0103000    |
+    | Directorio de paginas del  |               |
+    | kernel                     |               |
+    +----------------------------+ 0xC0104000    |  Higher half (kernel)
+    | Tablas de paginas          |               |
+    | ...                        |               |
+    +----------------------------+ 0xC0200000    |
+    | Codigo y datos del kernel  |               |
+    +----------------------------+ 0xC02XXXXX    |
+    | Estructuras page_t         |               |
+    +----------------------------+ 0xCXXXXXXX    |
+    |           ...              |               |
+    |           ...              |               |
+    |           ...              |               |
+    |           ...              |               |
+    |           ...              |               |
+    |           ...              |              /
+    +----------------------------+ 0xFFFFFFFF
 
 El arranque
 -----------
