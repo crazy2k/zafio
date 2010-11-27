@@ -59,11 +59,11 @@ void modules_gather(multiboot_info_t *mbi) {
     }
 }
 
-void mmu_init(uint32_t kernel_pd[1024], uint32_t page_tables[][1024],
+void mmu_init(uint32_t kernel_pd[TABLE_TOTAL_ENTRIES], uint32_t page_tables[][TABLE_TOTAL_ENTRIES],
     memory_info_t *meminfo) {
 
     // Configurar entries en el directorio de paginas
-    uint32_t (*kernel_first_pt)[1024] = &page_tables[0];
+    uint32_t (*kernel_first_pt)[TABLE_TOTAL_ENTRIES] = &page_tables[0];
 
     uint32_t pde = PDE_PT_BASE(*kernel_first_pt) | PDE_PWT | PDE_RW| PDE_P;
 

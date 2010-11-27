@@ -74,7 +74,7 @@ static void update_gdtr() {
     // virtual
     void *vaddr = (void *) 0x00000000;
     kernel_pd[PDI(vaddr)] = 0;
-    invalidate_tlb_pages(vaddr,1024);
+    invalidate_tlb_pages(vaddr,TABLE_TOTAL_ENTRIES);
 }
 
 //Mapea paginas de uso exclusivo del kernel durante el procesos de inicializacion
