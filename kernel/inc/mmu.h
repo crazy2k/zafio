@@ -107,7 +107,7 @@
 
 typedef struct { 
     uint16_t size __attribute__((packed));
-    void *addr __attribute__((packed_));
+    void *addr __attribute__((packed));
 } gdtr_t; 
 
 extern gdtr_t gdtr;
