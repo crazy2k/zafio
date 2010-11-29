@@ -31,6 +31,7 @@ $(BINARY): $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $@ --entry=$(ENTRY)
 
 install: $(BINARY)
+	mkdir -p $(PROGS_DIR)
 	mv $(BINARY) $(PROGS_DIR)
 
 clean: 
