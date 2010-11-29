@@ -61,9 +61,9 @@ acerca de la arquitectura IA-32, que ha tenido cierta experiencia
 previa programando en algún dialecto de <em>assembly</em> para dicha
 arquitectura y que está dispuesto a buscar en otros textos lo que no
 pueda encontrar aquí.</p>
-<p>La arquitectura en la que se basará este proyecto es la arquitectura
+<p>La arquitectura en la que se basa este proyecto es la arquitectura
 IA-32 de Intel, por lo que todos los detalles de bajo nivel se
-orientarán a esta.</p>
+orientan a esta.</p>
 <div class="section" id="la-secuencia-de-arranque">
 <h2>La secuencia de arranque<a class="headerlink" href="#la-secuencia-de-arranque" title="Enlazar permanentemente con este título">¶</a></h2>
 <p>En las computadoras compatibles con IBM PC, luego de encender la
@@ -162,7 +162,7 @@ selectores de segmento y proveen más información que los registros de
 segmento en modo real.</p>
 <p>Existe un pseudo-modo <strong>virtual-8086</strong>, que de momento no interesa.</p>
 </li>
-<li><p class="first"><strong>Modo de &#8220;gestión del sistema&#8221;</strong>: Por ahora no me interesa, pero
+<li><p class="first"><strong>Modo de &#8220;gestión del sistema&#8221;</strong>: Por ahora no nos interesa, pero
 básicamente es un modo que permite atender mensajes o alarmas de las
 que el sistema avisa a través de interrupciones.</p>
 </li>
@@ -543,46 +543,6 @@ análoga al caso del PDE.</p>
 </div>
 </div>
 </div>
-<div class="section" id="referencia-de-nasm">
-<h2>Referencia de NASM<a class="headerlink" href="#referencia-de-nasm" title="Enlazar permanentemente con este título">¶</a></h2>
-<div class="section" id="directivas-del-preprocesador">
-<h3>Directivas del preprocesador<a class="headerlink" href="#directivas-del-preprocesador" title="Enlazar permanentemente con este título">¶</a></h3>
-<dl class="describe">
-<dt>
-<tt class="descname">define A x</tt></dt>
-<dt>
-<tt class="descname">define f(x1, x2, ...) y</tt></dt>
-<dd><p>Permite definir macros en una sola línea. Funciona de manera
-similar a las macros de C, por lo que también posibilita crear
-macros con &#8220;parámetros&#8221;.</p>
-</dd></dl>
-
-</div>
-<div class="section" id="directivas-del-ensamblador">
-<h3>Directivas del ensamblador<a class="headerlink" href="#directivas-del-ensamblador" title="Enlazar permanentemente con este título">¶</a></h3>
-<dl class="describe">
-<dt>
-<tt class="descname">BITS m</tt></dt>
-<dd><p>Indica que el código a continuación de la directiva debe generarse
-para procesadores operando en modo de <tt class="docutils literal"><span class="pre">m</span></tt> bits, donde <tt class="docutils literal"><span class="pre">m</span></tt>
-puede ser 16, 32 o 64.</p>
-<p>Para el modo de salida <tt class="docutils literal"><span class="pre">bin</span></tt>, que es el que usamos para el
-<em>bootloader</em>, se puede asumir por omisión que <tt class="docutils literal"><span class="pre">m</span></tt> es 16. Sin
-embargo, siempre es buena práctica ser explícitos con esto, en
-lugar de asumir valores por omisión.</p>
-</dd></dl>
-
-<dl class="describe">
-<dt>
-<tt class="descname">ORG addr</tt></dt>
-<dd><p>Hace que NASM asuma que la dirección de memoria <tt class="docutils literal"><span class="pre">addr</span></tt> es la
-dirección en la que ha sido cargado el programa. NASM utiliza esta
-dirección como base para todas las referencias internas en una
-sección de código.</p>
-</dd></dl>
-
-</div>
-</div>
 <div class="section" id="referencias">
 <h2>Referencias<a class="headerlink" href="#referencias" title="Enlazar permanentemente con este título">¶</a></h2>
 <table class="docutils citation" frame="void" id="multiboot" rules="none">
@@ -623,11 +583,6 @@ sección de código.</p>
 <li><a class="reference internal" href="#paginacion">Paginación</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li><a class="reference internal" href="#referencia-de-nasm">Referencia de NASM</a><ul>
-<li><a class="reference internal" href="#directivas-del-preprocesador">Directivas del preprocesador</a></li>
-<li><a class="reference internal" href="#directivas-del-ensamblador">Directivas del ensamblador</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#referencias">Referencias</a></li>
