@@ -15,6 +15,7 @@ características salientes son:
 * **task-switching por software**
 * atención de **llamadas al sistema**
 
+En este documento se describen estas y otras características de Zafio.
 
 La estructura de directorios
 ----------------------------
@@ -25,7 +26,7 @@ el proyecto también se compone de archivos con código *assembly* de x86,
 binarios y documentación. Todo estos archivos están organizados en una
 estructura de directorios que facilita su búsqueda.
 
-Observemos una síntesis de la estructura de directorios del proyecto:
+Esta es una síntesis de la estructura de directorios del proyecto:
 
 .. graphviz::
 
@@ -62,10 +63,257 @@ Directorio   Contenido
              pruebas de referencia para el kernel.
 ============ ==========================================================
 
+
+Cargando el sistema
+-------------------
+
+Zafio puede ser cargado por cualquier *bootloader* compatible con la
+especificación Multiboot [Multiboot]_.
+
+La especificación Multiboot es relativamente sencilla y existen
+implementaciones estables de la misma. Además, la especificación
+asegura algunas características interesantes que tendrán los
+*bootloaders* que la implementen, como la obligación de prepararle al
+kernel un estado inicial en modo protegido con la *gate A20* activada
+y la capacidad de brindarle información sobre la memoria disponible,
+entre otras.
+
+.. note:: 
+    Si bien se utilizó GRUB ("Legacy") como *bootloader* de referencia,
+    Zafio debería poder ser arrancado por cualquier *bootloader* que
+    cumpla la especificación Multiboot.
+
+Una vez que el bootloader se ocupa de cargar Zafio en la memoria
+principal, el código en ``kernel/src/loader.S`` toma el control. Este
+código se ocupa, entre otras cosas, de construir la GDT definitiva del
+sistema, inicializar estructuras necesarias para el manejo de la
+memoria y activar el mecanismo de paginación de memoria que provee el
+procesador (hablaremos más en detalle de esto en la sección
+`La memoria`_).
+
+La objetivo final de esta pieza de código es dejar todo listo para que
+pueda darse la ejecución de código del kernel, escrito principalmente
+en C, que se encuentra mapeado en direcciones virtuales altas (*higher
+half*), por encima de los 3GB. Cuando esto es posible, se produce el
+salto al código presente en ``kernel/src/kernel.c`` que se ocupa de
+inicializar los diferentes subsistemas y comenzar la ejecución de la
+primer tarea.
+
+Manejo de procesos
+------------------
+
+La ejecución y el manejo de tareas (o procesos [1]_) es una parte
+importante de cualquier sistema operativo. Zafio no es la excepción.
+
+.. [1] Usamos los términos "tarea" y "proceso" de manera
+       intercambiable.
+
+El descriptor de proceso
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Cada tarea es representada en el kernel por una estructura ``task_t``,
+cuya definición puede hallarse en ``kernel/inc/sched.h``::
+
+    struct task_t {
+        // Informacion sobre el programa asociado a la tarea
+        struct program_t *prog;
+        // Direccion virtual del directorio de paginas en el espacio de direcciones
+        // del kernel
+        void *pd;
+        // Datos sobre el stack en espacio de kernel
+        void *kernel_stack;
+        void *kernel_stack_pointer;
+        void *kernel_stack_limit;
+        // Informacion para el scheduling
+        uint32_t quantum;
+        uint32_t rem_quantum;
+
+        task_t *next;
+        task_t *prev;
+    };
+
+Esta estructura contiene todo lo que el kernel precisa saber sobre la
+tarea. Entre estas cosas, se encuentra la información sobre el programa
+asociado a la tarea y sobre el espacio de direcciones virtual de la
+misma e información utilizada para la planificación realizada por
+*scheduler* de procesos.
+
+El *scheduler*
+~~~~~~~~~~~~~~
+
+El algoritmo de *scheduling* utilizado es extremadamente sencillo:
+*round-robin* con un *quantum* fijo. A cada tarea se le asigna un
+número fijo de unidades de tiempo para su ejecución. Cada unidad de
+tiempo equivale a una interrupción del *timer*.
+
+Como no hay llamadas al sistema bloqueantes, los procesos, o bien están
+ejecutándose en el procesador o bien están listos esperando su turno
+para ser ejecutados. Además, como el kernel sólo maneja un único
+procesador, en todo momento hay a lo sumo un único proceso en
+ejecución.
+
+La administración se realiza mediante una lista doblemente enlazada
+circular de procesos. La cabeza de esta lista es siempre el proceso
+actualmente en ejecución. Cuando se acaba el *quantum* de una tarea, la
+cabeza pasa a ser la siguiente tarea en la lista. Cuando una tarea
+finaliza su ejecución (invocando a la llamada al sistema ``exit()``)
+esta es quitada de la lista y los recursos que utilizaba son
+eventualmente liberados.
+
+Creación de tareas
+~~~~~~~~~~~~~~~~~~
+
+De momento, las tareas sólo pueden ser creadas desde espacio de kernel.
+La primer tarea que ingresa al sistema es una tarea especial, llamada
+"init", que se ejecuta en espacio de kernel y tiene a su cargo la
+creación de las tareas correspondientes a los programas de usuario
+alojados en ``progs/``. Puede observarse el código de esta tarea en el
+archivo ``kernel/src/init.c``::
+
+    for (int i = 0; i < programs_size; i++) {
+        uint32_t *pd = clone_pd(kernel_pd);
+        add_task(create_task(pd, &programs[i]));
+    }
+
+"init" simplemente recorre la secuencia de programas (cada uno
+representado por una estructura ``program_t``) y, para cada uno, crea
+una tarea nueva, usando ``create_task()``, cuyo espacio de direcciones
+coincide inicialmente con el del kernel. Luego, se agrega la tarea a la
+lista de tareas mediante la función ``add_task()``. Ambas funciones se
+hallan en ``kernel/src/sched.c``.
+
+Hasta este punto, se reserva espacio para el descriptor del proceso y
+para el stack del kernel de la tarea, pero la reserva y mapeo del
+stack de usuario y del código y los datos de la tarea en su espacio de
+direcciones virtual se realiza recién cuando a esta le toca ejecutarse
+por primera vez. El código que se ocupa de esto se halla repartido
+entre ``kernel/src/sched.c``, ``kernel/src/sched_helpers.S`` y
+``kernel/src/progs.c``.
+
+Cambios de contexto
+~~~~~~~~~~~~~~~~~~~
+
+Zafio realiza los cambios de contexto de las tareas por *software*.
+Como consecuencia, hay una única TSS que se utiliza al mínimo: Sólo
+se utilizan el campo correspondiente al descriptor de segmento del
+stack en modo kernel (``SS0``) y el correspondiente al *stack pointer*
+en modo kernel (``ESP0``). Estos campos de la TSS son utilizados por el
+hardware para cargar los registros ``SS`` y ``ESP0`` respectivamente al
+ocurrir un cambio de nivel al nivel 0.
+
+Los contextos de las tareas son resguardados en sus correspondientes
+stacks de kernel. Al ocurrir una interrupción mientras se está
+ejecutando una tarea, el *handler* de la interrupción inmediatamente
+almacena el contexto de la tarea en el stack de modo kernel y luego
+llama a la rutina de atención correspondiente (ver la sección `Manejo
+de interrupciones`_).
+
+Si la interrupción no deriva en un cambio de contexto, al terminar de
+manejarla, simplemente se procede de manera inversa, cargando el estado
+de la tarea desde el stack de kernel y volviendo a ejecutar en modo
+usuario. Sin embargo, si la interrupción sí derivará en un cambio de
+contexto, se procede del siguiente modo:
+
+* se guarda el registro ``EFLAGS`` (*flags* del procesador)
+* se marca la siguiente tarea en la lista de tareas como la tarea
+  actual
+* se carga el espacio de direcciones de la nueva tarea
+* se actualizan los valores de ``SS0`` y ``ESP0`` en la TSS del sistema
+* se almacena el *stack pointer* de modo kernel actual en el descriptor
+  de la tarea que estaba ejecutando y se carga el correspondiente a la
+  nueva tarea desde su descriptor
+
+El código de todo este procedimiento puede observarse en las funciones
+``switch_tasks()`` y ``switch_context()`` en ``kernel/src/sched.c`` y
+en el *label* ``switch_stack_pointers`` en
+``kernel/src/sched_helpers.S``.
+
+Al retornar de la función que se ocupa del último punto, se buscará la
+dirección de retorno en este "nuevo" stack. Si la tarea ya había estado
+en ejecución, simplemente irá retornando hasta llegar a la parte en la
+que se carga el contexto desde el stack y se vuelve a ejecutar en modo
+usuario. No obstante, si la tarea es una tarea nueva, su stack fue
+armado cuidadosamente de manera que al retornar de la función se
+ejecute el código del label ``initialize_task`` en
+``kernel/src/sched_helpers.S``. Esta porción de código es la encargada
+de reservar memoria y realizar los mapeos que ya se nombraron antes en
+`Creación de tareas`_.
+
+Manejo de interrupciones
+------------------------
+
+La función ``idt_init()`` en ``kernel/src/idt.c`` se ocupa de
+inicializar el módulo de manejo de interrupciones. Para esto, escribe
+los descriptores en la IDT para las interrupciones que serán manejadas.
+Cada una de las entradas en la IDT se corresponde con un *handler*
+distinto generado en ``kernel/src/idt_handlers.S``. La razón por la que
+hay un *handler* diferente por cada interrupción es porque es la única
+forma de poder establecer qué interrupción se está atendiendo, ya que,
+cuando ocurre una interrupción, se ejecuta el código cuya dirección fue
+registrada en la IDT, pero el hardware no almacena información que
+permita identificar de qué interrupción se trata.
+
+Estas rutinas se encargan de guardar el contexto de la tarea en
+ejecución en el stack de modo kernel y luego llaman a una función
+común, llamada ``idt_handle()``, pasándole a esta el índice en la IDT
+de la interrupción ocurrida, un código de error si existiera y el
+contexto guardado. De allí en más, ``idt_handle()`` es quien se ocupa
+de delegar el manejo de la interrupción en rutinas de servicio,
+escritas en C, que debieron ser registradas a través de
+``register_isr()``. Si no hay una rutina de servicio registrada para la
+interrupción, se llama a una rutina de servicio genérica por omisión.
+
+Una vez que ``idt_init()`` escribió la IDT, registra algunas rutinas
+de servicio, entre las cuales se encuentran la correspondiente al timer
+(interrupción ``0x20``) y la utilizada para recibir llamadas al sistema
+(interrupción ``0x80``) y da aviso al procesador de que tiene la IDT
+lista. Por último, configura los PIC y desenmascara sólo las
+interrupciones de *hardware* que le interesarán al kernel.
+
 La memoria
 ----------
 
-Espacio de memoria virtual de una tarea::
+Gestión de la memoria
+~~~~~~~~~~~~~~~~~~~~~
+
+El *bootloader* Multiboot es capaz de proveer información sobre la
+memoria física del sistema. Zafio saca provecho de eso. Al iniciar,
+utiliza los datos sobre la memoria brindados por el *bootloader* y
+asigna una estructura ``page_t`` por cada página física disponible para
+ser usada.  Dicha estructura se encuentra declarada en
+``kernel/inc/vmm.h`` del siguiente modo::
+
+    struct page_t {
+        int count;
+        page_t *next;
+        page_t *prev;
+        void *kvaddr;
+    };
+
+Los punteros ``next`` y ``prev`` son utilizados para administrar la
+lista de páginas físicas libres, ``count`` indica el número de
+referencias de la página y ``kvaddr`` representa la dirección virtual
+en la que está mapeada (si lo está).
+
+Direccionamiento
+~~~~~~~~~~~~~~~~
+
+Una de las primeras cosas que se realizan en ``kernel/src/loader.S``
+(el código al que salta el bootloader) es configurar una GDT definitiva
+para el sistema. La misma está compuesta por descriptores para:
+
+1. Código de nivel 0
+2. Datos de nivel 0
+3. Código de nivel 3
+4. Datos de nivel 3
+5. TSS del sistema
+
+Tanto los segmentos de código como de datos ocupan todo el espacio
+direccionable. El principal mecanismo de protección de memoria
+utilizado en Zafio es la paginación.
+
+Cada tarea tiene su propio espacio de memoria virtual. La siguiente es
+una representación del mismo para una tarea cualquiera::
 
     +----------------------------+ 0x00000000   \
     | ...                        |               |
@@ -117,142 +365,29 @@ Espacio de memoria virtual de una tarea::
     |           ...              |              /
     +----------------------------+ 0xFFFFFFFF
 
-El arranque
------------
+Como se puede ver, el código y los datos del kernel se encuentran
+siempre en las direcciones altas (*higher half*) de los espacios de
+memoria de las tareas, mientras que el código y los datos de usuario se
+encuentran en la parte baja.
 
-Dado que entendimos que nuestro foco principal estaría puesto en los
-problemas del sistema operativo en sí y no tanto en su carga, y dada la
-vasta cantidad de *bootloaders* disponibles, optamos por no emplear
-trabajo en escribir uno.
+La memoria de usuario (debajo de los 3GB) incluye el código de la
+tarea, un área para sus datos y su stack. Además, se encuentra mapeada
+en esta parte la función ``start_task()``. Esta función es la que
+recibe el control al cargar una tarea nueva. Recibe como parámetro la
+función que oficia de punto de entrada de la tarea, ya mapeada en el
+espacio de direcciones virtual, y sólo se ocupa de llamar a esa función
+y, si esta retorna, invocar la llamada al sistema ``exit()``. De este
+modo, una vez que la función de punto de entrada de la tarea finaliza,
+la tarea y los recursos que esta ocupa son liberados.
 
-Decidimos que nuestro kernel sea cargado por un *bootloader* compatible
-con la especificación Multiboot [Multiboot]_. La especificación nos pareció
-razonable y relativamente sencilla, y existen implementaciones estables de
-la misma. Además, la especificación nos asegura algunas características
-interesantes que tendrán los *bootloaders*, como la obligación de
-prepararnos un estado inicial en modo protegido con la *gate A20* activada
-y la capacidad de brindarnos información sobre la memoria disponible, entre
-otras.
+La memoria del kernel tiene una parte mapeada a la memoria física con
+un *offset* de 3GB. Por ejemplo, la dirección virtual ``0xC00B8000`` se
+corresponde con la dirección física ``0x000B8000``, donde se encuentra
+la memoria de video. Otras cosas mapeadas en las direcciones altas del
+espacio de memoria virtual son los directorios y tablas de páginas y
+demás estructuras para la administración de memoria y, por supuesto, el
+código del kernel.
 
-
-.. note:: 
-    Decidimos utilizar GRUB ("Legacy") como nuestro *bootloader* de
-    referencia, aunque nuestro sistema operativo debería poder ser
-    arrancado por cualquier *bootloader* que cumpla la especificación
-    Multiboot [Multiboot]_.
-
-El *loader*
------------
-
-En el archivo ``loader.S`` se encuentra el *header* Multiboot. Este
-*header* nos permite indicarle al *bootloader* que requerimos
-información de la memoria disponible, aunque puede usarse para
-especificarle también otros pedidos.
-
-En ese mismo archivo se encuentra el punto de entrada de nuestro
-kernel. El código en ``loader.S`` se ocupa, luego de silenciar las
-interrupciones, de cargar una GDT para el sistema y cargar los
-registros de segmento. Esta GDT será la GDT definitiva del sistema.
-Consta de dos segmentos de código y dos segmentos de datos; uno para
-cada nivel de privilegio que usamos en el kernel (0 y 3). Además posee
-una entrada que será utilizada para el descriptor de TSS del sistema.
-
-Luego se encarga de establecer el *stack pointer* de manera que pueda
-utilizarse el *stack del kernel* y sea posible realizar llamadas a
-código C. Una vez hecho esto, llama a tres funciones de C que se
-encargan de:
-
-* detener la ejecución si el kernel no fue cargado con un
-  *bootloader* Multiboot,
-* tomar datos de las estructuras con información que provee el
-  bootloader e inicializar estructuras para el manejo de la memoria y
-* establecer las correspondencias en directorios y tablas de páginas
-  para que, una vez activada la paginación, todo lo que el kernel
-  requiera inicialmente se encuentre presente en el espacio de
-  direcciones virtual.
-
-Ahora sí puede activarse la paginación de memoria. El mapa de memoria
-virtual ahora tiene 4MB con *identity-mapping* al principio (para poder
-seguir ejecutando el código en ``loader.S`` con normalidad) y toda la
-memoria que el kernel mínimamente va a requerir ubicada por encima de
-los 3GB en el espacio de direcciones virtual (*higher half*).
-
-Ya es tiempo de actualizar el *stack pointer* y saltar a código de C
-cuyas direcciones de reubicación apuntan a memoria alta.
-
-El *kernel*
------------
-
-Una vez en memoria alta, comienza la ejecución de la función
-``cmain()``. Esta función simplemente inicializa los diferentes módulos
-usando las funciones ``vm_init()``, ``idt_init()`` y ``sched_init()``.
-Esta última, una vez llamada, nunca devolverá el control, ya que
-dará paso a la ejecución de las tareas.
-
-``vmm.c``
-~~~~~~~~~
-
-Cuando ``cmain()`` llama a ``vm_init()`` comienza la inicialización del
-módulo encargado del manejo de memoria.
-
-Lo primero que se hace es actualizar el registro ``gdtr`` que alberga
-la dirección lineal de la GDT. Como queremos usar la dirección virtual
-en memoria alta de la GDT, necesitamos modificar este registro para no
-depender más de las referencias a memoria baja. Una vez hecho esto, ya
-podemos quitar el *identit-mapping* de los primeros 4MB de la memoria
-virtual.
-
-Lo segundo que hacemos es, en pocas palabras, avisarle a nuestro
-manejador de memoria que tiene que asumir que la memoria que está
-utilizando el kernel está reservada, y que no puede utilizarla como si
-estuviera libre para, por ejemplo, alojarla como memoria dinámica para
-algún subsistema del kernel.
-
-Por último, se definen los valores límite para el *heap*, es decir, el
-espacio de memoria virtual a utilizar para satisfacer las futuras
-necesidades de memoria de los distintos subsistemas del kernel.
-
-``idt.c``
-~~~~~~~~~
-
-``idt_init()`` se encuentra en ``idt.c`` y se encarga de inicializar el
-módulo de manejo de interrupciones.
-
-Su primer tarea es escribir todos los descriptores en la IDT para las
-interrupciones que se manejarán. Las rutinas que se corresponden con
-cada entrada en la IDT son generadas en ``kernel/src/idt_handlers.S``.
-Estas rutinas se encargan de guardar el estado del código en ejecución,
-y luego llaman a una función común, llamada ``idt_handle()`` pasándole
-a este el índice en la IDT de la interrupción ocurrida, un código de
-error si existiera y el estado guardado.
-
-De allí en más, ``idt_handle()`` es quien se encarga de delegar el
-manejo de la interrupción en rutinas de servicio, escritas en C,
-debidamente registradas a través de ``register_isr()``.
-
-Una vez que ``idt_init()`` escribió la IDT y registró algunas rutinas
-de servicio (las no registradas se manejan con una rutina de servicio
-por omisión), entonces ya puede dar aviso al procesador de que tiene la
-IDT lista.
-
-Por último, configura los PIC y desenmascara sólo las interrupciones de
-*hardware* que le interesarán al kernel.
-
-``sched.c``
-~~~~~~~~~
-
-``sched_init()`` es la función que inicializa el módulo de
-*scheduling*. Básicamente, se ocupa de crear una nueva tarea, conocida
-como ``init``, y agregarla a la lista de tareas en ejecución.
-
-Luego, se activan las interrupciones y se da paso a la ejecución de la
-tarea ``init``.
-
-``init``
-~~~~~~~~
-
-La tarea ``init`` es la primera tarea que se carga en Zafio. Su función
-es la de crear otras tareas.
 
 
 Convenciones

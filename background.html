@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -12,12 +14,13 @@
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
         VERSION:     '0.1',
-        COLLAPSE_MODINDEX: false,
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
     <script type="text/javascript" src="static/translations.js"></script>
     <link rel="top" title="Zafio v0.1 documentation" href="index.html" />
@@ -29,7 +32,7 @@
       <h3>Navegación</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="Índice general"
+          <a href="genindex.html" title="Índice General"
              accesskey="I">índice</a></li>
         <li class="right" >
           <a href="zafio.html" title="Zafio por dentro"
@@ -549,9 +552,10 @@ análoga al caso del PDE.</p>
 <tt class="descname">define A x</tt></dt>
 <dt>
 <tt class="descname">define f(x1, x2, ...) y</tt></dt>
-<dd>Permite definir macros en una sola línea. Funciona de manera
+<dd><p>Permite definir macros en una sola línea. Funciona de manera
 similar a las macros de C, por lo que también posibilita crear
-macros con &#8220;parámetros&#8221;.</dd></dl>
+macros con &#8220;parámetros&#8221;.</p>
+</dd></dl>
 
 </div>
 <div class="section" id="directivas-del-ensamblador">
@@ -571,10 +575,11 @@ lugar de asumir valores por omisión.</p>
 <dl class="describe">
 <dt>
 <tt class="descname">ORG addr</tt></dt>
-<dd>Hace que NASM asuma que la dirección de memoria <tt class="docutils literal"><span class="pre">addr</span></tt> es la
+<dd><p>Hace que NASM asuma que la dirección de memoria <tt class="docutils literal"><span class="pre">addr</span></tt> es la
 dirección en la que ha sido cargado el programa. NASM utiliza esta
 dirección como base para todas las referencias internas en una
-sección de código.</dd></dl>
+sección de código.</p>
+</dd></dl>
 
 </div>
 </div>
@@ -601,59 +606,59 @@ sección de código.</dd></dl>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Contenidos</a></h3>
-            <ul>
-<li><a class="reference external" href="#">Un poco de <em>background</em></a><ul>
-<li><a class="reference external" href="#la-secuencia-de-arranque">La secuencia de arranque</a><ul>
-<li><a class="reference external" href="#el-bootloader">El <em>bootloader</em></a><ul>
-<li><a class="reference external" href="#grub">GRUB</a></li>
+  <h3><a href="index.html">Contenidos</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Un poco de <em>background</em></a><ul>
+<li><a class="reference internal" href="#la-secuencia-de-arranque">La secuencia de arranque</a><ul>
+<li><a class="reference internal" href="#el-bootloader">El <em>bootloader</em></a><ul>
+<li><a class="reference internal" href="#grub">GRUB</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference external" href="#la-arquitectura">La arquitectura</a><ul>
-<li><a class="reference external" href="#modos-de-operacion">Modos de operación</a></li>
-<li><a class="reference external" href="#administracion-de-memoria">Administración de memoria</a><ul>
-<li><a class="reference external" href="#segmentacion">Segmentación</a></li>
-<li><a class="reference external" href="#paginacion">Paginación</a></li>
+<li><a class="reference internal" href="#la-arquitectura">La arquitectura</a><ul>
+<li><a class="reference internal" href="#modos-de-operacion">Modos de operación</a></li>
+<li><a class="reference internal" href="#administracion-de-memoria">Administración de memoria</a><ul>
+<li><a class="reference internal" href="#segmentacion">Segmentación</a></li>
+<li><a class="reference internal" href="#paginacion">Paginación</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference external" href="#referencia-de-nasm">Referencia de NASM</a><ul>
-<li><a class="reference external" href="#directivas-del-preprocesador">Directivas del preprocesador</a></li>
-<li><a class="reference external" href="#directivas-del-ensamblador">Directivas del ensamblador</a></li>
+<li><a class="reference internal" href="#referencia-de-nasm">Referencia de NASM</a><ul>
+<li><a class="reference internal" href="#directivas-del-preprocesador">Directivas del preprocesador</a></li>
+<li><a class="reference internal" href="#directivas-del-ensamblador">Directivas del ensamblador</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#referencias">Referencias</a></li>
+<li><a class="reference internal" href="#referencias">Referencias</a></li>
 </ul>
 </li>
 </ul>
 
-            <h4>Tema anterior</h4>
-            <p class="topless"><a href="index.html"
-                                  title="Capítulo anterior">Documentación de Zafio</a></p>
-            <h4>Próximo tema</h4>
-            <p class="topless"><a href="zafio.html"
-                                  title="Próximo capítulo">Zafio por dentro</a></p>
-            <h3>Esta página</h3>
-            <ul class="this-page-menu">
-              <li><a href="sources/background.txt"
-                     rel="nofollow">Enseñar el código</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Búsqueda rápida</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Ir a" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Introduzca los términos de búsqueda o un módulo, clase o nombre de función.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h4>Tema anterior</h4>
+  <p class="topless"><a href="index.html"
+                        title="Capítulo anterior">Documentación de Zafio</a></p>
+  <h4>Próximo tema</h4>
+  <p class="topless"><a href="zafio.html"
+                        title="Próximo capítulo">Zafio por dentro</a></p>
+  <h3>Esta página</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/background.txt"
+           rel="nofollow">Enseñar el código</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Búsqueda rápida</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Ir a" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Introduzca los términos de búsqueda o un módulo, clase o nombre de función.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -662,7 +667,7 @@ sección de código.</dd></dl>
       <h3>Navegación</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="Índice general"
+          <a href="genindex.html" title="Índice General"
              >índice</a></li>
         <li class="right" >
           <a href="zafio.html" title="Zafio por dentro"
@@ -674,8 +679,8 @@ sección de código.</dd></dl>
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, Pablo Antonio.
-      Creado con <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+        &copy; Copyright 2010, Pablo Antonio.
+      Creado con <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
     </div>
   </body>
 </html>

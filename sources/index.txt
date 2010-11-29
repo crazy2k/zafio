@@ -23,6 +23,9 @@ Los objetivos iniciales de este proyecto son:
     * con capacidad de extensión
 * aprender en el camino y documentar lo que se considere necesario
 
+Contenidos
+----------
+
 A continuación, la tabla de contenidos de la documentación:
 
 .. toctree::

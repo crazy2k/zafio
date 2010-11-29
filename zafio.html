@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -12,12 +14,13 @@
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
         VERSION:     '0.1',
-        COLLAPSE_MODINDEX: false,
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
     <script type="text/javascript" src="static/translations.js"></script>
     <link rel="top" title="Zafio v0.1 documentation" href="index.html" />
@@ -29,7 +32,7 @@
       <h3>Navegación</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="Índice general"
+          <a href="genindex.html" title="Índice General"
              accesskey="I">índice</a></li>
         <li class="right" >
           <a href="extension.html" title="Extensiones a futuro"
@@ -60,6 +63,7 @@ handlers en tiempo de ejecución</strong></li>
 <li><strong>task-switching por software</strong></li>
 <li>atención de <strong>llamadas al sistema</strong></li>
 </ul>
+<p>En este documento se describen estas y otras características de Zafio.</p>
 <div class="section" id="la-estructura-de-directorios">
 <h2>La estructura de directorios<a class="headerlink" href="#la-estructura-de-directorios" title="Enlazar permanentemente con este título">¶</a></h2>
 <p>Si bien la parte más importante de Zafio está escrita en C, en realidad,
@@ -67,7 +71,7 @@ el proyecto también se compone de archivos con código <em>assembly</em> de x86
 <em>scripts</em> de utilidad y de configuración de herramientas, archivos
 binarios y documentación. Todo estos archivos están organizados en una
 estructura de directorios que facilita su búsqueda.</p>
-<p>Observemos una síntesis de la estructura de directorios del proyecto:</p>
+<p>Esta es una síntesis de la estructura de directorios del proyecto:</p>
 <p class="graphviz">
 <img src="images/graphviz-c83ec6e99f0688464bb6971a90efd64efd2157a3.png" alt="digraph direcciones {
     ranksep=0.3
@@ -123,10 +127,240 @@ pruebas de referencia para el kernel.</td>
 </tbody>
 </table>
 </div>
+<div class="section" id="cargando-el-sistema">
+<h2>Cargando el sistema<a class="headerlink" href="#cargando-el-sistema" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Zafio puede ser cargado por cualquier <em>bootloader</em> compatible con la
+especificación Multiboot <a class="reference internal" href="background.html#multiboot">[Multiboot]</a>.</p>
+<p>La especificación Multiboot es relativamente sencilla y existen
+implementaciones estables de la misma. Además, la especificación
+asegura algunas características interesantes que tendrán los
+<em>bootloaders</em> que la implementen, como la obligación de prepararle al
+kernel un estado inicial en modo protegido con la <em>gate A20</em> activada
+y la capacidad de brindarle información sobre la memoria disponible,
+entre otras.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Si bien se utilizó GRUB (&#8220;Legacy&#8221;) como <em>bootloader</em> de referencia,
+Zafio debería poder ser arrancado por cualquier <em>bootloader</em> que
+cumpla la especificación Multiboot.</p>
+</div>
+<p>Una vez que el bootloader se ocupa de cargar Zafio en la memoria
+principal, el código en <tt class="docutils literal"><span class="pre">kernel/src/loader.S</span></tt> toma el control. Este
+código se ocupa, entre otras cosas, de construir la GDT definitiva del
+sistema, inicializar estructuras necesarias para el manejo de la
+memoria y activar el mecanismo de paginación de memoria que provee el
+procesador (hablaremos más en detalle de esto en la sección
+<a class="reference internal" href="#la-memoria">La memoria</a>).</p>
+<p>La objetivo final de esta pieza de código es dejar todo listo para que
+pueda darse la ejecución de código del kernel, escrito principalmente
+en C, que se encuentra mapeado en direcciones virtuales altas (<em>higher
+half</em>), por encima de los 3GB. Cuando esto es posible, se produce el
+salto al código presente en <tt class="docutils literal"><span class="pre">kernel/src/kernel.c</span></tt> que se ocupa de
+inicializar los diferentes subsistemas y comenzar la ejecución de la
+primer tarea.</p>
+</div>
+<div class="section" id="manejo-de-procesos">
+<h2>Manejo de procesos<a class="headerlink" href="#manejo-de-procesos" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>La ejecución y el manejo de tareas (o procesos <a class="footnote-reference" href="#id3" id="id2">[1]</a>) es una parte
+importante de cualquier sistema operativo. Zafio no es la excepción.</p>
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[1]</a></td><td>Usamos los términos &#8220;tarea&#8221; y &#8220;proceso&#8221; de manera
+intercambiable.</td></tr>
+</tbody>
+</table>
+<div class="section" id="el-descriptor-de-proceso">
+<h3>El descriptor de proceso<a class="headerlink" href="#el-descriptor-de-proceso" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Cada tarea es representada en el kernel por una estructura <tt class="docutils literal"><span class="pre">task_t</span></tt>,
+cuya definición puede hallarse en <tt class="docutils literal"><span class="pre">kernel/inc/sched.h</span></tt>:</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="k">struct</span> <span class="n">task_t</span> <span class="p">{</span>
+    <span class="c">// Informacion sobre el programa asociado a la tarea</span>
+    <span class="k">struct</span> <span class="n">program_t</span> <span class="o">*</span><span class="n">prog</span><span class="p">;</span>
+    <span class="c">// Direccion virtual del directorio de paginas en el espacio de direcciones</span>
+    <span class="c">// del kernel</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="n">pd</span><span class="p">;</span>
+    <span class="c">// Datos sobre el stack en espacio de kernel</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="n">kernel_stack</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="n">kernel_stack_pointer</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="n">kernel_stack_limit</span><span class="p">;</span>
+    <span class="c">// Informacion para el scheduling</span>
+    <span class="kt">uint32_t</span> <span class="n">quantum</span><span class="p">;</span>
+    <span class="kt">uint32_t</span> <span class="n">rem_quantum</span><span class="p">;</span>
+
+    <span class="n">task_t</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+    <span class="n">task_t</span> <span class="o">*</span><span class="n">prev</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>Esta estructura contiene todo lo que el kernel precisa saber sobre la
+tarea. Entre estas cosas, se encuentra la información sobre el programa
+asociado a la tarea y sobre el espacio de direcciones virtual de la
+misma e información utilizada para la planificación realizada por
+<em>scheduler</em> de procesos.</p>
+</div>
+<div class="section" id="el-scheduler">
+<h3>El <em>scheduler</em><a class="headerlink" href="#el-scheduler" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>El algoritmo de <em>scheduling</em> utilizado es extremadamente sencillo:
+<em>round-robin</em> con un <em>quantum</em> fijo. A cada tarea se le asigna un
+número fijo de unidades de tiempo para su ejecución. Cada unidad de
+tiempo equivale a una interrupción del <em>timer</em>.</p>
+<p>Como no hay llamadas al sistema bloqueantes, los procesos, o bien están
+ejecutándose en el procesador o bien están listos esperando su turno
+para ser ejecutados. Además, como el kernel sólo maneja un único
+procesador, en todo momento hay a lo sumo un único proceso en
+ejecución.</p>
+<p>La administración se realiza mediante una lista doblemente enlazada
+circular de procesos. La cabeza de esta lista es siempre el proceso
+actualmente en ejecución. Cuando se acaba el <em>quantum</em> de una tarea, la
+cabeza pasa a ser la siguiente tarea en la lista. Cuando una tarea
+finaliza su ejecución (invocando a la llamada al sistema <tt class="docutils literal"><span class="pre">exit()</span></tt>)
+esta es quitada de la lista y los recursos que utilizaba son
+eventualmente liberados.</p>
+</div>
+<div class="section" id="creacion-de-tareas">
+<h3>Creación de tareas<a class="headerlink" href="#creacion-de-tareas" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>De momento, las tareas sólo pueden ser creadas desde espacio de kernel.
+La primer tarea que ingresa al sistema es una tarea especial, llamada
+&#8220;init&#8221;, que se ejecuta en espacio de kernel y tiene a su cargo la
+creación de las tareas correspondientes a los programas de usuario
+alojados en <tt class="docutils literal"><span class="pre">progs/</span></tt>. Puede observarse el código de esta tarea en el
+archivo <tt class="docutils literal"><span class="pre">kernel/src/init.c</span></tt>:</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">programs_size</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">uint32_t</span> <span class="o">*</span><span class="n">pd</span> <span class="o">=</span> <span class="n">clone_pd</span><span class="p">(</span><span class="n">kernel_pd</span><span class="p">);</span>
+    <span class="n">add_task</span><span class="p">(</span><span class="n">create_task</span><span class="p">(</span><span class="n">pd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">programs</span><span class="p">[</span><span class="n">i</span><span class="p">]));</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>&#8220;init&#8221; simplemente recorre la secuencia de programas (cada uno
+representado por una estructura <tt class="docutils literal"><span class="pre">program_t</span></tt>) y, para cada uno, crea
+una tarea nueva, usando <tt class="docutils literal"><span class="pre">create_task()</span></tt>, cuyo espacio de direcciones
+coincide inicialmente con el del kernel. Luego, se agrega la tarea a la
+lista de tareas mediante la función <tt class="docutils literal"><span class="pre">add_task()</span></tt>. Ambas funciones se
+hallan en <tt class="docutils literal"><span class="pre">kernel/src/sched.c</span></tt>.</p>
+<p>Hasta este punto, se reserva espacio para el descriptor del proceso y
+para el stack del kernel de la tarea, pero la reserva y mapeo del
+stack de usuario y del código y los datos de la tarea en su espacio de
+direcciones virtual se realiza recién cuando a esta le toca ejecutarse
+por primera vez. El código que se ocupa de esto se halla repartido
+entre <tt class="docutils literal"><span class="pre">kernel/src/sched.c</span></tt>, <tt class="docutils literal"><span class="pre">kernel/src/sched_helpers.S</span></tt> y
+<tt class="docutils literal"><span class="pre">kernel/src/progs.c</span></tt>.</p>
+</div>
+<div class="section" id="cambios-de-contexto">
+<h3>Cambios de contexto<a class="headerlink" href="#cambios-de-contexto" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Zafio realiza los cambios de contexto de las tareas por <em>software</em>.
+Como consecuencia, hay una única TSS que se utiliza al mínimo: Sólo
+se utilizan el campo correspondiente al descriptor de segmento del
+stack en modo kernel (<tt class="docutils literal"><span class="pre">SS0</span></tt>) y el correspondiente al <em>stack pointer</em>
+en modo kernel (<tt class="docutils literal"><span class="pre">ESP0</span></tt>). Estos campos de la TSS son utilizados por el
+hardware para cargar los registros <tt class="docutils literal"><span class="pre">SS</span></tt> y <tt class="docutils literal"><span class="pre">ESP0</span></tt> respectivamente al
+ocurrir un cambio de nivel al nivel 0.</p>
+<p>Los contextos de las tareas son resguardados en sus correspondientes
+stacks de kernel. Al ocurrir una interrupción mientras se está
+ejecutando una tarea, el <em>handler</em> de la interrupción inmediatamente
+almacena el contexto de la tarea en el stack de modo kernel y luego
+llama a la rutina de atención correspondiente (ver la sección <a class="reference internal" href="#manejo-de-interrupciones">Manejo
+de interrupciones</a>).</p>
+<p>Si la interrupción no deriva en un cambio de contexto, al terminar de
+manejarla, simplemente se procede de manera inversa, cargando el estado
+de la tarea desde el stack de kernel y volviendo a ejecutar en modo
+usuario. Sin embargo, si la interrupción sí derivará en un cambio de
+contexto, se procede del siguiente modo:</p>
+<ul class="simple">
+<li>se guarda el registro <tt class="docutils literal"><span class="pre">EFLAGS</span></tt> (<em>flags</em> del procesador)</li>
+<li>se marca la siguiente tarea en la lista de tareas como la tarea
+actual</li>
+<li>se carga el espacio de direcciones de la nueva tarea</li>
+<li>se actualizan los valores de <tt class="docutils literal"><span class="pre">SS0</span></tt> y <tt class="docutils literal"><span class="pre">ESP0</span></tt> en la TSS del sistema</li>
+<li>se almacena el <em>stack pointer</em> de modo kernel actual en el descriptor
+de la tarea que estaba ejecutando y se carga el correspondiente a la
+nueva tarea desde su descriptor</li>
+</ul>
+<p>El código de todo este procedimiento puede observarse en las funciones
+<tt class="docutils literal"><span class="pre">switch_tasks()</span></tt> y <tt class="docutils literal"><span class="pre">switch_context()</span></tt> en <tt class="docutils literal"><span class="pre">kernel/src/sched.c</span></tt> y
+en el <em>label</em> <tt class="docutils literal"><span class="pre">switch_stack_pointers</span></tt> en
+<tt class="docutils literal"><span class="pre">kernel/src/sched_helpers.S</span></tt>.</p>
+<p>Al retornar de la función que se ocupa del último punto, se buscará la
+dirección de retorno en este &#8220;nuevo&#8221; stack. Si la tarea ya había estado
+en ejecución, simplemente irá retornando hasta llegar a la parte en la
+que se carga el contexto desde el stack y se vuelve a ejecutar en modo
+usuario. No obstante, si la tarea es una tarea nueva, su stack fue
+armado cuidadosamente de manera que al retornar de la función se
+ejecute el código del label <tt class="docutils literal"><span class="pre">initialize_task</span></tt> en
+<tt class="docutils literal"><span class="pre">kernel/src/sched_helpers.S</span></tt>. Esta porción de código es la encargada
+de reservar memoria y realizar los mapeos que ya se nombraron antes en
+<a class="reference internal" href="#creacion-de-tareas">Creación de tareas</a>.</p>
+</div>
+</div>
+<div class="section" id="manejo-de-interrupciones">
+<h2>Manejo de interrupciones<a class="headerlink" href="#manejo-de-interrupciones" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>La función <tt class="docutils literal"><span class="pre">idt_init()</span></tt> en <tt class="docutils literal"><span class="pre">kernel/src/idt.c</span></tt> se ocupa de
+inicializar el módulo de manejo de interrupciones. Para esto, escribe
+los descriptores en la IDT para las interrupciones que serán manejadas.
+Cada una de las entradas en la IDT se corresponde con un <em>handler</em>
+distinto generado en <tt class="docutils literal"><span class="pre">kernel/src/idt_handlers.S</span></tt>. La razón por la que
+hay un <em>handler</em> diferente por cada interrupción es porque es la única
+forma de poder establecer qué interrupción se está atendiendo, ya que,
+cuando ocurre una interrupción, se ejecuta el código cuya dirección fue
+registrada en la IDT, pero el hardware no almacena información que
+permita identificar de qué interrupción se trata.</p>
+<p>Estas rutinas se encargan de guardar el contexto de la tarea en
+ejecución en el stack de modo kernel y luego llaman a una función
+común, llamada <tt class="docutils literal"><span class="pre">idt_handle()</span></tt>, pasándole a esta el índice en la IDT
+de la interrupción ocurrida, un código de error si existiera y el
+contexto guardado. De allí en más, <tt class="docutils literal"><span class="pre">idt_handle()</span></tt> es quien se ocupa
+de delegar el manejo de la interrupción en rutinas de servicio,
+escritas en C, que debieron ser registradas a través de
+<tt class="docutils literal"><span class="pre">register_isr()</span></tt>. Si no hay una rutina de servicio registrada para la
+interrupción, se llama a una rutina de servicio genérica por omisión.</p>
+<p>Una vez que <tt class="docutils literal"><span class="pre">idt_init()</span></tt> escribió la IDT, registra algunas rutinas
+de servicio, entre las cuales se encuentran la correspondiente al timer
+(interrupción <tt class="docutils literal"><span class="pre">0x20</span></tt>) y la utilizada para recibir llamadas al sistema
+(interrupción <tt class="docutils literal"><span class="pre">0x80</span></tt>) y da aviso al procesador de que tiene la IDT
+lista. Por último, configura los PIC y desenmascara sólo las
+interrupciones de <em>hardware</em> que le interesarán al kernel.</p>
+</div>
 <div class="section" id="la-memoria">
 <h2>La memoria<a class="headerlink" href="#la-memoria" title="Enlazar permanentemente con este título">¶</a></h2>
-<p>Espacio de memoria virtual de una tarea:</p>
-<div class="highlight-python"><pre>+----------------------------+ 0x00000000   \
+<div class="section" id="gestion-de-la-memoria">
+<h3>Gestión de la memoria<a class="headerlink" href="#gestion-de-la-memoria" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>El <em>bootloader</em> Multiboot es capaz de proveer información sobre la
+memoria física del sistema. Zafio saca provecho de eso. Al iniciar,
+utiliza los datos sobre la memoria brindados por el <em>bootloader</em> y
+asigna una estructura <tt class="docutils literal"><span class="pre">page_t</span></tt> por cada página física disponible para
+ser usada.  Dicha estructura se encuentra declarada en
+<tt class="docutils literal"><span class="pre">kernel/inc/vmm.h</span></tt> del siguiente modo:</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="k">struct</span> <span class="n">page_t</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">count</span><span class="p">;</span>
+    <span class="n">page_t</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+    <span class="n">page_t</span> <span class="o">*</span><span class="n">prev</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="n">kvaddr</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>Los punteros <tt class="docutils literal"><span class="pre">next</span></tt> y <tt class="docutils literal"><span class="pre">prev</span></tt> son utilizados para administrar la
+lista de páginas físicas libres, <tt class="docutils literal"><span class="pre">count</span></tt> indica el número de
+referencias de la página y <tt class="docutils literal"><span class="pre">kvaddr</span></tt> representa la dirección virtual
+en la que está mapeada (si lo está).</p>
+</div>
+<div class="section" id="direccionamiento">
+<h3>Direccionamiento<a class="headerlink" href="#direccionamiento" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Una de las primeras cosas que se realizan en <tt class="docutils literal"><span class="pre">kernel/src/loader.S</span></tt>
+(el código al que salta el bootloader) es configurar una GDT definitiva
+para el sistema. La misma está compuesta por descriptores para:</p>
+<ol class="arabic simple">
+<li>Código de nivel 0</li>
+<li>Datos de nivel 0</li>
+<li>Código de nivel 3</li>
+<li>Datos de nivel 3</li>
+<li>TSS del sistema</li>
+</ol>
+<p>Tanto los segmentos de código como de datos ocupan todo el espacio
+direccionable. El principal mecanismo de protección de memoria
+utilizado en Zafio es la paginación.</p>
+<p>Cada tarea tiene su propio espacio de memoria virtual. La siguiente es
+una representación del mismo para una tarea cualquiera:</p>
+<div class="highlight-c"><pre>+----------------------------+ 0x00000000   \
 | ...                        |               |
 +----------------------------+ 0x08048000    |
 | Código y datos de la tarea |               |
@@ -176,123 +410,26 @@ pruebas de referencia para el kernel.</td>
 |           ...              |              /
 +----------------------------+ 0xFFFFFFFF</pre>
 </div>
-</div>
-<div class="section" id="el-arranque">
-<h2>El arranque<a class="headerlink" href="#el-arranque" title="Enlazar permanentemente con este título">¶</a></h2>
-<p>Dado que entendimos que nuestro foco principal estaría puesto en los
-problemas del sistema operativo en sí y no tanto en su carga, y dada la
-vasta cantidad de <em>bootloaders</em> disponibles, optamos por no emplear
-trabajo en escribir uno.</p>
-<p>Decidimos que nuestro kernel sea cargado por un <em>bootloader</em> compatible
-con la especificación Multiboot <a class="reference external" href="background.html#multiboot">[Multiboot]</a>. La especificación nos pareció
-razonable y relativamente sencilla, y existen implementaciones estables de
-la misma. Además, la especificación nos asegura algunas características
-interesantes que tendrán los <em>bootloaders</em>, como la obligación de
-prepararnos un estado inicial en modo protegido con la <em>gate A20</em> activada
-y la capacidad de brindarnos información sobre la memoria disponible, entre
-otras.</p>
-<div class="admonition note">
-<p class="first admonition-title">Nota</p>
-<p class="last">Decidimos utilizar GRUB (&#8220;Legacy&#8221;) como nuestro <em>bootloader</em> de
-referencia, aunque nuestro sistema operativo debería poder ser
-arrancado por cualquier <em>bootloader</em> que cumpla la especificación
-Multiboot <a class="reference external" href="background.html#multiboot">[Multiboot]</a>.</p>
-</div>
-</div>
-<div class="section" id="el-loader">
-<h2>El <em>loader</em><a class="headerlink" href="#el-loader" title="Enlazar permanentemente con este título">¶</a></h2>
-<p>En el archivo <tt class="docutils literal"><span class="pre">loader.S</span></tt> se encuentra el <em>header</em> Multiboot. Este
-<em>header</em> nos permite indicarle al <em>bootloader</em> que requerimos
-información de la memoria disponible, aunque puede usarse para
-especificarle también otros pedidos.</p>
-<p>En ese mismo archivo se encuentra el punto de entrada de nuestro
-kernel. El código en <tt class="docutils literal"><span class="pre">loader.S</span></tt> se ocupa, luego de silenciar las
-interrupciones, de cargar una GDT para el sistema y cargar los
-registros de segmento. Esta GDT será la GDT definitiva del sistema.
-Consta de dos segmentos de código y dos segmentos de datos; uno para
-cada nivel de privilegio que usamos en el kernel (0 y 3). Además posee
-una entrada que será utilizada para el descriptor de TSS del sistema.</p>
-<p>Luego se encarga de establecer el <em>stack pointer</em> de manera que pueda
-utilizarse el <em>stack del kernel</em> y sea posible realizar llamadas a
-código C. Una vez hecho esto, llama a tres funciones de C que se
-encargan de:</p>
-<ul class="simple">
-<li>detener la ejecución si el kernel no fue cargado con un
-<em>bootloader</em> Multiboot,</li>
-<li>tomar datos de las estructuras con información que provee el
-bootloader e inicializar estructuras para el manejo de la memoria y</li>
-<li>establecer las correspondencias en directorios y tablas de páginas
-para que, una vez activada la paginación, todo lo que el kernel
-requiera inicialmente se encuentre presente en el espacio de
-direcciones virtual.</li>
-</ul>
-<p>Ahora sí puede activarse la paginación de memoria. El mapa de memoria
-virtual ahora tiene 4MB con <em>identity-mapping</em> al principio (para poder
-seguir ejecutando el código en <tt class="docutils literal"><span class="pre">loader.S</span></tt> con normalidad) y toda la
-memoria que el kernel mínimamente va a requerir ubicada por encima de
-los 3GB en el espacio de direcciones virtual (<em>higher half</em>).</p>
-<p>Ya es tiempo de actualizar el <em>stack pointer</em> y saltar a código de C
-cuyas direcciones de reubicación apuntan a memoria alta.</p>
-</div>
-<div class="section" id="el-kernel">
-<h2>El <em>kernel</em><a class="headerlink" href="#el-kernel" title="Enlazar permanentemente con este título">¶</a></h2>
-<p>Una vez en memoria alta, comienza la ejecución de la función
-<tt class="docutils literal"><span class="pre">cmain()</span></tt>. Esta función simplemente inicializa los diferentes módulos
-usando las funciones <tt class="docutils literal"><span class="pre">vm_init()</span></tt>, <tt class="docutils literal"><span class="pre">idt_init()</span></tt> y <tt class="docutils literal"><span class="pre">sched_init()</span></tt>.
-Esta última, una vez llamada, nunca devolverá el control, ya que
-dará paso a la ejecución de las tareas.</p>
-<div class="section" id="vmm-c">
-<h3><tt class="docutils literal"><span class="pre">vmm.c</span></tt><a class="headerlink" href="#vmm-c" title="Enlazar permanentemente con este título">¶</a></h3>
-<p>Cuando <tt class="docutils literal"><span class="pre">cmain()</span></tt> llama a <tt class="docutils literal"><span class="pre">vm_init()</span></tt> comienza la inicialización del
-módulo encargado del manejo de memoria.</p>
-<p>Lo primero que se hace es actualizar el registro <tt class="docutils literal"><span class="pre">gdtr</span></tt> que alberga
-la dirección lineal de la GDT. Como queremos usar la dirección virtual
-en memoria alta de la GDT, necesitamos modificar este registro para no
-depender más de las referencias a memoria baja. Una vez hecho esto, ya
-podemos quitar el <em>identit-mapping</em> de los primeros 4MB de la memoria
-virtual.</p>
-<p>Lo segundo que hacemos es, en pocas palabras, avisarle a nuestro
-manejador de memoria que tiene que asumir que la memoria que está
-utilizando el kernel está reservada, y que no puede utilizarla como si
-estuviera libre para, por ejemplo, alojarla como memoria dinámica para
-algún subsistema del kernel.</p>
-<p>Por último, se definen los valores límite para el <em>heap</em>, es decir, el
-espacio de memoria virtual a utilizar para satisfacer las futuras
-necesidades de memoria de los distintos subsistemas del kernel.</p>
-</div>
-<div class="section" id="idt-c">
-<h3><tt class="docutils literal"><span class="pre">idt.c</span></tt><a class="headerlink" href="#idt-c" title="Enlazar permanentemente con este título">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">idt_init()</span></tt> se encuentra en <tt class="docutils literal"><span class="pre">idt.c</span></tt> y se encarga de inicializar el
-módulo de manejo de interrupciones.</p>
-<p>Su primer tarea es escribir todos los descriptores en la IDT para las
-interrupciones que se manejarán. Las rutinas que se corresponden con
-cada entrada en la IDT son generadas en <tt class="docutils literal"><span class="pre">kernel/src/idt_handlers.S</span></tt>.
-Estas rutinas se encargan de guardar el estado del código en ejecución,
-y luego llaman a una función común, llamada <tt class="docutils literal"><span class="pre">idt_handle()</span></tt> pasándole
-a este el índice en la IDT de la interrupción ocurrida, un código de
-error si existiera y el estado guardado.</p>
-<p>De allí en más, <tt class="docutils literal"><span class="pre">idt_handle()</span></tt> es quien se encarga de delegar el
-manejo de la interrupción en rutinas de servicio, escritas en C,
-debidamente registradas a través de <tt class="docutils literal"><span class="pre">register_isr()</span></tt>.</p>
-<p>Una vez que <tt class="docutils literal"><span class="pre">idt_init()</span></tt> escribió la IDT y registró algunas rutinas
-de servicio (las no registradas se manejan con una rutina de servicio
-por omisión), entonces ya puede dar aviso al procesador de que tiene la
-IDT lista.</p>
-<p>Por último, configura los PIC y desenmascara sólo las interrupciones de
-<em>hardware</em> que le interesarán al kernel.</p>
-</div>
-<div class="section" id="sched-c">
-<h3><tt class="docutils literal"><span class="pre">sched.c</span></tt><a class="headerlink" href="#sched-c" title="Enlazar permanentemente con este título">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">sched_init()</span></tt> es la función que inicializa el módulo de
-<em>scheduling</em>. Básicamente, se ocupa de crear una nueva tarea, conocida
-como <tt class="docutils literal"><span class="pre">init</span></tt>, y agregarla a la lista de tareas en ejecución.</p>
-<p>Luego, se activan las interrupciones y se da paso a la ejecución de la
-tarea <tt class="docutils literal"><span class="pre">init</span></tt>.</p>
-</div>
-<div class="section" id="init">
-<h3><tt class="docutils literal"><span class="pre">init</span></tt><a class="headerlink" href="#init" title="Enlazar permanentemente con este título">¶</a></h3>
-<p>La tarea <tt class="docutils literal"><span class="pre">init</span></tt> es la primera tarea que se carga en Zafio. Su función
-es la de crear otras tareas.</p>
+<p>Como se puede ver, el código y los datos del kernel se encuentran
+siempre en las direcciones altas (<em>higher half</em>) de los espacios de
+memoria de las tareas, mientras que el código y los datos de usuario se
+encuentran en la parte baja.</p>
+<p>La memoria de usuario (debajo de los 3GB) incluye el código de la
+tarea, un área para sus datos y su stack. Además, se encuentra mapeada
+en esta parte la función <tt class="docutils literal"><span class="pre">start_task()</span></tt>. Esta función es la que
+recibe el control al cargar una tarea nueva. Recibe como parámetro la
+función que oficia de punto de entrada de la tarea, ya mapeada en el
+espacio de direcciones virtual, y sólo se ocupa de llamar a esa función
+y, si esta retorna, invocar la llamada al sistema <tt class="docutils literal"><span class="pre">exit()</span></tt>. De este
+modo, una vez que la función de punto de entrada de la tarea finaliza,
+la tarea y los recursos que esta ocupa son liberados.</p>
+<p>La memoria del kernel tiene una parte mapeada a la memoria física con
+un <em>offset</em> de 3GB. Por ejemplo, la dirección virtual <tt class="docutils literal"><span class="pre">0xC00B8000</span></tt> se
+corresponde con la dirección física <tt class="docutils literal"><span class="pre">0x000B8000</span></tt>, donde se encuentra
+la memoria de video. Otras cosas mapeadas en las direcciones altas del
+espacio de memoria virtual son los directorios y tablas de páginas y
+demás estructuras para la administración de memoria y, por supuesto, el
+código del kernel.</p>
 </div>
 </div>
 <div class="section" id="convenciones">
@@ -306,49 +443,53 @@ es la de crear otras tareas.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Contenidos</a></h3>
-            <ul>
-<li><a class="reference external" href="#">Zafio por dentro</a><ul>
-<li><a class="reference external" href="#la-estructura-de-directorios">La estructura de directorios</a></li>
-<li><a class="reference external" href="#la-memoria">La memoria</a></li>
-<li><a class="reference external" href="#el-arranque">El arranque</a></li>
-<li><a class="reference external" href="#el-loader">El <em>loader</em></a></li>
-<li><a class="reference external" href="#el-kernel">El <em>kernel</em></a><ul>
-<li><a class="reference external" href="#vmm-c"><tt class="docutils literal"><span class="pre">vmm.c</span></tt></a></li>
-<li><a class="reference external" href="#idt-c"><tt class="docutils literal"><span class="pre">idt.c</span></tt></a></li>
-<li><a class="reference external" href="#sched-c"><tt class="docutils literal"><span class="pre">sched.c</span></tt></a></li>
-<li><a class="reference external" href="#init"><tt class="docutils literal"><span class="pre">init</span></tt></a></li>
+  <h3><a href="index.html">Contenidos</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Zafio por dentro</a><ul>
+<li><a class="reference internal" href="#la-estructura-de-directorios">La estructura de directorios</a></li>
+<li><a class="reference internal" href="#cargando-el-sistema">Cargando el sistema</a></li>
+<li><a class="reference internal" href="#manejo-de-procesos">Manejo de procesos</a><ul>
+<li><a class="reference internal" href="#el-descriptor-de-proceso">El descriptor de proceso</a></li>
+<li><a class="reference internal" href="#el-scheduler">El <em>scheduler</em></a></li>
+<li><a class="reference internal" href="#creacion-de-tareas">Creación de tareas</a></li>
+<li><a class="reference internal" href="#cambios-de-contexto">Cambios de contexto</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#convenciones">Convenciones</a></li>
+<li><a class="reference internal" href="#manejo-de-interrupciones">Manejo de interrupciones</a></li>
+<li><a class="reference internal" href="#la-memoria">La memoria</a><ul>
+<li><a class="reference internal" href="#gestion-de-la-memoria">Gestión de la memoria</a></li>
+<li><a class="reference internal" href="#direccionamiento">Direccionamiento</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#convenciones">Convenciones</a></li>
 </ul>
 </li>
 </ul>
 
-            <h4>Tema anterior</h4>
-            <p class="topless"><a href="background.html"
-                                  title="Capítulo anterior">Un poco de <em>background</em></a></p>
-            <h4>Próximo tema</h4>
-            <p class="topless"><a href="extension.html"
-                                  title="Próximo capítulo">Extensiones a futuro</a></p>
-            <h3>Esta página</h3>
-            <ul class="this-page-menu">
-              <li><a href="sources/zafio.txt"
-                     rel="nofollow">Enseñar el código</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Búsqueda rápida</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Ir a" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Introduzca los términos de búsqueda o un módulo, clase o nombre de función.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h4>Tema anterior</h4>
+  <p class="topless"><a href="background.html"
+                        title="Capítulo anterior">Un poco de <em>background</em></a></p>
+  <h4>Próximo tema</h4>
+  <p class="topless"><a href="extension.html"
+                        title="Próximo capítulo">Extensiones a futuro</a></p>
+  <h3>Esta página</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/zafio.txt"
+           rel="nofollow">Enseñar el código</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Búsqueda rápida</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Ir a" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Introduzca los términos de búsqueda o un módulo, clase o nombre de función.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -357,7 +498,7 @@ es la de crear otras tareas.</p>
       <h3>Navegación</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="Índice general"
+          <a href="genindex.html" title="Índice General"
              >índice</a></li>
         <li class="right" >
           <a href="extension.html" title="Extensiones a futuro"
@@ -369,8 +510,8 @@ es la de crear otras tareas.</p>
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, Pablo Antonio.
-      Creado con <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+        &copy; Copyright 2010, Pablo Antonio.
+      Creado con <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
     </div>
   </body>
 </html>

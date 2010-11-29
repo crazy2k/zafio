@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -12,12 +14,13 @@
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
         VERSION:     '0.1',
-        COLLAPSE_MODINDEX: false,
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
     <script type="text/javascript" src="static/translations.js"></script>
     <link rel="top" title="Zafio v0.1 documentation" href="#" />
@@ -28,7 +31,7 @@
       <h3>Navegación</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="Índice general"
+          <a href="genindex.html" title="Índice General"
              accesskey="I">índice</a></li>
         <li class="right" >
           <a href="background.html" title="Un poco de background"
@@ -64,45 +67,54 @@ falta de tacto.</p>
 <li><p class="first">aprender en el camino y documentar lo que se considere necesario</p>
 </li>
 </ul>
+<div class="section" id="contenidos">
+<h2>Contenidos<a class="headerlink" href="#contenidos" title="Enlazar permanentemente con este título">¶</a></h2>
 <p>A continuación, la tabla de contenidos de la documentación:</p>
+<div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference external" href="background.html">Un poco de <em>background</em></a><ul>
-<li class="toctree-l2"><a class="reference external" href="background.html#la-secuencia-de-arranque">La secuencia de arranque</a><ul>
-<li class="toctree-l3"><a class="reference external" href="background.html#el-bootloader">El <em>bootloader</em></a></li>
+<li class="toctree-l1"><a class="reference internal" href="background.html">Un poco de <em>background</em></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="background.html#la-secuencia-de-arranque">La secuencia de arranque</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="background.html#el-bootloader">El <em>bootloader</em></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference external" href="background.html#la-arquitectura">La arquitectura</a><ul>
-<li class="toctree-l3"><a class="reference external" href="background.html#modos-de-operacion">Modos de operación</a></li>
-<li class="toctree-l3"><a class="reference external" href="background.html#administracion-de-memoria">Administración de memoria</a></li>
+<li class="toctree-l2"><a class="reference internal" href="background.html#la-arquitectura">La arquitectura</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="background.html#modos-de-operacion">Modos de operación</a></li>
+<li class="toctree-l3"><a class="reference internal" href="background.html#administracion-de-memoria">Administración de memoria</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference external" href="background.html#referencia-de-nasm">Referencia de NASM</a><ul>
-<li class="toctree-l3"><a class="reference external" href="background.html#directivas-del-preprocesador">Directivas del preprocesador</a></li>
-<li class="toctree-l3"><a class="reference external" href="background.html#directivas-del-ensamblador">Directivas del ensamblador</a></li>
+<li class="toctree-l2"><a class="reference internal" href="background.html#referencia-de-nasm">Referencia de NASM</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="background.html#directivas-del-preprocesador">Directivas del preprocesador</a></li>
+<li class="toctree-l3"><a class="reference internal" href="background.html#directivas-del-ensamblador">Directivas del ensamblador</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference external" href="background.html#referencias">Referencias</a></li>
+<li class="toctree-l2"><a class="reference internal" href="background.html#referencias">Referencias</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference external" href="zafio.html">Zafio por dentro</a><ul>
-<li class="toctree-l2"><a class="reference external" href="zafio.html#la-estructura-de-directorios">La estructura de directorios</a></li>
-<li class="toctree-l2"><a class="reference external" href="zafio.html#la-memoria">La memoria</a></li>
-<li class="toctree-l2"><a class="reference external" href="zafio.html#el-arranque">El arranque</a></li>
-<li class="toctree-l2"><a class="reference external" href="zafio.html#el-loader">El <em>loader</em></a></li>
-<li class="toctree-l2"><a class="reference external" href="zafio.html#el-kernel">El <em>kernel</em></a><ul>
-<li class="toctree-l3"><a class="reference external" href="zafio.html#vmm-c"><tt class="docutils literal"><span class="pre">vmm.c</span></tt></a></li>
-<li class="toctree-l3"><a class="reference external" href="zafio.html#idt-c"><tt class="docutils literal"><span class="pre">idt.c</span></tt></a></li>
-<li class="toctree-l3"><a class="reference external" href="zafio.html#sched-c"><tt class="docutils literal"><span class="pre">sched.c</span></tt></a></li>
-<li class="toctree-l3"><a class="reference external" href="zafio.html#init"><tt class="docutils literal"><span class="pre">init</span></tt></a></li>
+<li class="toctree-l1"><a class="reference internal" href="zafio.html">Zafio por dentro</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="zafio.html#la-estructura-de-directorios">La estructura de directorios</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zafio.html#cargando-el-sistema">Cargando el sistema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zafio.html#manejo-de-procesos">Manejo de procesos</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="zafio.html#el-descriptor-de-proceso">El descriptor de proceso</a></li>
+<li class="toctree-l3"><a class="reference internal" href="zafio.html#el-scheduler">El <em>scheduler</em></a></li>
+<li class="toctree-l3"><a class="reference internal" href="zafio.html#creacion-de-tareas">Creación de tareas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="zafio.html#cambios-de-contexto">Cambios de contexto</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference external" href="zafio.html#convenciones">Convenciones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zafio.html#manejo-de-interrupciones">Manejo de interrupciones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zafio.html#la-memoria">La memoria</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="zafio.html#gestion-de-la-memoria">Gestión de la memoria</a></li>
+<li class="toctree-l3"><a class="reference internal" href="zafio.html#direccionamiento">Direccionamiento</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference external" href="extension.html">Extensiones a futuro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zafio.html#convenciones">Convenciones</a></li>
 </ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extensiones a futuro</a></li>
+</ul>
+</div>
 <hr class="docutils" />
 <p>La imagen de la letra zeta fue creada por <a class="reference external" href="http://http://commons.wikimedia.org/wiki/User:WebHamster">WebHamster</a>.</p>
+</div>
 </div>
 
 
@@ -111,27 +123,37 @@ falta de tacto.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h4>Próximo tema</h4>
-            <p class="topless"><a href="background.html"
-                                  title="Próximo capítulo">Un poco de <em>background</em></a></p>
-            <h3>Esta página</h3>
-            <ul class="this-page-menu">
-              <li><a href="sources/index.txt"
-                     rel="nofollow">Enseñar el código</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Búsqueda rápida</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Ir a" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Introduzca los términos de búsqueda o un módulo, clase o nombre de función.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3><a href="#">Contenidos</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Documentación de Zafio</a><ul>
+<li><a class="reference internal" href="#contenidos">Contenidos</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Próximo tema</h4>
+  <p class="topless"><a href="background.html"
+                        title="Próximo capítulo">Un poco de <em>background</em></a></p>
+  <h3>Esta página</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/index.txt"
+           rel="nofollow">Enseñar el código</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Búsqueda rápida</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Ir a" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Introduzca los términos de búsqueda o un módulo, clase o nombre de función.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -140,7 +162,7 @@ falta de tacto.</p>
       <h3>Navegación</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="Índice general"
+          <a href="genindex.html" title="Índice General"
              >índice</a></li>
         <li class="right" >
           <a href="background.html" title="Un poco de background"
@@ -149,8 +171,8 @@ falta de tacto.</p>
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, Pablo Antonio.
-      Creado con <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+        &copy; Copyright 2010, Pablo Antonio.
+      Creado con <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
     </div>
   </body>
 </html>
