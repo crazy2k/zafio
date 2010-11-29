@@ -25,7 +25,7 @@ void free_user_memory(uint32_t pd[]) {
                 if (*get_pte(pd,vaddr) & PTE_P) 
                     free_page(pd,vaddr);
             }
-        free_page(pd, PDE_PT_BASE(pd[i]));
+        free_page(pd, KVIRTADDR(PDE_PT_BASE(pd[i])));
         }
     }
 }
