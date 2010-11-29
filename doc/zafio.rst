@@ -185,7 +185,8 @@ hallan en ``kernel/src/sched.c``.
 Hasta este punto, se reserva espacio para el descriptor del proceso y
 para el stack del kernel de la tarea, pero la reserva y mapeo del
 stack de usuario y del código y los datos de la tarea en su espacio de
-direcciones virtual se realiza recién cuando a esta le toca ejecutarse
+direcciones virtual, utilizando la información en el ejecutable ELF
+correspondiente, se realiza recién cuando a esta le toca ejecutarse
 por primera vez. El código que se ocupa de esto se halla repartido
 entre ``kernel/src/sched.c``, ``kernel/src/sched_helpers.S`` y
 ``kernel/src/progs.c``.
@@ -270,6 +271,25 @@ de servicio, entre las cuales se encuentran la correspondiente al timer
 lista. Por último, configura los PIC y desenmascara sólo las
 interrupciones de *hardware* que le interesarán al kernel.
 
+Atención de llamadas al sistema
+-------------------------------
+
+Las llamadas al sistema se realizan a través de la interrupción
+``0x80``. Antes de generar la interrupción por software, el proceso
+debe escribir el número correspondiente a la llamada al sistema que
+desea ejecutar en el registro ``EAX``. Los parámetros de la llamada al
+sistema deben pasarse usando los registros ``EBX``, ``ECX`` y ``EDX``.
+Al ocurrir la interrupción, la rutina de servicio de la interrupción
+``0x80`` llama a la función correspondiente a la llamada al sistema
+invocada con los parámetros pasados.
+
+Las llamadas al sistema implementadas hasta ahora son:
+
+* ``exit()``, que finaliza el proceso en ejecución y libera todos los
+  recursos utilizados por este
+* ``puts()``, que recibe una cadena de caracteres y la imprime en la
+  pantalla
+
 La memoria
 ----------
 
@@ -294,6 +314,14 @@ Los punteros ``next`` y ``prev`` son utilizados para administrar la
 lista de páginas físicas libres, ``count`` indica el número de
 referencias de la página y ``kvaddr`` representa la dirección virtual
 en la que está mapeada (si lo está).
+
+En ``kernel/src/vmm.c`` se encuentran todas las funciones que se ocupan
+de gestionar las páginas físicas libres y de mapearlas a los espacios
+de direcciones virtuales.
+
+En ``kernel/src/heap.c`` se encuentran las funciones ``kmalloc()`` y
+``kfree()`` una implementación de un *heap* para pedidos de memoria
+arbitrarios.
 
 Direccionamiento
 ~~~~~~~~~~~~~~~~
@@ -387,13 +415,4 @@ la memoria de video. Otras cosas mapeadas en las direcciones altas del
 espacio de memoria virtual son los directorios y tablas de páginas y
 demás estructuras para la administración de memoria y, por supuesto, el
 código del kernel.
-
-
-
-Convenciones
-------------
-
-.. TODO: Agregar las convenciones que usamos para las macros, los
-   nombres de las funciones, etc.
-
 
