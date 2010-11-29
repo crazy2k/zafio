@@ -103,6 +103,8 @@
 #define PTE_RW PDE_RW
 #define PTE_P PDE_P
 
+#define TABLE_TOTAL_ENTRIES (1024)
+
 typedef struct { 
     uint16_t size __attribute__((packed));
     void *addr __attribute__((packed));
@@ -112,8 +114,8 @@ extern gdtr_t gdtr;
 
 extern uint64_t gdt[];
 
-extern uint32_t kernel_pd[1024];
-extern uint32_t kernel_pts[][1024];
+extern uint32_t kernel_pd[TABLE_TOTAL_ENTRIES];
+extern uint32_t kernel_pts[][TABLE_TOTAL_ENTRIES];
 
 #define PAGE_SIZE 0x1000ul
 

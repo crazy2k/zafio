@@ -2,7 +2,7 @@
 #include "../inc/memlayout.h"
 #include "../inc/idt.h"
 
-uint32_t kernel_pd[1024] __attribute__((section (".pd"))) = {0};
+uint32_t kernel_pd[TABLE_TOTAL_ENTRIES] __attribute__((section (".pd"))) = {0};
 
 #define COMMON_FLAGS (GDT_DESC_G | GDT_DESC_DB | GDT_DESC_P | GDT_DESC_S)
 
