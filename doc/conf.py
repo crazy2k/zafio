@@ -84,6 +84,8 @@ exclude_trees = ['_build']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+highlight_language = "c"
+
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
@@ -92,6 +94,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
+#html_theme = 'nature'
 html_theme = 'default'
 
 # Theme options are theme-specific and customize the look and feel of a theme
