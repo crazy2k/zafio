@@ -24,7 +24,7 @@
     <script type="text/javascript" src="static/doctools.js"></script>
     <script type="text/javascript" src="static/translations.js"></script>
     <link rel="top" title="Zafio v0.1 documentation" href="index.html" />
-    <link rel="next" title="Extensiones a futuro" href="extension.html" />
+    <link rel="next" title="Instalación y uso" href="install.html" />
     <link rel="prev" title="Un poco de background" href="background.html" /> 
   </head>
   <body>
@@ -35,7 +35,7 @@
           <a href="genindex.html" title="Índice General"
              accesskey="I">índice</a></li>
         <li class="right" >
-          <a href="extension.html" title="Extensiones a futuro"
+          <a href="install.html" title="Instalación y uso"
              accesskey="N">siguiente</a> |</li>
         <li class="right" >
           <a href="background.html" title="Un poco de background"
@@ -241,7 +241,8 @@ hallan en <tt class="docutils literal"><span class="pre">kernel/src/sched.c</spa
 <p>Hasta este punto, se reserva espacio para el descriptor del proceso y
 para el stack del kernel de la tarea, pero la reserva y mapeo del
 stack de usuario y del código y los datos de la tarea en su espacio de
-direcciones virtual se realiza recién cuando a esta le toca ejecutarse
+direcciones virtual, utilizando la información en el ejecutable ELF
+correspondiente, se realiza recién cuando a esta le toca ejecutarse
 por primera vez. El código que se ocupa de esto se halla repartido
 entre <tt class="docutils literal"><span class="pre">kernel/src/sched.c</span></tt>, <tt class="docutils literal"><span class="pre">kernel/src/sched_helpers.S</span></tt> y
 <tt class="docutils literal"><span class="pre">kernel/src/progs.c</span></tt>.</p>
@@ -320,6 +321,24 @@ de servicio, entre las cuales se encuentran la correspondiente al timer
 lista. Por último, configura los PIC y desenmascara sólo las
 interrupciones de <em>hardware</em> que le interesarán al kernel.</p>
 </div>
+<div class="section" id="atencion-de-llamadas-al-sistema">
+<h2>Atención de llamadas al sistema<a class="headerlink" href="#atencion-de-llamadas-al-sistema" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Las llamadas al sistema se realizan a través de la interrupción
+<tt class="docutils literal"><span class="pre">0x80</span></tt>. Antes de generar la interrupción por software, el proceso
+debe escribir el número correspondiente a la llamada al sistema que
+desea ejecutar en el registro <tt class="docutils literal"><span class="pre">EAX</span></tt>. Los parámetros de la llamada al
+sistema deben pasarse usando los registros <tt class="docutils literal"><span class="pre">EBX</span></tt>, <tt class="docutils literal"><span class="pre">ECX</span></tt> y <tt class="docutils literal"><span class="pre">EDX</span></tt>.
+Al ocurrir la interrupción, la rutina de servicio de la interrupción
+<tt class="docutils literal"><span class="pre">0x80</span></tt> llama a la función correspondiente a la llamada al sistema
+invocada con los parámetros pasados.</p>
+<p>Las llamadas al sistema implementadas hasta ahora son:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">exit()</span></tt>, que finaliza el proceso en ejecución y libera todos los
+recursos utilizados por este</li>
+<li><tt class="docutils literal"><span class="pre">puts()</span></tt>, que recibe una cadena de caracteres y la imprime en la
+pantalla</li>
+</ul>
+</div>
 <div class="section" id="la-memoria">
 <h2>La memoria<a class="headerlink" href="#la-memoria" title="Enlazar permanentemente con este título">¶</a></h2>
 <div class="section" id="gestion-de-la-memoria">
@@ -342,6 +361,12 @@ ser usada.  Dicha estructura se encuentra declarada en
 lista de páginas físicas libres, <tt class="docutils literal"><span class="pre">count</span></tt> indica el número de
 referencias de la página y <tt class="docutils literal"><span class="pre">kvaddr</span></tt> representa la dirección virtual
 en la que está mapeada (si lo está).</p>
+<p>En <tt class="docutils literal"><span class="pre">kernel/src/vmm.c</span></tt> se encuentran todas las funciones que se ocupan
+de gestionar las páginas físicas libres y de mapearlas a los espacios
+de direcciones virtuales.</p>
+<p>En <tt class="docutils literal"><span class="pre">kernel/src/heap.c</span></tt> se encuentran las funciones <tt class="docutils literal"><span class="pre">kmalloc()</span></tt> y
+<tt class="docutils literal"><span class="pre">kfree()</span></tt> una implementación de un <em>heap</em> para pedidos de memoria
+arbitrarios.</p>
 </div>
 <div class="section" id="direccionamiento">
 <h3>Direccionamiento<a class="headerlink" href="#direccionamiento" title="Enlazar permanentemente con este título">¶</a></h3>
@@ -432,9 +457,6 @@ demás estructuras para la administración de memoria y, por supuesto, el
 código del kernel.</p>
 </div>
 </div>
-<div class="section" id="convenciones">
-<h2>Convenciones<a class="headerlink" href="#convenciones" title="Enlazar permanentemente con este título">¶</a></h2>
-</div>
 </div>
 
 
@@ -456,12 +478,12 @@ código del kernel.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#manejo-de-interrupciones">Manejo de interrupciones</a></li>
+<li><a class="reference internal" href="#atencion-de-llamadas-al-sistema">Atención de llamadas al sistema</a></li>
 <li><a class="reference internal" href="#la-memoria">La memoria</a><ul>
 <li><a class="reference internal" href="#gestion-de-la-memoria">Gestión de la memoria</a></li>
 <li><a class="reference internal" href="#direccionamiento">Direccionamiento</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#convenciones">Convenciones</a></li>
 </ul>
 </li>
 </ul>
@@ -470,8 +492,8 @@ código del kernel.</p>
   <p class="topless"><a href="background.html"
                         title="Capítulo anterior">Un poco de <em>background</em></a></p>
   <h4>Próximo tema</h4>
-  <p class="topless"><a href="extension.html"
-                        title="Próximo capítulo">Extensiones a futuro</a></p>
+  <p class="topless"><a href="install.html"
+                        title="Próximo capítulo">Instalación y uso</a></p>
   <h3>Esta página</h3>
   <ul class="this-page-menu">
     <li><a href="sources/zafio.txt"
@@ -501,7 +523,7 @@ código del kernel.</p>
           <a href="genindex.html" title="Índice General"
              >índice</a></li>
         <li class="right" >
-          <a href="extension.html" title="Extensiones a futuro"
+          <a href="install.html" title="Instalación y uso"
              >siguiente</a> |</li>
         <li class="right" >
           <a href="background.html" title="Un poco de background"
