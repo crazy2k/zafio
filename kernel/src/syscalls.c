@@ -14,6 +14,10 @@ void sys_exit(task_t *task) {
     switch_tasks();
 }
 
+int sys_read(int from, char *buf, int bufsize) {
+
+}
+
 void sys_puts(char *str) {
     kputs(str);
 }
