@@ -34,7 +34,6 @@ static void initialize_task_state(task_state_t *st, void *entry_point,
     void *stack_pointer);
 static void switch_context(task_t *old_task, task_t *new_task);
 static void restart_quantum(task_t *task);
-
 static uint32_t get_next_pid();
 
 void sched_init() {

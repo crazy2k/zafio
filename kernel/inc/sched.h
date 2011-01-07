@@ -100,7 +100,7 @@ struct task_t {
     uint32_t quantum;
     uint32_t rem_quantum;
     bool io_wait;
-    //pid
+    // Campo para identificacion del proceso
     uint32_t pid;
 
     task_t *next;
