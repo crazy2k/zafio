@@ -99,6 +99,7 @@ struct task_t {
     // Informacion para el scheduling
     uint32_t quantum;
     uint32_t rem_quantum;
+    bool io_wait;
 
     task_t *next;
     task_t *prev;
