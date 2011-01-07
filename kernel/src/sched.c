@@ -245,7 +245,7 @@ void switch_tasks() {
 
     task_t *old_task = current_task();
 
-    task_t *current_candidate = old_task->next();
+    task_t *current_candidate = old_task->next;
     // Buscamos una tarea que no este esperando I/O. Siempre hay al menos una
     // (init).
     while (current_candidate->io_wait)
