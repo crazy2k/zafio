@@ -25,12 +25,17 @@ task_t *task_list = NULL;
 // Tarea para ser removida. Inicialmente ninguna.
 task_t *zombie_task = NULL;
 
+//Contador de process pids
+uint32_t pid_counter = 0;
+
 static void link_tasks(task_t *fst, task_t *sec);
 
 static void initialize_task_state(task_state_t *st, void *entry_point,
     void *stack_pointer);
 static void switch_context(task_t *old_task, task_t *new_task);
 static void restart_quantum(task_t *task);
+
+static uint32_t get_next_pid();
 
 void sched_init() {
 
@@ -49,6 +54,8 @@ void sched_init() {
 
     init->quantum = SCHED_QUANTUM;
     restart_quantum(init);
+    
+    init->pid = get_next_pid();
 
     // El stack de nivel 0 no interesa. Deberia sobreescribirse al cambiar de
     // tarea. Ademas, como estamos en espacio de kernel, no se deberia utilizar
@@ -170,6 +177,10 @@ static void initialize_task_state(task_state_t *st, void *entry_point,
     st->esp = (uint32_t)stack_pointer;
 }
 
+static uint32_t get_next_pid() {
+    return ++pid_counter;
+}
+
 static void restart_quantum(task_t *task) {
     task->rem_quantum = task->quantum;
 }
@@ -189,6 +200,8 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
 
     task->quantum = SCHED_QUANTUM;
     restart_quantum(task);
+    
+    task->pid = get_next_pid();
 
     // Alojamos memoria para el stack del kernel de la tarea
     task->kernel_stack = new_kernel_page();

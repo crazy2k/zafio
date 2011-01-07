@@ -100,6 +100,8 @@ struct task_t {
     uint32_t quantum;
     uint32_t rem_quantum;
     bool io_wait;
+    //pid
+    uint32_t pid;
 
     task_t *next;
     task_t *prev;
