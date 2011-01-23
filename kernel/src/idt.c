@@ -21,6 +21,12 @@ static void remap_PIC(char offset1, char offset2);
 // Arreglo de rutinas de atencion de excepciones/interrupciones
 isr_t isrs[IDT_LENGTH] = {NULL};
 
+// Buffer de datos obtenidos desde el teclado
+char keyboard_isr_buf[KEYBOARD_ISR_BUF_LENGTH];
+int keyboard_isr_buf_idx = 0; // Indice del proximo caracter a ingresar
+task_t *keyboard_isr_waiting_task = NULL; // Task waiting for keyboard
+
+
 void idt_init() {
 
     // Configuramos los handlers en la IDT
@@ -38,7 +44,7 @@ void idt_init() {
     remap_PIC(PIC1_OFFSET, PIC2_OFFSET);
 
     // Desenmascaramos interrupciones en el PIC
-    outb(PIC1_DATA, ~PIC_TIMER);
+    outb(PIC1_DATA, ~PIC_TIMER && ~PIC_KB);
 }
 
 /* Registra una rutina de atencion ``isr`` para la excepcion/interrupcion cuyo
@@ -139,11 +145,11 @@ static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
 static void keyboard_isr(uint32_t index, uint32_t error_code,
     task_state_t *st) {
 
-    kputs("Teclado \n");
-    char c = inb(0x60);
-    kputui32((uint32_t)c);
-    kputs("\n");
-    BOCHS_BREAK;
+    if (keyboard_isr_buf_idx >= KEYBOARD_ISR_BUF_LENGTH) {
+        kpanic("Buffer de teclado lleno");
+    }
+
+    keyboard_isr_buf[keyboard_isr_buf_idx++] = inb(0x60);
 }
 
 static uint32_t timer_count = 0;

@@ -67,6 +67,13 @@
 #define PIC_TIMER       0x1
 #define PIC_KB          0x2
 
+// Longitud del buffer para la ISR del teclado
+#define KEYBOARD_ISR_BUF_LENGTH 1024
+
+extern char keyboard_isr_buf[KEYBOARD_ISR_BUF_LENGTH];
+int keyboard_isr_buf_idx;
+task_t *keyboard_isr_waiting_task;
+
 // Funciones
 
 typedef void (*isr_t)(uint32_t index, uint32_t error_code, task_state_t *st);
