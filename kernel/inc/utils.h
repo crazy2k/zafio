@@ -14,4 +14,6 @@ long min(long var1, long var2);
 
 void kpanic(char *msg);
 
+char sc2ascii(char sc);
+
 #endif

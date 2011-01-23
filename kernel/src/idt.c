@@ -205,8 +205,10 @@ static void pf_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
 static void syscalls_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
     if (st->eax == SYSCALLS_ISR_EXIT)
         sys_exit(current_task());
-    else if (st->eax == SYSCALLS_ISR_READ)
-        sys_read(st->ebx, st->ecx, st->edx);
+    else if (st->eax == SYSCALLS_ISR_READ) {
+        int n = sys_read(st->ebx, (char *)st->ecx, st->edx);
+        st->eax = n;
+    }
     else if (st->eax == SYSCALLS_ISR_PUTS)
         sys_puts((char *)st->ebx);
 }
