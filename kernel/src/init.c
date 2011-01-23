@@ -6,6 +6,8 @@
 
 static void welcome_msg();
 
+//char buf[1024];
+
 void init_task() {
     welcome_msg();
 
@@ -17,6 +19,17 @@ void init_task() {
 
     while(1)
         __asm__ __volatile__ ("hlt");
+
+
+    /* Codigo para probar el manejo del teclado
+    while (1) {
+        int n = sys_read(0, buf, 1024);
+        buf[n] = '\0';
+        if (n > 0) {
+            kputs(buf);
+        }
+    }
+    */
 
 }
 
