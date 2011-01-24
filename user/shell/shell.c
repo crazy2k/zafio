@@ -7,7 +7,8 @@
 char line_buffer[BUFF_LEN];
 
 static void command_error();
-static print_shell_use();
+static void user_error(char *msg);
+static void print_shell_use();
 static char *skip_spaces(char* str);
 static char *get_word(char** result, char* str);
 
@@ -21,9 +22,9 @@ int main() {
         readed = read(TERM_INPUT, line_buffer, BUFF_LEN);
 
         if (readed == -1)
-            user_error("Line too long")
+            user_error("Line too long");
         else {
-            buff[readed] = NULL;
+            line_buffer[readed] = NULL;
 
             rest = skip_spaces(line_buffer);
 
@@ -71,6 +72,10 @@ char *get_word(char** result, char* str) {
     return str;
 }
 
+void user_error(char *msg) {
+
+}
+        
 void command_error() {
     //Comando erroneo
     
@@ -78,4 +83,5 @@ void command_error() {
 }
 
 void print_shell_use() {
+
 }
