@@ -40,7 +40,7 @@ int main() {
             } else if (strcmp(command_str,OTRO_COMADO) == 0) {
                 //Hacer otras cosas...
             } else
-                print_shell_use();
+                command_error();
             
         }
     }
@@ -48,12 +48,15 @@ int main() {
    return 0;
 }
 
-//Se salte todos los espacios y retorna el primer elemento sin espacios
+// Se saltea todos los espacios y retorna el primer elemento que no es un espacio
 char *skip_spaces(char* str) {
     while (*str == ' ') str++;
     return str;
 }
 
+/* Deja apuntando a result a la siguiente palabra q encuentra, 
+   pone un NULL al final de la misma y retorna la posicion siguente 
+   a donde dejo el NULL*/
 char *get_word(char** result, char* str) {
     *result = str;
 
@@ -69,7 +72,7 @@ char *get_word(char** result, char* str) {
 }
 
 void command_error() {
-    //Comando erroo
+    //Comando erroneo
     
     print_shell_use();
 }
