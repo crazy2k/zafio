@@ -1,4 +1,4 @@
-INCLUDE := ../include/
+INCLUDE := ../inc/
 
 CC := gcc
 CFLAGS := -std=gnu99 -Wall -nostdlib -nostdinc -nostartfiles -nodefaultlibs -I$(INCLUDE)
