@@ -1,16 +1,24 @@
 #include <types.h>
+#include <io.h>
+#include <utils.h>
 
 #define BUFF_LEN (80)
 #define TERM_INPUT (0)
 
+#define HELP ("help")
+#define PS ("ps")
+#define LS ("ls")
+#define REBOOT ("reboot")
+#define RUN ("run")
+#define RUN_BG ("bg")
+
 
 char line_buffer[BUFF_LEN];
 
-static void command_error();
-static void user_error(char *msg);
+static void command_use_error();
 static void print_shell_use();
 static char *skip_spaces(char* str);
-static char *get_word(char** result, char* str);
+static char *get_word(char** str);
 
 int main() {
     int readed;
@@ -19,29 +27,39 @@ int main() {
     //Inicializar terminal... 
 
     while(TRUE) {
-        readed = read(TERM_INPUT, line_buffer, BUFF_LEN);
+        readed = read_line(TERM_INPUT, line_buffer, BUFF_LEN);
 
-        if (readed == -1)
-            user_error("Line too long");
-        else {
+        if (readed == -1) {
+            while (read_line(TERM_INPUT, line_buffer, BUFF_LEN) != 1) ;
+            
+            write_line("Line too long");        
+        } else {
             line_buffer[readed] = NULL;
-
             rest = skip_spaces(line_buffer);
 
-            if (!rest) command_error();
+            if (!rest) {
+                command_use_error();
+                continue;
+            }
 
-            rest = get_word(&command_str ,rest);
-
+            command_str = get_word(&rest);
             rest = skip_spaces(rest);
+            param_str = get_word(&rest);
 
-            rest = get_word(&param_str, rest);
-
-            if (strcmp(command_str,ALGUN_COMADO) == 0) {
-                //Hacer cosas...
-            } else if (strcmp(command_str,OTRO_COMADO) == 0) {
-                //Hacer otras cosas...
+            if (strcmp(HELP, command_str) == 0) {
+                print_shell_use();
+            } else if (strcmp(PS, command_str) == 0) {
+                //Imprimir informacion de programas en ejecucion
+            } else if (strcmp(PS, command_str) == 0) {
+                //Imprimir list de programas disponibles
+            } else if (strcmp(REBOOT, command_str) == 0) {
+                //Resetear
+            } else if (strcmp(RUN, command_str) == 0) {
+                //Ejecutar un programa en foreground
+            } else if (strcmp(RUN_BG, command_str) == 0) {
+                //Ejecutar un programa en background
             } else
-                command_error();
+                command_use_error();
             
         }
     }
@@ -55,28 +73,25 @@ char *skip_spaces(char* str) {
     return str;
 }
 
-/* Deja apuntando a result a la siguiente palabra q encuentra, 
-   pone un NULL al final de la misma y retorna la posicion siguente 
+/* Deja apuntando en el resultado a la siguiente palabra q encuentra, 
+   pone un NULL al final de la misma y deja en str la posicion siguente 
    a donde dejo el NULL*/
-char *get_word(char** result, char* str) {
-    *result = str;
+char *get_word(char** str) {
+    char *result = *str, 
+        *curr = *str;
 
-    while (*str != NULL && *str != ' ')
-        str++;
+    while (*curr != NULL && *curr != ' ')
+        curr++;
 
-    if (*str != NULL ) {
-        *str = NULL;
-        str++;
+    if (*curr != NULL ) {
+        *curr = NULL;
+        *str = ++curr;
     }
 
-    return str;
+    return result;
 }
-
-void user_error(char *msg) {
-
-}
-        
-void command_error() {
+       
+void command_use_error() {
     //Comando erroneo
     
     print_shell_use();
