@@ -2,15 +2,16 @@
 #include <io.h>
 #include <utils.h>
 
-#define BUFF_LEN (80)
-#define TERM_INPUT (0)
+#define BUFF_LEN 80
+#define TERM_INPUT 0
+#define TERM_OUTPUT 1
 
-#define HELP ("help")
-#define PS ("ps")
-#define LS ("ls")
-#define REBOOT ("reboot")
-#define RUN ("run")
-#define RUN_BG ("bg")
+#define HELP "help"
+#define PS "ps"
+#define LS "ls"
+#define REBOOT "reboot"
+#define RUN "run"
+#define RUN_BG "bg"
 
 
 char line_buffer[BUFF_LEN];
@@ -32,9 +33,9 @@ int main() {
         if (readed == -1) {
             while (read_line(TERM_INPUT, line_buffer, BUFF_LEN) != 1) ;
             
-            write_line("Line too long");        
+            write_line(TERM_OUTPUT, "Line too long");        
         } else {
-            line_buffer[readed] = NULL;
+            line_buffer[readed] = NULL; // ¿ Ó readed -1 ?
             rest = skip_spaces(line_buffer);
 
             if (!*rest) {
