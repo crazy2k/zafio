@@ -37,7 +37,7 @@ int main() {
             line_buffer[readed] = NULL;
             rest = skip_spaces(line_buffer);
 
-            if (!rest) {
+            if (!*rest) {
                 command_use_error();
                 continue;
             }
@@ -50,7 +50,7 @@ int main() {
                 print_shell_use();
             } else if (strcmp(PS, command_str) == 0) {
                 //Imprimir informacion de programas en ejecucion
-            } else if (strcmp(PS, command_str) == 0) {
+            } else if (strcmp(LS, command_str) == 0) {
                 //Imprimir list de programas disponibles
             } else if (strcmp(REBOOT, command_str) == 0) {
                 //Resetear
@@ -73,7 +73,7 @@ char *skip_spaces(char* str) {
     return str;
 }
 
-/* Deja apuntando en el resultado a la siguiente palabra q encuentra, 
+/* Deja apuntando en el resultado la siguiente palabra q encuentra, 
    pone un NULL al final de la misma y deja en str la posicion siguente 
    a donde dejo el NULL*/
 char *get_word(char** str) {
