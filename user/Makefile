@@ -5,7 +5,7 @@ CC := gcc
 CFLAGS := -std=gnu99 -Wall -nostdlib -nostdinc -nostartfiles -nodefaultlibs -I$(INCLUDE)
 
 LD := ld
-LDFLAGS := --whole-archive -L$(LIBS) -lzafiostd 
+LDFLAGS := --whole-archive -L$(LIBS) -lzafiostd
 
 PROGS_DIR := ../../progs/
 BINARY := $(shell basename `pwd`)
