@@ -1,4 +1,4 @@
-INCLUDE := ./
+INCLUDE := inc/
 
 CC := gcc
 CFLAGS := -std=gnu99 -Wall -nostdlib -nostdinc -nostartfiles -nodefaultlibs -I$(INCLUDE)
@@ -6,33 +6,42 @@ CFLAGS := -std=gnu99 -Wall -nostdlib -nostdinc -nostartfiles -nodefaultlibs -I$(
 AR := ar
 ARFLAGS := -cvq
 
-LIB_DIR := ../lib/
-LIB_NAME := zafiostd
-LIB_FILE := $(LIB_DIR)/lib$(LIB_NAME).a
+LIBDIR := ../lib
+OBJSDIR := obj/
+SRCDIR := src/
+LIBNAME := zafiostd
+LIBFILE := $(LIBDIR)/lib$(LIBNAME).a
 
-SOURCES := $(wildcard *.c)
-HEADERS := $(wildcard *.h)
+SOURCES := $(wildcard $(SRCDIR)/*.c)
+HEADERS := $(wildcard $(SRCDIR)/*.h)
 
-OBJS := $(SOURCES:.c=.o)
+OBJS := $(notdir $(SOURCES:.c=.o))
+OBJS := $(addprefix $(OBJSDIR), $(OBJS))
 
-all: $(LIB_FILE)
+all: $(LIBFILE)
 
-install: $(LIB_FILE)
+$(LIBDIR):
+	mkdir $(LIBDIR)
+
+$(OBJSDIR):
+	mkdir $(OBJSDIR)
+
+install: $(LIBFILE)
 
 deps: $(SOURCES)
-	$(CC) $(CFLAGS) -MM $(SOURCES) > $@
+	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(subst /,\/, $(OBJSDIR))\1/" > $@
 
 -include deps
 
-%.o:
+$(OBJSDIR)%.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(LIB_FILE): $(OBJS)
-	$(AR) $(ARFLAGS) $(LIB_FILE) $(OBJS)
+$(LIBFILE): $(OBJS)
+	$(AR) $(ARFLAGS) $(LIBFILE) $(OBJS)
 
 clean: 
-	rm -f *.o
-	rm -f $(LIB_FILE)
+	rm -f $(OBJSDIR)/*.o
+	rm -f $(LIBFILE)
 	rm -f deps
 
 

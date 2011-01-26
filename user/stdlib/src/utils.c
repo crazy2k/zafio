@@ -1,4 +1,4 @@
-#include "../inc/io.h"
+#include <io.h>
 
 int strlen(char* str) {
     int result = 0;

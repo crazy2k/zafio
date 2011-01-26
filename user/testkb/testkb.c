@@ -1,5 +1,5 @@
 #include <types.h>
-#include <syscall.h>
+#include <syscalls.h>
 
 char buf[1024] = { 0 };
 

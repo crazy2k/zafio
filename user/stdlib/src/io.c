@@ -1,4 +1,7 @@
-#include "../inc/io.h"
+#include <types.h>
+#include <io.h>
+#include <utils.h>
+#include <syscalls.h>
 
 #define READ_BUFF_LEN 1024
 

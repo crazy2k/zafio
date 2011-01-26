@@ -32,8 +32,6 @@ BUILD_ALL_PROGS := ./buildprogs.sh
 
 PROGS = $(wildcard $(PROGS_DIR)/*)
 PROG_OBJS := $(addsuffix .o, $(subst $(PROGS_DIR),$(OBJSDIR),$(PROGS)))
-USER_LIBS_DIR := $(USER_DIR)/lib/
-USER_LIBS_SRC := $(USER_DIR)/stdlib/
 
 # Codigo C
 SOURCES := $(shell find $(SRCDIR) -name "*.c")
@@ -70,8 +68,6 @@ deps: $(SOURCES) $(OBJSDIR) $(PROG_SOURCES) $(PROG_OBJSDIR) $(ALL_PROGS_SOURCE)
 $(PROGS_DIR):
 	mkdir $(PROGS_DIR)
 
-$(USER_LIBS_DIR):
-	mkdir $(USER_LIBS_DIR)
 
 $(OBJSDIR):
 	mkdir $(OBJSDIR)
@@ -90,10 +86,7 @@ $(ASOBJS): $(ASSOURCES)
 $(OBJSDIR)%.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build_user_libs: $(USER_LIBS_DIR)
-	$(MAKE) -C $(USER_LIBS_SRC) install;
-
-install_user_progs: build_user_libs
+install_user_progs:
 	for DIR in $(USER_PROG_DIRS); do    \
 		$(MAKE) -C $$DIR install;       \
 	done
