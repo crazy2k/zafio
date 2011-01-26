@@ -123,6 +123,23 @@ void kputud(unsigned long int num) {
     kputs(&chars[i]);
 }
 
+task_t *terminal_control = NULL;
+task_t *past_terminal_control = NULL;
+
+task_t *get_terminal_control() {
+    return terminal_control;
+}
+
+task_t *get_past_terminal_control() {
+    return past_terminal_control;
+}
+
+void set_terminal_control(task_t *task) {
+    past_terminal_control = terminal_control;
+    terminal_control = task;
+}
+
+
 /*
  * TODO: Hacerla?
 int printf(char *format, ...) {
