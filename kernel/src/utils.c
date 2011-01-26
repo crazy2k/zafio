@@ -1,6 +1,20 @@
 #include "../inc/types.h"
 #include "../inc/io.h"
 
+int strcmp(char * src, char * dst) {
+    int ret = 0 ;
+
+    while(!(ret = (uint)*src - (uint)*dst) && *dst)
+        ++src, ++dst;
+
+    if (ret < 0)
+        ret = -1 ;
+    else if (ret > 0)
+        ret = 1 ;
+
+    return ret;
+}
+
 void *memcpy(void *dest, const void *src, size_t n) {
     char *bdest = (char *) dest;
     char *bsrc = (char *) src;

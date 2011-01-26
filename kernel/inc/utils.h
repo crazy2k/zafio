@@ -16,4 +16,6 @@ void kpanic(char *msg);
 
 char sc2ascii(char sc);
 
+int strcmp(char * src, char * dst);
+
 #endif
