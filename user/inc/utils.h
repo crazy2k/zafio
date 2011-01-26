@@ -3,5 +3,6 @@
 #define __UTILS_H__
 
 int strcmp(char* left, char* right);
+int strlen(char* str);
 
 #endif
