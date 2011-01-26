@@ -91,7 +91,7 @@ $(OBJSDIR)%.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build_user_libs: $(USER_LIBS_DIR)
-	$(MAKE) -C $(USER_LIBS_DIR) install;
+	$(MAKE) -C $(USER_LIBS_SRC) install;
 
 install_user_progs: build_user_libs
 	for DIR in $(USER_PROG_DIRS); do    \
