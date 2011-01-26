@@ -1,10 +1,13 @@
 INCLUDE := ../inc/
+LIBS := ../lib/
+
+#LIBOBJS := $(wildcard ../lib/*.o)
 
 CC := gcc
 CFLAGS := -std=gnu99 -Wall -nostdlib -nostdinc -nostartfiles -nodefaultlibs -I$(INCLUDE)
 
 LD := ld
-LDFLAGS :=
+LDFLAGS := --whole-archive -L$(LIBS) -lzafiostd 
 
 PROGS_DIR := ../../progs/
 BINARY := $(shell basename `pwd`)
@@ -29,6 +32,7 @@ deps: $(SOURCES)
 
 $(BINARY): $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $@ --entry=$(ENTRY)
+        
 
 install: $(BINARY)
 	mkdir -p $(PROGS_DIR)
