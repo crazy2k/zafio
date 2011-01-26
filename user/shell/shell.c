@@ -3,8 +3,6 @@
 #include <utils.h>
 
 #define BUFF_LEN 80
-#define TERM_INPUT 0
-#define TERM_OUTPUT 1
 
 #define HELP "help"
 #define PS "ps"
@@ -22,20 +20,20 @@ static char *skip_spaces(char* str);
 static char *get_word(char** str);
 
 int main() {
-    int readed;
+    int count;
     char *rest, *command_str, *param_str;
 
     //Inicializar terminal... 
 
     while(TRUE) {
-        readed = read_line(TERM_INPUT, line_buffer, BUFF_LEN);
+        count = read_line(line_buffer, BUFF_LEN);
 
-        if (readed == -1) {
-            while (read_line(TERM_INPUT, line_buffer, BUFF_LEN) != 1) ;
-            
-            write_line(TERM_OUTPUT, "Line too long");        
+        if (count == -1) {
+            while (read_line(line_buffer, BUFF_LEN) != 1);
+
+            write_line("Line too long");
         } else {
-            line_buffer[readed] = NULL; // ¿ Ó readed -1 ?
+            line_buffer[count -1] = NULL;
             rest = skip_spaces(line_buffer);
 
             if (!*rest) {
@@ -52,7 +50,7 @@ int main() {
             } else if (strcmp(PS, command_str) == 0) {
                 //Imprimir informacion de programas en ejecucion
             } else if (strcmp(LS, command_str) == 0) {
-                //Imprimir list de programas disponibles
+                //Imprimir lista de programas disponibles
             } else if (strcmp(REBOOT, command_str) == 0) {
                 //Resetear
             } else if (strcmp(RUN, command_str) == 0) {
