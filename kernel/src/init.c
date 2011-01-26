@@ -6,22 +6,34 @@
 
 static void welcome_msg();
 
-//char buf[1024];
+char buf[1024];
+
+#define INIT_PROGNAMES_SIZE (sizeof(init_prognames)/sizeof(char *))
+
+char *init_prognames[] = { "shell" };
+
+program_t *get_prog_by_name(char *name) {
+    for (int i = 0; i < programs_size; i++) {
+        if (strcmp(programs[i].name, name) == 0)
+            return &programs[i];
+    }
+    return NULL;
+}
 
 void init_task() {
     welcome_msg();
 
-    // Creamos los nuevos task_t para las tareas
-    for (int i = 0; i < programs_size; i++) {
-        uint32_t *pd = clone_pd(kernel_pd);
-        add_task(create_task(pd, &programs[i]));
+    // Creamos los nuevos task_t para las tareas de inicio
+    for (int i = 0; i < INIT_PROGNAMES_SIZE; i++) {
+        program_t *prog;
+        if (prog = get_prog_by_name(init_prognames[i])) {
+            uint32_t *pd = clone_pd(kernel_pd);
+            add_task(create_task(pd, prog));
+        }
     }
 
-    while(1)
-        __asm__ __volatile__ ("hlt");
-
-
-    /* Codigo para probar el manejo del teclado
+    /*
+    // Codigo para probar el manejo del teclado
     while (1) {
         int n = sys_read(0, buf, 1024);
         buf[n] = '\0';
@@ -29,7 +41,16 @@ void init_task() {
             kputs(buf);
         }
     }
+
+    for (int i = 0; i < programs_size; i++) {
+        uint32_t *pd = clone_pd(kernel_pd);
+        add_task(create_task(pd, &programs[i]));
+    }
+
     */
+
+    while(1)
+        switch_tasks();
 
 }
 
