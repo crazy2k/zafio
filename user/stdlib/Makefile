@@ -6,9 +6,9 @@ CFLAGS := -std=gnu99 -Wall -nostdlib -nostdinc -nostartfiles -nodefaultlibs -I$(
 AR := ar
 ARFLAGS := -cvq
 
+LIBDIR := ../lib
 OBJSDIR := obj/
 SRCDIR := src/
-LIBDIR := ../lib
 LIBNAME := zafiostd
 LIBFILE := $(LIBDIR)/lib$(LIBNAME).a
 
@@ -19,6 +19,12 @@ OBJS := $(notdir $(SOURCES:.c=.o))
 OBJS := $(addprefix $(OBJSDIR), $(OBJS))
 
 all: $(LIBFILE)
+
+$(LIBDIR):
+	mkdir $(LIBDIR)
+
+$(OBJSDIR):
+	mkdir $(OBJSDIR)
 
 install: $(LIBFILE)
 
