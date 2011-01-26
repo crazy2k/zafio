@@ -71,7 +71,7 @@ $(PROGS_DIR):
 	mkdir $(PROGS_DIR)
 
 $(USER_LIBS_DIR):
-	mkdir $(USER_LIBSS_DIR)
+	mkdir $(USER_LIBS_DIR)
 
 $(OBJSDIR):
 	mkdir $(OBJSDIR)
