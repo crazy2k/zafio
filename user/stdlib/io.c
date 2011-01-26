@@ -8,14 +8,14 @@ int read_line(char* str, int buff_size) {
 }
 
 void write_line(char* str) {
-    write(TERM_OUTPUT, str);
-    write(TERM_OUTPUT, "\n");
+    write(TERM_OUTPUT, str, strlen(str));
+    write(TERM_OUTPUT, "\n", 1);
 }
 
-int read(int dev, char* buff, int buff_size) {
-    
+int read(int dev, char *buf, int buf_size) {
+    return syscall(SYSCALL_READ, dev, (uint32_t)buf, buf_size, 0, 0);
 }
     
-void write(int dev, char* str) {
-    
+int write(int dev, char *buf, int buf_size) {
+    return syscall(SYSCALL_WRITE, dev, (uint32_t)buf, buf_size, 0, 0);
 }
