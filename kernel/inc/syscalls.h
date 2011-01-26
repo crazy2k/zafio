@@ -10,3 +10,7 @@
 void sys_exit(task_t *task);
 int sys_write(int to, char *buf, int bufsize);
 int sys_read(int from, char *buf, int bufsize);
+int sys_ls(int mode, char *buf, int bufsize);
+int sys_ps(int mode, char *buf, int bufsize);
+int sys_run(int mode, char *progname);
+int sys_termreq();
