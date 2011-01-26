@@ -7,10 +7,10 @@
 #include "../inc/sched.h"
 #include "../inc/utils.h"
 #include "../inc/syscalls.h"
+#include "../inc/devices.h"
 
 
 static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st);
-static void keyboard_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 static void timer_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 static void pf_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 static void syscalls_isr(uint32_t index, uint32_t error_code,
@@ -20,11 +20,6 @@ static void remap_PIC(char offset1, char offset2);
 
 // Arreglo de rutinas de atencion de excepciones/interrupciones
 isr_t isrs[IDT_LENGTH] = {NULL};
-
-// Buffer de datos obtenidos desde el teclado
-char keyboard_isr_buf[KEYBOARD_ISR_BUF_LENGTH];
-int keyboard_isr_buf_idx = 0; // Indice del proximo caracter a ingresar
-task_t *keyboard_isr_waiting_task = NULL; // Task waiting for keyboard
 
 
 void idt_init() {
@@ -142,15 +137,6 @@ static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
     BOCHS_BREAK;
 }
 
-static void keyboard_isr(uint32_t index, uint32_t error_code,
-    task_state_t *st) {
-
-    if (keyboard_isr_buf_idx >= KEYBOARD_ISR_BUF_LENGTH) {
-        kpanic("Buffer de teclado lleno");
-    }
-
-    keyboard_isr_buf[keyboard_isr_buf_idx++] = inb(0x60);
-}
 
 static uint32_t timer_count = 0;
 static void timer_isr(uint32_t index, uint32_t error_code,
