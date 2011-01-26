@@ -3,7 +3,7 @@
 #include "../inc/progs.h"
 #include "../inc/debug.h"
 #include "../inc/sched.h"
-#include "../inc/util.h"
+#include "../inc/utils.h"
 
 static void welcome_msg();
 
