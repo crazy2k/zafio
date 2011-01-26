@@ -9,6 +9,6 @@ int read_line(char* str, int buff_size);
 void write_line(char* str);
 
 int read(int dev, char* buff, int buff_size);
-void write(int dev, char* str);
+int write(int dev, char *buf, int buf_size);
 
 #endif
