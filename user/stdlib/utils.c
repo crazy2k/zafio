@@ -1,5 +1,11 @@
 #include "../inc/io.h"
 
+int strlen(char* str) {
+    int result = 0;
+    while(*str) str++;
+    return result;
+}
+
 int strcmp(char * src, char * dst) {
     int ret = 0 ;
 
