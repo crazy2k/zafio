@@ -1,8 +1,6 @@
 INCLUDE := ../inc/
 LIBS := ../lib/
 
-#LIBOBJS := $(wildcard ../lib/*.o)
-
 CC := gcc
 CFLAGS := -std=gnu99 -Wall -nostdlib -nostdinc -nostartfiles -nodefaultlibs -I$(INCLUDE)
 
