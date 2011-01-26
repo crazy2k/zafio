@@ -46,6 +46,7 @@ int sys_read(int from, char *buf, int bufsize) {
     return j - 1;
 }
 
-void sys_puts(char *str) {
-    kputs(str);
+int sys_write(int to, char *buf, int bufsize) {
+    if (to == DEV_KEYBOARD_NUM)
+        kputs(buf);
 }
