@@ -17,6 +17,8 @@ extern long programs_size;
 
 struct task_t;
 
+program_t *get_prog_by_name(char *name);
+
 void load_task_image(struct task_t *);
 
 void load_task_stack(struct task_t* task);

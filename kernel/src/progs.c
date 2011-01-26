@@ -4,7 +4,15 @@
 #include "../inc/mmu.h"
 #include "../inc/vmm.h"
 #include "../inc/debug.h"
+#include "../inc/utils.h"
 
+program_t *get_prog_by_name(char *name) {
+    for (int i = 0; i < programs_size; i++) {
+        if (strcmp(programs[i].name, name) == 0)
+            return &programs[i];
+    }
+    return NULL;
+}
 
 void load_task_image(task_t * task) {
     load_elf_proc_image(task->prog->file, task->pd); 

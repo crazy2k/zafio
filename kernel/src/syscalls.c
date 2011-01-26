@@ -4,6 +4,7 @@
 #include "../inc/idt.h"
 #include "../inc/utils.h"
 #include "../inc/devices.h"
+#include "../inc/vmm.h"
 
 void sys_exit(task_t *task) {
     if (get_terminal_control() == current_task())
@@ -44,7 +45,7 @@ int sys_read(int from, char *buf, int bufsize) {
     for (i = 0, j = 0; i <= keyboard->idx; i++) {
         if (keyboard->buffer[i] & 0x80)
             continue;
-        buf[j++] = sc2ascii(keyboard->buffer[i]);
+        buf[j++] = sc2ascii((unsigned char)keyboard->buffer[i]);
     }
     keyboard->idx = 0;
 
@@ -55,8 +56,10 @@ int sys_write(int to, char *buf, int bufsize) {
     if (current_task() != get_terminal_control())
         return -1;
 
-    if (to == DEV_KEYBOARD_NUM)
+    if (to == DEV_SCREEN_NUM)
         kputs(buf);
+
+    return 0;
 }
 
 #define SYSCALLS_SEP ("\t")
@@ -66,8 +69,8 @@ int sys_ls(int mode, char *buf, int bufsize) {
     if (mode == 0) {
         buf[0] = '\0';
         for (int i = 0; i < programs_size; i++) {
-            strcat(buf, bufsize, (&programs[i])->name);
-            end = strcat(buf, bufsize, SYSCALLS_SEP);
+            strconcat(buf, bufsize, (&programs[i])->name);
+            end = strconcat(buf, bufsize, SYSCALLS_SEP);
         }
         buf[end] = '\0';
     }
@@ -82,8 +85,8 @@ int sys_ps(int mode, char *buf, int bufsize) {
 
         buf[0] = '\0';
         do {
-            strcat(buf, bufsize, curr->prog->name);
-            end = strcat(buf, bufsize, SYSCALLS_SEP);
+            strconcat(buf, bufsize, curr->prog->name);
+            end = strconcat(buf, bufsize, SYSCALLS_SEP);
             
             curr = curr->next;
         } while(curr != first);
@@ -103,6 +106,8 @@ int sys_run(int mode, char *progname) {
     if (mode == 0) {
         set_terminal_control(new_task);
     }
+
+    return 0;
 }
 
 int sys_termreq() {

@@ -1,11 +1,14 @@
 #include "../inc/devices.h"
+#include "../inc/x86.h"
+#include "../inc/utils.h"
+#include "../inc/vmm.h"
 
 /*
  * Teclado
  */
 
 dev_keyboard_t keyboard = {
-    .buffer = NULL,
+    .buffer = { NULL },
     .idx = 0
 };
 

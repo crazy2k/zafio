@@ -13,13 +13,7 @@ char buf[1024];
 
 char *init_prognames[] = { "shell" };
 
-program_t *get_prog_by_name(char *name) {
-    for (int i = 0; i < programs_size; i++) {
-        if (strcmp(programs[i].name, name) == 0)
-            return &programs[i];
-    }
-    return NULL;
-}
+
 
 void init_task() {
     welcome_msg();
@@ -27,7 +21,7 @@ void init_task() {
     // Creamos los nuevos task_t para las tareas de inicio
     for (int i = 0; i < INIT_PROGNAMES_SIZE; i++) {
         program_t *prog;
-        if (prog = get_prog_by_name(init_prognames[i])) {
+        if ((prog = get_prog_by_name(init_prognames[i]))) {
             uint32_t *pd = clone_pd(kernel_pd);
             add_task(create_task(pd, prog));
         }

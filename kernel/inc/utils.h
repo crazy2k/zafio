@@ -18,6 +18,6 @@ char sc2ascii(char sc);
 
 int strcmp(char * src, char * dst);
 
-int *strcat(char *dest, int dest_size, const char *src);
+int strconcat(char *dest, int dest_size, char *src);
 
 #endif

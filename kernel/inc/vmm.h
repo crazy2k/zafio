@@ -67,5 +67,7 @@ void vm_init();
 
 void *clone_pd(uint32_t pd[]);
 
+void free_kernel_page(void *vaddr);
+
 #endif
 
