@@ -185,18 +185,25 @@ static void pf_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
     kpanic("Fallo de pagina!");
 }
 
-#define SYSCALLS_ISR_EXIT 1
-#define SYSCALLS_ISR_READ 3
-#define SYSCALLS_ISR_WRITE 4
 static void syscalls_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
-    if (st->eax == SYSCALLS_ISR_EXIT)
+    if (st->eax == SYSCALLS_NUM_EXIT)
         sys_exit(current_task());
-    else if (st->eax == SYSCALLS_ISR_READ) {
-        int n = sys_read(st->ebx, (char *)st->ecx, st->edx);
-        st->eax = n;
+    else if (st->eax == SYSCALLS_NUM_READ) {
+        st->eax = sys_read(st->ebx, (char *)st->ecx, st->edx);
     }
-    else if (st->eax == SYSCALLS_ISR_WRITE) {
-        int n = sys_write(st->ebx, (char *)st->ecx, st->edx);
-        st->eax = n;
+    else if (st->eax == SYSCALLS_NUM_WRITE) {
+        st->eax = sys_write(st->ebx, (char *)st->ecx, st->edx);
+    }
+    else if (st->eax == SYSCALLS_NUM_LS) {
+        st->eax = sys_ls(st->ebx, (char *)st->ecx, st->edx);
+    }
+    else if (st->eax == SYSCALLS_NUM_PS) {
+        st->eax = sys_ps(st->ebx, (char *)st->ecx, st->edx);
+    }
+    else if (st->eax == SYSCALLS_NUM_RUN) {
+        st->eax = sys_run(st->ebx, (char *)st->ecx);
+    }
+    else if (st->eax == SYSCALLS_NUM_TERMREQ) {
+        st->eax = sys_termreq();
     }
 }

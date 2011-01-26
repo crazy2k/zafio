@@ -17,6 +17,25 @@ int strcmp(char * src, char * dst) {
     return ret;
 }
 
+
+int *strcat(char *dest, int dest_size, const char *src) {
+    int i;
+    for (i = 0; dest[i] != '\0'; i++)
+        ;
+
+    int j;
+    for (j = 0; src[j] != '\0'; j++) {
+        if (i + j >= dest_size)
+            return -1;
+
+        dest[i + j] = src[j];
+    }
+    dest[i + j] = '\0';
+
+    return i + j;
+}
+
+
 void *memcpy(void *dest, const void *src, size_t n) {
     char *bdest = (char *) dest;
     char *bsrc = (char *) src;
