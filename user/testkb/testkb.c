@@ -1,22 +1,7 @@
 #include <types.h>
+#include <syscall.h>
 
 char buf[1024] = { 0 };
-
-uint32_t syscall(int num, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5) {
-    uint32_t ret;
-    asm volatile("int %1\n"
-        : "=a" (ret)
-        : "i" (0x80),
-        "a" (num),
-        "b" (a1),
-        "c" (a2),
-        "d" (a3),
-        "D" (a4),
-        "S" (a5)
-        : "cc", "memory");
-
-    return ret;
-}
 
 int main() {
     while (1) {
