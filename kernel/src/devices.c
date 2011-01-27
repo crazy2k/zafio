@@ -77,6 +77,8 @@ int dev_keyboard_read(int from, char *buf, int bufsize) {
 dev_terminal_t terminal = {
     .read = &dev_terminal_read,
     .write = NULL,
+    .waiting_task = NULL,
+
     .buffer = { NULL },
     .start = 0,
     .end = 0
