@@ -5,6 +5,7 @@
 #define BUFF_LEN 80
 
 #define HELP "help"
+#define ECHO "echo"
 #define PS "ps"
 #define LS "ls"
 #define REBOOT "reboot"
@@ -47,6 +48,8 @@ int main() {
 
             if (strcmp(HELP, command_str) == 0) {
                 print_shell_use();
+            } else if (strcmp(ECHO, command_str) == 0) {
+                write_line(param_str);
             } else if (strcmp(PS, command_str) == 0) {
                 //Imprimir informacion de programas en ejecucion
             } else if (strcmp(LS, command_str) == 0) {
@@ -59,7 +62,6 @@ int main() {
                 //Ejecutar un programa en background
             } else
                 command_use_error();
-            
         }
     }
 
