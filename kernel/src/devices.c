@@ -124,12 +124,14 @@ int dev_terminal_proc_keys(int keyb_dev, int term_dev) {
 
             //backspace:
             case 8:
-                /*cur_pos = get_current_pos();*/
+                if (terminal->end != terminal->start) {
+                    cur_pos = get_current_pos();
 
-                    /*set_current_pos(cur_pos - SCREEN_CHAR_SIZE);*/
-                    /*kputc(' ');*/
-                    /*set_current_pos(cur_pos - SCREEN_CHAR_SIZE);*/
-                    /*terminal->end--;*/
+                    set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
+                    kputc(' ');
+                    set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
+                    terminal->end--;   
+                }
             break;
 
             //tab:
