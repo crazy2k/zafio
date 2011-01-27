@@ -20,8 +20,11 @@ void* get_current_pos() {
 }
 
 void set_current_pos(void * pos) {
-    if (SCREEN_BEGIN <= pos && pos < SCREEN_END)
+    if (SCREEN_BEGIN <= pos && pos < SCREEN_END) {
         current_pos = pos;
+        /*update_cursor(((pos - SCREEN_BEGIN)/SCREEN_CHAR_SIZE) / SCREEN_COLS,
+            ((pos - SCREEN_BEGIN)/SCREEN_CHAR_SIZE) % SCREEN_COLS);*/
+    }
 }
 
 /*
@@ -76,7 +79,8 @@ void kputc(char chr) {
 
         copychar(current_pos, chr);
 
-        current_pos += SCREEN_CHAR_SIZE;
+        set_current_pos(get_current_pos() + SCREEN_CHAR_SIZE);
+
     }
 }
 
