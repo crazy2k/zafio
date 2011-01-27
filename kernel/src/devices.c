@@ -5,14 +5,22 @@
 #include "../inc/io.h"
 #include "../inc/debug.h"
 
+static void dev_terminal_callback();
+
+void dev_awake_task(dev_device_t *dev) {
+    dev->waiting_task->io_wait = FALSE;
+    dev->waiting_task = NULL;
+}
+
 /*
  * Teclado
  */
 
+
 dev_keyboard_t keyboard = {
     .read = dev_keyboard_read,
     .write = NULL,
-    .waiting_kernel_func = NULL,
+    .waiting_kernel_func = dev_terminal_callback,
     .waiting_task = NULL,
 
     .buffer = { NULL },
@@ -35,8 +43,7 @@ void keyboard_isr(uint32_t index, uint32_t error_code,
         keyboard->waiting_kernel_func();
     }
     else if (keyboard->waiting_task) {
-        keyboard->waiting_task->io_wait = FALSE;
-        keyboard->waiting_task = NULL;
+        dev_awake_task((dev_device_t *)keyboard);
     }
 }
 
@@ -90,6 +97,9 @@ dev_device_t *devs[DEV_MAX] = {
     [DEV_TERMINAL_NUM] = (dev_device_t *)&terminal,
 };
 
+static void dev_terminal_callback() {
+    dev_terminal_proc_keys(DEV_KEYBOARD_NUM, DEV_TERMINAL_NUM);
+}
 
 int dev_terminal_proc_keys(int keyb_dev, int term_dev) {
 
@@ -138,6 +148,8 @@ int dev_terminal_proc_keys(int keyb_dev, int term_dev) {
             terminal->start++;
          
     }
+
+    dev_awake_task((dev_device_t *)terminal);
 }
 
 int dev_terminal_read(int from, char *buf, int bufsize) {
