@@ -114,6 +114,7 @@ dev_terminal_t terminal = {
 dev_device_t *devs[DEV_MAX] = {
     [DEV_KEYBOARD_NUM] = (dev_device_t *)&keyboard,
     [DEV_TERMINAL_NUM] = (dev_device_t *)&terminal,
+    [DEV_SCREEN_NUM] = (dev_device_t *)&screen,
 };
 
 static void dev_terminal_callback() {
