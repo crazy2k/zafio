@@ -22,6 +22,9 @@ void kputui32(uint32_t n);
 void kputud(unsigned long int num);
 void kputd(long int num);
 
+void* get_current_pos();
+void set_current_pos(void * pos);
+
 void set_terminal_control(task_t *task);
 
 task_t *get_terminal_control();

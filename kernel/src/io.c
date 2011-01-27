@@ -15,6 +15,15 @@
 
 void *current_pos = (void *)SCREEN_BEGIN;
 
+void* get_current_pos() {
+    return current_pos;
+}
+
+void set_current_pos(void * pos) {
+    if (SCREEN_BEGIN <= pos && pos < SCREEN_END)
+        current_pos = pos;
+}
+
 /*
  * Levanta los datos de la pantalla y ``current_pos`` una linea.
  */
