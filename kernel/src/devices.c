@@ -35,11 +35,11 @@ int dev_screen_write(int to, char *buf, int bufsize) {
 dev_keyboard_t keyboard = {
     .read = dev_keyboard_read,
     .write = NULL,
-    .waiting_kernel_func = dev_terminal_callback,
     .waiting_task = NULL,
 
     .buffer = { NULL },
-    .idx = 0
+    .idx = 0,
+    .waiting_kernel_func = dev_terminal_callback,
 };
 
 void keyboard_isr(uint32_t index, uint32_t error_code,
