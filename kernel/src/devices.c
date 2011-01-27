@@ -153,9 +153,7 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
                     set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
                     kputc(' ');
                     set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
-                    terminal->end--;
-                    if (terminal->end == -1) 
-                        terminal->end = DEV_TERMINAL_BUF_LENGTH;
+                    terminal_move(terminal, -1);
                 }
             break;
 
@@ -221,9 +219,11 @@ void terminal_move(dev_terminal_t* terminal, int times) {
         if (terminal->start == terminal->end)
             terminal->start++;
          
-    }/* else if (times < 0) {*/
-        /*if (terminal->end != terminal->start) {*/
-            /*terminal->end = ((terminal->end + times) % DEV_TERMINAL_BUF_LENGTH) + 1;*/
-        /*}*/
-    /*}*/
+    } else if (times < 0) {
+        if (terminal->end != terminal->start) {
+            terminal->end -= times;
+            if (terminal->end < 0) 
+                terminal->end += DEV_TERMINAL_BUF_LENGTH + 1;
+        }
+    }
 }
