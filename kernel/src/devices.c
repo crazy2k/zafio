@@ -12,6 +12,7 @@
 dev_keyboard_t keyboard = {
     .read = dev_keyboard_read,
     .write = NULL,
+    .waiting_kernel_func = NULL,
     .waiting_task = NULL,
 
     .buffer = { NULL },
@@ -29,7 +30,11 @@ void keyboard_isr(uint32_t index, uint32_t error_code,
 
     keyboard->buffer[keyboard->idx++] = inb(0x60);
 
-    if (keyboard->waiting_task) {
+    // Avisar a un subsistema del kernel o despertar a una tarea en espera
+    if (keyboard->waiting_kernel_func) {
+        keyboard->waiting_kernel_func();
+    }
+    else if (keyboard->waiting_task) {
         keyboard->waiting_task->io_wait = FALSE;
         keyboard->waiting_task = NULL;
     }
