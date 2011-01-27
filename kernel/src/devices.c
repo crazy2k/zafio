@@ -8,6 +8,8 @@
 
 static void dev_terminal_callback();
 
+static int dev_terminal_proc_keys(int keyb_dev, int term_dev);
+
 void dev_awake_task(dev_device_t *dev) {
     dev->waiting_task->io_wait = FALSE;
     dev->waiting_task = NULL;
@@ -143,12 +145,14 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
 
             //backspace:
             case 8:
-                /*cur_pos = get_current_pos();*/
+                if (terminal->end != terminal->start) {
+                    cur_pos = get_current_pos();
 
-                    /*set_current_pos(cur_pos - SCREEN_CHAR_SIZE);*/
-                    /*kputc(' ');*/
-                    /*set_current_pos(cur_pos - SCREEN_CHAR_SIZE);*/
-                    /*terminal->end--;*/
+                    set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
+                    kputc(' ');
+                    set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
+                    terminal->end--;   
+                }
             break;
 
             //tab:

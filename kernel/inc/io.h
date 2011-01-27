@@ -2,6 +2,8 @@
 
 #define __IO_H__
 
+#define SCREEN_CHAR_SIZE 2
+
 #include "../inc/memlayout.h"
 #include "../inc/sched.h"
 
