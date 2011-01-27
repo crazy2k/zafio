@@ -197,17 +197,11 @@ int dev_terminal_read(int from, char *buf, int bufsize) {
 
     int result = (new_line + 1 - terminal->start) % DEV_TERMINAL_BUF_LENGTH;
     int buff_end = result + terminal->start;
-    for (int i = terminal->start; i < buff_end; i++)
-        buf[i] = terminal->buffer[i % DEV_TERMINAL_BUF_LENGTH];
+    for (int j = 0, i = terminal->start; i < buff_end; i++, j++)
+        buf[j] = terminal->buffer[i % DEV_TERMINAL_BUF_LENGTH];
 
-    kputs("\n");
-    kputui32(terminal->start);
-    kputs("\n");
 
     terminal->start = (buff_end % DEV_TERMINAL_BUF_LENGTH);
-
-    kputui32(terminal->start);
-    kputs("\n");
 
     return result;
 }
