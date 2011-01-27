@@ -4,11 +4,12 @@
 #include "../inc/vmm.h"
 #include "../inc/io.h"
 #include "../inc/debug.h"
+#include "../inc/syscalls.h"
 
 static void dev_terminal_callback();
 static void terminal_move(dev_terminal_t* terminal, int times);
 
-static int dev_terminal_proc_keys(int keyb_dev, int term_dev);
+static void dev_terminal_proc_keys(int keyb_dev, int term_dev);
 
 void dev_awake_task(dev_device_t *dev) {
     dev->waiting_task->io_wait = FALSE;
@@ -119,7 +120,7 @@ static void dev_terminal_callback() {
     dev_terminal_proc_keys(DEV_KEYBOARD_NUM, DEV_TERMINAL_NUM);
 }
 
-int dev_terminal_proc_keys(int keyb_dev, int term_dev) {
+void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
 
     dev_terminal_t *terminal = (dev_terminal_t *)devs[term_dev];
 
