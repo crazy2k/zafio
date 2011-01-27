@@ -39,7 +39,7 @@ typedef struct {
 
     char buffer[DEV_KEYBOARD_BUF_LENGTH];
     int idx; // Indice del proximo caracter a ingresar
-    int (*waiting_kernel_func)(); // Subsistema del kernel esperando
+    void (*waiting_kernel_func)(); // Subsistema del kernel esperando
 } dev_keyboard_t;
 
 

@@ -4,6 +4,7 @@
 #include "../inc/vmm.h"
 #include "../inc/io.h"
 #include "../inc/debug.h"
+#include "../inc/syscalls.h"
 
 static void dev_terminal_callback();
 
@@ -116,13 +117,12 @@ static void dev_terminal_callback() {
     dev_terminal_proc_keys(DEV_KEYBOARD_NUM, DEV_TERMINAL_NUM);
 }
 
-int dev_terminal_proc_keys(int keyb_dev, int term_dev) {
+void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
 
     dev_terminal_t *terminal = (dev_terminal_t *)devs[term_dev];
 
     static char buff[DEV_KEYBOARD_BUF_LENGTH] = {0};
     int len = sys_read(keyb_dev, buff, sizeof(buff)); 
-    void *cur_pos = NULL;
 
     for (int i = 0; i < len; i++) {
         char chr = buff[i];
