@@ -31,7 +31,7 @@ int read_line(char* str, int buff_size) {
         }
     }
     
-    int result = (newline - buff_beg) % READ_BUFF_LEN;
+    int result = (newline - buff_beg + 1) % READ_BUFF_LEN;
     
     if (newline >= buff_beg)
         memcpy(str, &read_buff[buff_beg], newline - buff_beg + 1);
