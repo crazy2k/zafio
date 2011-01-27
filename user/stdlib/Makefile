@@ -28,7 +28,7 @@ $(OBJSDIR):
 
 install: $(LIBFILE)
 
-deps: $(SOURCES)
+deps: $(SOURCES) $(OBJSDIR)
 	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(subst /,\/, $(OBJSDIR))\1/" > $@
 
 -include deps
