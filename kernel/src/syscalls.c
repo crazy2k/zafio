@@ -5,6 +5,7 @@
 #include "../inc/utils.h"
 #include "../inc/devices.h"
 #include "../inc/vmm.h"
+#include "../inc/debug.h"
 
 void sys_exit(task_t *task) {
     if (get_terminal_control() == current_task())
@@ -27,12 +28,11 @@ int sys_read(int from, char *buf, int bufsize) {
 }
 
 int sys_write(int to, char *buf, int bufsize) {
-    if (current_task() != get_terminal_control())
-        return -1;
+    //if (current_task() != get_terminal_control())
+    //    return -1;
 
     if (to == DEV_SCREEN_NUM)
         kputs(buf);
-
     return 0;
 }
 

@@ -3,6 +3,7 @@
 #include "../inc/utils.h"
 #include "../inc/vmm.h"
 #include "../inc/io.h"
+#include "../inc/debug.h"
 
 /*
  * Teclado
@@ -36,8 +37,8 @@ void keyboard_isr(uint32_t index, uint32_t error_code,
 
 int dev_keyboard_read(int from, char *buf, int bufsize) {
 
-    if (current_task() != get_terminal_control())
-        return -1;
+    //if (current_task() != get_terminal_control())
+    //    return -1;
 
     dev_keyboard_t *keyboard = (dev_keyboard_t *)devs[from];
 
