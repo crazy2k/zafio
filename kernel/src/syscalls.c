@@ -28,12 +28,7 @@ int sys_read(int from, char *buf, int bufsize) {
 }
 
 int sys_write(int to, char *buf, int bufsize) {
-    //if (current_task() != get_terminal_control())
-    //    return -1;
-
-    if (to == DEV_SCREEN_NUM)
-        kputs(buf);
-    return 0;
+    return devs[to]->write(to, buf, bufsize);
 }
 
 #define SYSCALLS_SEP ("\t")
