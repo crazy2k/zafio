@@ -14,10 +14,15 @@
 #define DEV_SCREEN_NUM 1
 #define DEV_TERMINAL_NUM 2
 
-typedef struct {
-    int (*read)(int from, char *buf, int bufsize);
-    int (*write)(int to, char *buf, int bufsize);
+#define INCLUDE_DEVICE() \
+    int (*read)(int from, char *buf, int bufsize); \
+    int (*write)(int to, char *buf, int bufsize); \
     task_t *waiting_task;
+
+
+
+typedef struct {
+    INCLUDE_DEVICE();
 } dev_device_t;
 
 
@@ -25,9 +30,7 @@ typedef struct {
 #define DEV_KEYBOARD_BUF_LENGTH 1024
 
 typedef struct {
-    int (*read)(int from, char *buf, int bufsize);
-    int (*write)(int to, char *buf, int bufsize);
-    task_t *waiting_task;
+    INCLUDE_DEVICE();
 
     char buffer[DEV_KEYBOARD_BUF_LENGTH];
     int idx; // Indice del proximo caracter a ingresar
@@ -37,9 +40,7 @@ typedef struct {
 // Longitud del buffer para la terminal
 #define DEV_TERMINAL_BUF_LENGTH 1024
 typedef struct {
-    int (*read)(int from, char *buf, int bufsize);
-    int (*write)(int to, char *buf, int bufsize);
-    task_t *waiting_task;
+    INCLUDE_DEVICE();
 
     char buffer[DEV_TERMINAL_BUF_LENGTH];
     int start;
