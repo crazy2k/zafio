@@ -26,6 +26,11 @@ typedef struct {
 } dev_device_t;
 
 
+typedef struct {
+    INCLUDE_DEVICE();
+} dev_screen_t;
+
+
 // Longitud del buffer para el teclado
 #define DEV_KEYBOARD_BUF_LENGTH 1024
 
@@ -56,5 +61,7 @@ void keyboard_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 int dev_keyboard_read(int from, char *buf, int bufsize);
 
 int dev_terminal_read(int from, char *buf, int bufsize);
+
+int dev_screen_write(int to, char *buf, int bufsize);
 
 #endif

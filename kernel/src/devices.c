@@ -13,6 +13,21 @@ void dev_awake_task(dev_device_t *dev) {
 }
 
 /*
+ * Pantalla
+ */
+
+dev_screen_t screen = {
+    .read = NULL,
+    .write = dev_screen_write,
+    .waiting_task = NULL,
+};
+
+int dev_screen_write(int to, char *buf, int bufsize) {
+    kputs(buf);
+}
+
+
+/*
  * Teclado
  */
 
