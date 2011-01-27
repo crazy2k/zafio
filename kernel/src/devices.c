@@ -7,6 +7,8 @@
 
 static void dev_terminal_callback();
 
+static int dev_terminal_proc_keys(int keyb_dev, int term_dev);
+
 void dev_awake_task(dev_device_t *dev) {
     dev->waiting_task->io_wait = FALSE;
     dev->waiting_task = NULL;
