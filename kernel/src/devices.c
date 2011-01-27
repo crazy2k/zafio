@@ -101,8 +101,8 @@ int dev_keyboard_read(int from, char *buf, int bufsize) {
 
 
 dev_terminal_t terminal = {
-    .read = &dev_terminal_read,
-    .write = NULL,
+    .read = dev_terminal_read,
+    .write = dev_screen_write,
     .waiting_task = NULL,
 
     .buffer = { NULL },
