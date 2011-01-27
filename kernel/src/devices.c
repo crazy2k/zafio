@@ -13,6 +13,21 @@ void dev_awake_task(dev_device_t *dev) {
 }
 
 /*
+ * Pantalla
+ */
+
+dev_screen_t screen = {
+    .read = NULL,
+    .write = dev_screen_write,
+    .waiting_task = NULL,
+};
+
+int dev_screen_write(int to, char *buf, int bufsize) {
+    kputs(buf);
+}
+
+
+/*
  * Teclado
  */
 
@@ -20,11 +35,11 @@ void dev_awake_task(dev_device_t *dev) {
 dev_keyboard_t keyboard = {
     .read = dev_keyboard_read,
     .write = NULL,
-    .waiting_kernel_func = dev_terminal_callback,
     .waiting_task = NULL,
 
     .buffer = { NULL },
-    .idx = 0
+    .idx = 0,
+    .waiting_kernel_func = dev_terminal_callback,
 };
 
 void keyboard_isr(uint32_t index, uint32_t error_code,
