@@ -23,33 +23,7 @@ void sys_exit(task_t *task) {
 }
 
 int sys_read(int from, char *buf, int bufsize) {
-
-    if (current_task() != get_terminal_control())
-        return -1;
-
-    waited_device_t *keyboard_wdev = &wdevs[DEV_KEYBOARD_NUM];
-    dev_keyboard_t *keyboard = (dev_keyboard_t *)keyboard_wdev->device;
-
-    // Si no hay nada en el buffer, bloquear
-    if (keyboard->idx <= 0) {
-        current_task()->io_wait = TRUE;
-
-        keyboard_wdev->task = current_task();
-
-        switch_tasks();
-    }
-
-    current_task()->io_wait = FALSE;
-
-    int i, j;
-    for (i = 0, j = 0; i <= keyboard->idx; i++) {
-        if (keyboard->buffer[i] & 0x80)
-            continue;
-        buf[j++] = sc2ascii((unsigned char)keyboard->buffer[i]);
-    }
-    keyboard->idx = 0;
-
-    return j - 1;
+    return devs[from]->read(from, buf, bufsize);
 }
 
 int sys_write(int to, char *buf, int bufsize) {

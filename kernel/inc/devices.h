@@ -6,30 +6,51 @@
 
 
 // Cantidad maxima de dispositivos
-#define DEV_WAITING_MAX 1
+#define DEV_MAX 3
 
 
 // Numero de dispositivos
 #define DEV_KEYBOARD_NUM 0
 #define DEV_SCREEN_NUM 1
+#define DEV_TERMINAL_NUM 2
+
+typedef struct {
+    int (*read)(int from, char *buf, int bufsize);
+    int (*write)(int to, char *buf, int bufsize);
+    task_t *waiting_task;
+} dev_device_t;
 
 
 // Longitud del buffer para el teclado
 #define DEV_KEYBOARD_BUF_LENGTH 1024
 
 typedef struct {
+    int (*read)(int from, char *buf, int bufsize);
+    int (*write)(int to, char *buf, int bufsize);
+    task_t *waiting_task;
+
     char buffer[DEV_KEYBOARD_BUF_LENGTH];
     int idx; // Indice del proximo caracter a ingresar
 } dev_keyboard_t;
 
 
+// Longitud del buffer para la terminal
+#define DEV_TERMINAL_BUF_LENGTH 1024
 typedef struct {
-    task_t *task;
-    void *device;
-} waited_device_t;
+    int (*read)(int from, char *buf, int bufsize);
+    int (*write)(int to, char *buf, int bufsize);
+    task_t *waiting_task;
 
-extern waited_device_t wdevs[DEV_WAITING_MAX];
+    char buffer[DEV_TERMINAL_BUF_LENGTH];
+    int start;
+    int end;
+} dev_terminal_t;
+
+
+extern dev_device_t *devs[DEV_MAX];
 
 void keyboard_isr(uint32_t index, uint32_t error_code, task_state_t *st);
+
+int dev_keyboard_read(int from, char *buf, int bufsize);
 
 #endif
