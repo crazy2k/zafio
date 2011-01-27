@@ -155,6 +155,8 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
                     kputc(' ');
                     set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
                     terminal->end--;
+                    if (terminal->end == -1) 
+                        terminal->end = DEV_TERMINAL_BUF_LENGTH;
                 }
             break;
 
@@ -200,7 +202,14 @@ int dev_terminal_read(int from, char *buf, int bufsize) {
     for (int i = terminal->start; i < buff_end; i++)
         buf[i] = terminal->buffer[i % DEV_TERMINAL_BUF_LENGTH];
 
-    terminal->start = buff_end % DEV_TERMINAL_BUF_LENGTH;
+    kputs("\n");
+    kputui32(terminal->start);
+    kputs("\n");
+
+    terminal->start = (buff_end % DEV_TERMINAL_BUF_LENGTH);
+
+    kputui32(terminal->start);
+    kputs("\n");
 
     return result;
 }
