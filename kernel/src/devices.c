@@ -80,3 +80,33 @@ dev_device_t *devs[DEV_MAX] = {
     [DEV_TERMINAL_NUM] = (dev_device_t *)&terminal,
 };
 
+int dev_terminal_read(int from, char *buf, int bufsize) {
+
+    dev_terminal_t *terminal = (dev_terminal_t *)devs[from];
+    int new_line = -1;
+
+    do {
+        int buff_end = ((terminal->end - terminal->start) % DEV_TERMINAL_BUF_LENGTH) + terminal->start;
+        for (int i = buff_end - 1; i >= terminal->start; i--)
+            if (terminal->buffer[i % DEV_TERMINAL_BUF_LENGTH] == '\n')
+                new_line = i % DEV_TERMINAL_BUF_LENGTH;
+
+        // Si no hay nada en el buffer, bloquear
+        if (new_line == -1) {
+            current_task()->io_wait = TRUE;
+            terminal->waiting_task = current_task();
+            switch_tasks();
+        }
+    } while (new_line == -1);
+
+    current_task()->io_wait = FALSE;
+
+    int result = (new_line + 1 - terminal->start) % DEV_TERMINAL_BUF_LENGTH;
+    int buff_end = result + terminal->start;
+    for (int i = terminal->start; i < buff_end; i++)
+        buf[i] = terminal->buffer[i % DEV_TERMINAL_BUF_LENGTH];
+
+    terminal->start = buff_end % DEV_TERMINAL_BUF_LENGTH;
+
+    return result;
+}

@@ -54,4 +54,6 @@ void keyboard_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 
 int dev_keyboard_read(int from, char *buf, int bufsize);
 
+int dev_terminal_read(int from, char *buf, int bufsize);
+
 #endif
