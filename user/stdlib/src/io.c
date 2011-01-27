@@ -13,10 +13,10 @@ int read_line(char* str, int buff_size) {
     int newline = -1, count = 0;
 
     if ((READ_BUFF_LEN - buff_end) >= buff_size)
-        count = read(TERM_INPUT, &read_buff[buff_end], buff_size);
+        count = read(TERMINAL, &read_buff[buff_end], buff_size);
     else {
-        count = read(TERM_INPUT, &read_buff[buff_end], READ_BUFF_LEN - buff_end);
-        count += read(TERM_INPUT, read_buff, buff_size - count);
+        count = read(TERMINAL, &read_buff[buff_end], READ_BUFF_LEN - buff_end);
+        count += read(TERMINAL, read_buff, buff_size - count);
     }
     
     if (count == -1)
@@ -46,8 +46,8 @@ int read_line(char* str, int buff_size) {
 }
 
 void write_line(char* str) {
-    write(TERM_OUTPUT, str, strlen(str));
-    write(TERM_OUTPUT, "\n", 1);
+    write(TERMINAL, str, strlen(str) + 1);
+    write(TERMINAL, "\n", 2);
 }
 
 int read(int dev, char *buf, int buf_size) {

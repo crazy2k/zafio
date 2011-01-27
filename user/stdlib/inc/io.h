@@ -2,8 +2,9 @@
 
 #define __IO_H__
 
-#define TERM_INPUT 0
-#define TERM_OUTPUT 1
+#define KEYBOARD 0
+#define SCREEN 1
+#define TERMINAL 2
 
 int read_line(char* str, int buff_size);
 void write_line(char* str);
