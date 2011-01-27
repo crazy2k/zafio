@@ -18,7 +18,7 @@ int strcmp(char * src, char * dst) {
 }
 
 
-int *strcat(char *dest, int dest_size, const char *src) {
+int strconcat(char *dest, int dest_size, char *src) {
     int i;
     for (i = 0; dest[i] != '\0'; i++)
         ;
@@ -85,6 +85,7 @@ char sc2ascii_table[] = {0xFF, 27, '1', '2', '3', '4', '5', '6', '7',
     255, 255, 255, 16, 17, 29 ,30, 31, 255, 26, 255, 28, 255, 23, 24, 25, 22,
     0x7f, 255, 255, 255, 255, 255, 255, 255, 20, 21, 18, 255, 255};
 
-char sc2ascii(char sc) {
-    return sc2ascii_table[sc];
+char sc2ascii(unsigned char sc) {
+    int idx = (int)sc;
+    return sc2ascii_table[idx];
 }
