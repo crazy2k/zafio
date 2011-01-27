@@ -99,5 +99,5 @@ void command_use_error() {
 }
 
 void print_shell_use() {
-
+    write_line("Ayudaaa!!!");
 }
