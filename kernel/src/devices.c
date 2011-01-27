@@ -6,6 +6,7 @@
 #include "../inc/debug.h"
 
 static void dev_terminal_callback();
+static void terminal_move(dev_terminal_t* terminal, int times);
 
 static int dev_terminal_proc_keys(int keyb_dev, int term_dev);
 
@@ -134,13 +135,13 @@ int dev_terminal_proc_keys(int keyb_dev, int term_dev) {
             case 13:
                 kputc('\n');
                 terminal->buffer[terminal->end] = '\n';
-                terminal->end = (terminal->end % DEV_TERMINAL_BUF_LENGTH) + 1;
+                terminal_move(terminal,1);
             break;
             //caracteres imprimibles
             case 32 ... 126:
                 kputc(chr);
                 terminal->buffer[terminal->end] = chr;
-                terminal->end = (terminal->end % DEV_TERMINAL_BUF_LENGTH) + 1;
+                terminal_move(terminal,1);
             break;
 
             //backspace:
@@ -151,14 +152,14 @@ int dev_terminal_proc_keys(int keyb_dev, int term_dev) {
                     set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
                     kputc(' ');
                     set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
-                    terminal->end--;   
+                    terminal->end--;
                 }
             break;
 
             //tab:
             case 9:
                 kputs("    ");
-                terminal->end = ((terminal->end + 3) % DEV_TERMINAL_BUF_LENGTH) + 1;
+                terminal_move(terminal, 4);
             break;
 
             //delete:
@@ -166,10 +167,6 @@ int dev_terminal_proc_keys(int keyb_dev, int term_dev) {
 
             break;
         }
-
-        if (terminal->start == terminal->end)
-            terminal->start++;
-         
     }
 
     dev_awake_task((dev_device_t *)terminal);
@@ -204,4 +201,19 @@ int dev_terminal_read(int from, char *buf, int bufsize) {
     terminal->start = buff_end % DEV_TERMINAL_BUF_LENGTH;
 
     return result;
+}
+
+void terminal_move(dev_terminal_t* terminal, int times) {
+    if (times > 0) {
+        times--;
+        terminal->end = ((terminal->end + times) % DEV_TERMINAL_BUF_LENGTH) + 1;
+
+        if (terminal->start == terminal->end)
+            terminal->start++;
+         
+    }/* else if (times < 0) {*/
+        /*if (terminal->end != terminal->start) {*/
+            /*terminal->end = ((terminal->end + times) % DEV_TERMINAL_BUF_LENGTH) + 1;*/
+        /*}*/
+    /*}*/
 }
