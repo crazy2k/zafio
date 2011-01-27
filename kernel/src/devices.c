@@ -82,6 +82,56 @@ dev_device_t *devs[DEV_MAX] = {
     [DEV_TERMINAL_NUM] = (dev_device_t *)&terminal,
 };
 
+
+int dev_terminal_proc_keys(int keyb_dev, int term_dev) {
+
+    dev_terminal_t *terminal = (dev_terminal_t *)devs[term_dev];
+
+    static char buff[DEV_KEYBOARD_BUF_LENGTH] = {0};
+    int len = sys_read(keyb_dev, buff, sizeof(buff)); 
+    void *cur_pos = NULL;
+
+    for (int i = 0; i < len; i++) {
+        char chr = buff[i];
+
+        switch (chr) {
+            //carriage return:
+            case 15:
+            //caracteres imprimibles
+            case 32 ... 126:
+                kputc(chr);
+                terminal->buffer[terminal->end] = chr;
+                terminal->end = (terminal->end % DEV_TERMINAL_BUF_LENGTH) + 1;
+            break;
+
+            //backspace:
+            case 8:
+                /*cur_pos = get_current_pos();*/
+
+                    /*set_current_pos(cur_pos - SCREEN_CHAR_SIZE);*/
+                    /*kputc(' ');*/
+                    /*set_current_pos(cur_pos - SCREEN_CHAR_SIZE);*/
+                    /*terminal->end--;*/
+            break;
+
+            //tab:
+            case 9:
+                kputs("    ");
+                terminal->end = ((terminal->end + 3) % DEV_TERMINAL_BUF_LENGTH) + 1;
+            break;
+
+            //delete:
+            case 127:
+
+            break;
+        }
+
+        if (terminal->start == terminal->end)
+            terminal->start++;
+         
+    }
+}
+
 int dev_terminal_read(int from, char *buf, int bufsize) {
 
     dev_terminal_t *terminal = (dev_terminal_t *)devs[from];
