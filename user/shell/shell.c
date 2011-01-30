@@ -1,6 +1,7 @@
 #include <types.h>
 #include <io.h>
 #include <utils.h>
+#include <sched.h>
 
 #define BUFF_LEN 80
 
@@ -14,9 +15,12 @@
 
 
 char line_buffer[BUFF_LEN];
+#define RESULT_BUF_LEN
+char result_buf[RESULT_BUF_LEN];
 
 static void command_use_error();
 static void print_shell_use();
+static void print_ps(char *mode);
 static char *skip_spaces(char* str);
 static char *get_word(char** str);
 
@@ -52,6 +56,7 @@ int main() {
                 write_line(param_str);
             } else if (strcmp(PS, command_str) == 0) {
                 //Imprimir informacion de programas en ejecucion
+                print_ps(param_str);
             } else if (strcmp(LS, command_str) == 0) {
                 //Imprimir lista de programas disponibles
             } else if (strcmp(REBOOT, command_str) == 0) {
@@ -91,7 +96,19 @@ char *get_word(char** str) {
 
     return result;
 }
-       
+
+static void print_ps(char *mode) {
+    char coso[2];
+    coso[0] = (char)strlen(mode) + '0';
+    coso[1] = '\0';
+    if (strlen(mode) == 0) {
+        int n = ps(0, result_buf, RESULT_BUF_LEN);
+        result_buf[n] = '\0';
+
+        write_line(result_buf);
+    }
+}
+
 void command_use_error() {
     //Comando erroneo
     

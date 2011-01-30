@@ -51,9 +51,9 @@ void write_line(char* str) {
 }
 
 int read(int dev, char *buf, int buf_size) {
-    return syscall(SYSCALL_READ, dev, (uint32_t)buf, buf_size, 0, 0);
+    return syscall(SYSCALLS_NUM_READ, dev, (uint32_t)buf, buf_size, 0, 0);
 }
     
 int write(int dev, char *buf, int buf_size) {
-    return syscall(SYSCALL_WRITE, dev, (uint32_t)buf, buf_size, 0, 0);
+    return syscall(SYSCALLS_NUM_WRITE, dev, (uint32_t)buf, buf_size, 0, 0);
 }
