@@ -15,9 +15,9 @@ previa programando en algún dialecto de *assembly* para dicha
 arquitectura y que está dispuesto a buscar en otros textos lo que no
 pueda encontrar aquí.
 
-La arquitectura en la que se basará este proyecto es la arquitectura
+La arquitectura en la que se basa este proyecto es la arquitectura
 IA-32 de Intel, por lo que todos los detalles de bajo nivel se
-orientarán a esta.
+orientan a esta.
 
 La secuencia de arranque
 ------------------------
@@ -129,7 +129,7 @@ La arquitectura IA-32 tiene los siguientes modos de operación:
 
   Existe un pseudo-modo **virtual-8086**, que de momento no interesa.
 
-* **Modo de "gestión del sistema"**: Por ahora no me interesa, pero
+* **Modo de "gestión del sistema"**: Por ahora no nos interesa, pero
   básicamente es un modo que permite atender mensajes o alarmas de las
   que el sistema avisa a través de interrupciones.
 
@@ -330,41 +330,6 @@ D       Indica si el software escribió en la página referenciada
 Los campos que no se hallan en esta tabla se interpretan de manera
 análoga al caso del PDE.
 
-
-Referencia de NASM
-------------------
-
-Directivas del preprocesador
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. describe:: define A x
-              define f(x1, x2, ...) y
-
-    Permite definir macros en una sola línea. Funciona de manera
-    similar a las macros de C, por lo que también posibilita crear
-    macros con "parámetros".
-
-
-Directivas del ensamblador
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. describe:: BITS m
-
-    Indica que el código a continuación de la directiva debe generarse
-    para procesadores operando en modo de ``m`` bits, donde ``m``
-    puede ser 16, 32 o 64.
-
-    Para el modo de salida ``bin``, que es el que usamos para el
-    *bootloader*, se puede asumir por omisión que ``m`` es 16. Sin
-    embargo, siempre es buena práctica ser explícitos con esto, en
-    lugar de asumir valores por omisión.
-
-.. describe:: ORG addr
-
-    Hace que NASM asuma que la dirección de memoria ``addr`` es la
-    dirección en la que ha sido cargado el programa. NASM utiliza esta
-    dirección como base para todas las referencias internas en una
-    sección de código.
 
 .. TODO: Hablar de inline assembly en GCC.
    http://ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html

@@ -1,7 +1,7 @@
 #include "../inc/x86.h"
 
 void outb(uint32_t port, char value) {
-    __asm__ __volatile__("outb %b0, %w1" : : "r" (value), "r" (port));
+    __asm__ __volatile__("outb %b0, %w1" : : "a" (value), "dN" (port));
 }
 
 char inb(uint32_t port) {
