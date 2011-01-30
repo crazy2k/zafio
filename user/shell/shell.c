@@ -5,6 +5,7 @@
 
 #define BUFF_LEN 80
 
+#define PROMPT "$ "
 #define HELP "help"
 #define ECHO "echo"
 #define PS "ps"
@@ -31,6 +32,7 @@ int main() {
     //Inicializar terminal... 
 
     while(TRUE) {
+        write(TERMINAL, PROMPT, strlen(PROMPT));
         count = read_line(line_buffer, BUFF_LEN);
 
         if (count == -1) {
