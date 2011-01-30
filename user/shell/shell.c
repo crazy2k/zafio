@@ -4,6 +4,7 @@
 #include <sched.h>
 
 #define BUFF_LEN 80
+#define RESULT_BUF_LEN 1024
 
 #define PROMPT "$ "
 #define HELP "help"
@@ -16,7 +17,6 @@
 
 
 char line_buffer[BUFF_LEN];
-#define RESULT_BUF_LEN
 char result_buf[RESULT_BUF_LEN];
 
 static void command_use_error();
