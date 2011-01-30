@@ -31,7 +31,7 @@ int sys_write(int to, char *buf, int bufsize) {
     return devs[to]->write(to, buf, bufsize);
 }
 
-#define SYSCALLS_SEP ("\t")
+#define SYSCALLS_SEP ("    ")
 
 int sys_ls(int mode, char *buf, int bufsize) {
     int end = 0;
