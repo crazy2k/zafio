@@ -101,9 +101,6 @@ char *get_word(char** str) {
 }
 
 static void print_ps(char *mode) {
-    char coso[2];
-    coso[0] = (char)strlen(mode) + '0';
-    coso[1] = '\0';
     if (strlen(mode) == 0) {
         int n = ps(0, result_buf, RESULT_BUF_LEN);
         result_buf[n] = '\0';
