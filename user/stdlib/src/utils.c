@@ -2,9 +2,10 @@
 
 int strlen(char* str) {
     int result = 0;
-    if (str) {
-        while(*str) str++;
-    }
+
+    if (str)
+        while(str[result]) result++;
+
     return result;
 }
 
