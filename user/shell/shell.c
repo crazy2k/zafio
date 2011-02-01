@@ -16,7 +16,7 @@
 
 
 char line_buffer[BUFF_LEN];
-#define RESULT_BUF_LEN
+#define RESULT_BUF_LEN 1024
 char result_buf[RESULT_BUF_LEN];
 
 static void command_use_error();
