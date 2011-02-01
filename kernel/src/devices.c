@@ -171,7 +171,8 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
         }
     }
 
-    dev_awake_task((dev_device_t *)terminal);
+    if (terminal->waiting_task)
+        dev_awake_task((dev_device_t *)terminal);
 }
 
 int dev_terminal_read(int from, char *buf, int bufsize) {

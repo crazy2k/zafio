@@ -37,7 +37,7 @@ int read_line(char* str, int buff_size) {
         memcpy(str, &read_buff[buff_beg], newline - buff_beg + 1);
     else {
         memcpy(str, &read_buff[buff_beg], READ_BUFF_LEN - buff_beg);
-        memcpy(str, read_line, newline + 1);
+        memcpy(str, read_buff, newline + 1);
     }
     
     buff_beg = (newline + 1) % READ_BUFF_LEN;
