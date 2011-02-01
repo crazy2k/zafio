@@ -61,7 +61,7 @@ DISKETTE := $(REFTESTDIR)/aux/diskette.img
 #
 all: diskette.img
 
-deps: $(SOURCES) $(OBJSDIR) $(PROG_SOURCES) $(PROG_OBJSDIR) $(ALL_PROGS_SOURCE)
+deps: $(SOURCES) $(OBJSDIR) $(PROG_SOURCES) $(PROG_OBJSDIR) 
 	$(CC) $(CFLAGS) -MM $(SOURCES) | sed "s/\(\w*\.o\)/$(subst /,\/, $(OBJSDIR))\1/" > $@
 -include deps
 
@@ -78,7 +78,7 @@ $(ALL_PROGS_SOURCE): $(PROGS_DIR) $(BUILD_ALL_PROGS)
 	$(BUILD_ALL_PROGS) > $@
 
 $(KERNEL): $(OBJS) $(ASOBJS) $(PROGS_DIR) $(PROG_OBJS) $(ALL_PROGS_OBJ)
-	$(LD) $(LDFLAGS) $(ASOBJS) $(OBJS) $(PROG_OBJS) -o $@
+	$(LD) $(LDFLAGS) $(ASOBJS) $(OBJS) $(PROG_OBJS) $(ALL_PROGS_OBJ) -o $@
 
 $(ASOBJS): $(ASSOURCES)
 	$(AS) $(ASFLAGS) $(shell find $(SRCDIR) -name "$(notdir $(patsubst %.o, %.S, $@))") -o $@
@@ -94,7 +94,7 @@ install_user_progs:
 $(PROG_OBJS): install_user_progs
 	$(LD) $(LDPARTFLAGS) -b binary $(patsubst $(OBJSDIR)/%.o,$(PROGS_DIR)/%,$@) -o $@
 
-.PHONY: clean new diskette.img all
+.PHONY: clean new diskette.img all install_user_progs
 
 clean:
 	rm -f $(ALL_PROGS_SOURCE)	
