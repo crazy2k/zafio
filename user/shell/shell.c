@@ -93,8 +93,9 @@ char *get_word(char** str) {
 
     if (*curr != NULL ) {
         *curr = NULL;
-        *str = ++curr;
+        ++curr;
     }
+    *str = curr;
 
     return result;
 }
