@@ -49,8 +49,7 @@ typedef struct {
     INCLUDE_DEVICE();
 
     char buffer[DEV_TERMINAL_BUF_LENGTH];
-    int start;
-    int end;
+    int end; // Indice del proximo caracter a ingresar
 } dev_terminal_t;
 
 
