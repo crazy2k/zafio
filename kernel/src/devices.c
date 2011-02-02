@@ -9,7 +9,6 @@
 static void dev_terminal_callback();
 static void terminal_buffer_move(dev_terminal_t* terminal, int times);
 
-static bool terminal_buffer_full(dev_terminal_t* terminal);
 static void dev_terminal_proc_keys(int keyb_dev, int term_dev);
 
 void dev_awake_task(dev_device_t *dev) {
@@ -86,7 +85,6 @@ int dev_keyboard_read(int from, char *buf, int bufsize) {
     current_task()->io_wait = FALSE;
 
     int i, j;
-    //TODO: No copiar mas carateres de los q entran en el buffer
     for (i = 0, j = 0; i <= keyboard->idx; i++) {
         if (keyboard->buffer[i] & 0x80)
             continue;
@@ -108,6 +106,7 @@ dev_terminal_t terminal = {
     .waiting_task = NULL,
 
     .buffer = { NULL },
+    .start = 0,
     .end = 0
 };
 
@@ -142,16 +141,14 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
             break;
             //caracteres imprimibles
             case 32 ... 126:
-                if (!terminal_buffer_full(terminal)) {
-                    kputc(chr);
-                    terminal->buffer[terminal->end] = chr;
-                    terminal_buffer_move(terminal,1);
-                }
+                kputc(chr);
+                terminal->buffer[terminal->end] = chr;
+                terminal_buffer_move(terminal,1);
             break;
 
             //backspace:
             case 8:
-                if (terminal->end > 0) {
+                if (terminal->end != terminal->start) {
                     cur_pos = get_current_pos();
 
                     set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
@@ -179,15 +176,15 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
 }
 
 int dev_terminal_read(int from, char *buf, int bufsize) {
-    //TODO: Fallar si el buffer es muy chico
 
     dev_terminal_t *terminal = (dev_terminal_t *)devs[from];
     int new_line = -1;
 
     do {
-        for (int i = terminal->end - 1; i >= 0; i--)
-            if (terminal->buffer[i] == '\n')
-                new_line = i;
+        int buff_end = ((terminal->end - terminal->start) % DEV_TERMINAL_BUF_LENGTH) + terminal->start;
+        for (int i = buff_end - 1; i >= terminal->start; i--)
+            if (terminal->buffer[i % DEV_TERMINAL_BUF_LENGTH] == '\n')
+                new_line = i % DEV_TERMINAL_BUF_LENGTH;
 
         // Si no hay nada en el buffer, bloquear
         if (new_line == -1) {
@@ -199,25 +196,30 @@ int dev_terminal_read(int from, char *buf, int bufsize) {
 
     current_task()->io_wait = FALSE;
 
-    memcpy(buf, terminal->buffer, new_line + 1);
-    terminal->end = 0;
+    int result = (new_line + 1 - terminal->start) % DEV_TERMINAL_BUF_LENGTH;
+    int buff_end = result + terminal->start;
+    for (int j = 0, i = terminal->start; i < buff_end; i++, j++)
+        buf[j] = terminal->buffer[i % DEV_TERMINAL_BUF_LENGTH];
 
-    return new_line + 1;
-}
 
-bool terminal_buffer_full(dev_terminal_t* terminal) {
-    return terminal->end == DEV_TERMINAL_BUF_LENGTH - 1;
+    terminal->start = (buff_end % DEV_TERMINAL_BUF_LENGTH);
+
+    return result;
 }
 
 void terminal_buffer_move(dev_terminal_t* terminal, int times) {
-    terminal->end += times;
-
     if (times > 0) {
-        if (terminal->end >= DEV_TERMINAL_BUF_LENGTH)
-            terminal->end = DEV_TERMINAL_BUF_LENGTH - 1;
+        times--;
+        terminal->end = ((terminal->end + times) % DEV_TERMINAL_BUF_LENGTH) + 1;
+
+        if (terminal->start == terminal->end)
+            terminal->start++;
          
     } else if (times < 0) {
-        if (terminal->end < 0)
-            terminal->end = 0;
+        if (terminal->end != terminal->start) {
+            terminal->end -= times;
+            if (terminal->end < 0) 
+                terminal->end += DEV_TERMINAL_BUF_LENGTH + 1;
+        }
     }
 }
