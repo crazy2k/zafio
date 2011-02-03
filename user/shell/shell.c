@@ -22,6 +22,7 @@ char result_buf[RESULT_BUF_LEN];
 static void command_use_error();
 static void print_shell_use();
 static void print_ps(char *mode);
+static void print_ls(char *mode);
 static char *skip_spaces(char* str);
 static char *get_word(char** str);
 
@@ -61,6 +62,7 @@ int main() {
                 print_ps(param_str);
             } else if (strcmp(LS, command_str) == 0) {
                 //Imprimir lista de programas disponibles
+                print_ls(param_str);
             } else if (strcmp(REBOOT, command_str) == 0) {
                 //Resetear
             } else if (strcmp(RUN, command_str) == 0) {
@@ -103,6 +105,15 @@ char *get_word(char** str) {
 static void print_ps(char *mode) {
     if (strlen(mode) == 0) {
         int n = ps(0, result_buf, RESULT_BUF_LEN);
+        result_buf[n] = '\0';
+
+        write_line(result_buf);
+    }
+}
+
+static void print_ls(char *mode) {
+    if (strlen(mode) == 0) {
+        int n = ls(0, result_buf, RESULT_BUF_LEN);
         result_buf[n] = '\0';
 
         write_line(result_buf);
