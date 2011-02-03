@@ -17,7 +17,6 @@ int strcmp(char * src, char * dst) {
     return ret;
 }
 
-
 int strconcat(char *dest, int dest_size, char *src) {
     int i;
     for (i = 0; dest[i] != '\0'; i++)
@@ -33,6 +32,35 @@ int strconcat(char *dest, int dest_size, char *src) {
     dest[i + j] = '\0';
 
     return i + j;
+}
+
+char *align(unsigned int n, char *out, char *in, int outsize) {
+    int in_len = strlen(in);
+    for (int i = 0; i < n; i++) {
+        if (i < in_len)
+            out[i] = in[i];
+        else
+            out[i] = ' ';
+    }
+    out[n] = '\0';
+    return out;
+}
+
+char *strcolumns(char *dest, int dest_size, int al, char **srcarr, int src_len) {
+    for (int i = 0; i < src_len; i++) {
+            align(al, dest + i*al, srcarr[i], dest_size);
+    }
+    return dest;
+}
+
+
+int strlen(char* str) {
+    int result = 0;
+
+    if (str)
+        while(str[result]) result++;
+
+    return result;
 }
 
 
@@ -89,3 +117,26 @@ char sc2ascii(unsigned char sc) {
     int idx = (int)sc;
     return sc2ascii_table[idx];
 }
+
+char *reversestr(char *str) {
+    int str_len = strlen(str);
+    for (int i = 0; i < str_len/2; i++) {
+        char aux = str[i];
+        str[i] = str[str_len - 1 - i];
+        str[str_len - 1 - i] = aux;
+    }
+    return str;
+}
+
+char *uitoa(unsigned int n, char *str) {
+    int i = 0;
+    do {
+        str[i++] = '0' + (n % 10);
+    } while ((n /= 10) > 0);
+
+    str[i] = '\0';
+
+    return reversestr(str);
+}
+
+

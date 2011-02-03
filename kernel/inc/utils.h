@@ -20,4 +20,10 @@ int strcmp(char * src, char * dst);
 
 int strconcat(char *dest, int dest_size, char *src);
 
+int strlen(char* str);
+
+char *align(unsigned int n, char *out, char *in, int outsize);
+
+char *strcolumns(char *dest, int dest_size, int al, char **srcarr, int src_len);
+
 #endif
