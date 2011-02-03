@@ -50,7 +50,7 @@ typedef struct {
 
     char buffer[DEV_TERMINAL_BUF_LENGTH];
     int start;
-    int end;
+    int len;
 } dev_terminal_t;
 
 

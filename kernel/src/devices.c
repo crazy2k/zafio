@@ -107,7 +107,7 @@ dev_terminal_t terminal = {
 
     .buffer = { NULL },
     .start = 0,
-    .end = 0
+    .len = 0
 };
 
 // Instancias de dispositivos
@@ -126,29 +126,33 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
     dev_terminal_t *terminal = (dev_terminal_t *)devs[term_dev];
 
     static char buff[DEV_KEYBOARD_BUF_LENGTH] = {0};
-    int len = sys_read(keyb_dev, buff, sizeof(buff)); 
+    int keys = sys_read(keyb_dev, buff, sizeof(buff)); 
     void *cur_pos = NULL;
 
-    for (int i = 0; i < len; i++) {
+    for (int i = 0; i < keys; i++) {
         char chr = buff[i];
 
         switch (chr) {
             //carriage return:
             case 13:
-                kputc('\n');
-                terminal->buffer[terminal->end] = '\n';
-                terminal_buffer_move(terminal,1);
+                if (terminal->len < DEV_TERMINAL_BUF_LENGTH) {
+                    kputc('\n');
+                    terminal->buffer[terminal->start + terminal->len] = '\n';
+                    terminal_buffer_move(terminal,1);
+                }
             break;
             //caracteres imprimibles
             case 32 ... 126:
-                kputc(chr);
-                terminal->buffer[terminal->end] = chr;
-                terminal_buffer_move(terminal,1);
+                if (terminal->len < DEV_TERMINAL_BUF_LENGTH - 1) {
+                    kputc(chr);
+                    terminal->buffer[terminal->start + terminal->len] = chr;
+                    terminal_buffer_move(terminal,1);
+                }
             break;
 
             //backspace:
             case 8:
-                if (terminal->end != terminal->start) {
+                if (terminal->len > 0) {
                     cur_pos = get_current_pos();
 
                     set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
@@ -160,8 +164,10 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
 
             //tab:
             case 9:
-                kputs("    ");
-                terminal_buffer_move(terminal, 4);
+                if (terminal->len < DEV_TERMINAL_BUF_LENGTH - 4) {
+                    kputs("    ");
+                    terminal_buffer_move(terminal, 4);
+                }
             break;
 
             //delete:
@@ -181,10 +187,10 @@ int dev_terminal_read(int from, char *buf, int bufsize) {
     int new_line = -1;
 
     do {
-        int buff_end = ((terminal->end - terminal->start) % DEV_TERMINAL_BUF_LENGTH) + terminal->start;
+        int buff_end = terminal->start + terminal->len;
         for (int i = buff_end - 1; i >= terminal->start; i--)
             if (terminal->buffer[i % DEV_TERMINAL_BUF_LENGTH] == '\n')
-                new_line = i % DEV_TERMINAL_BUF_LENGTH;
+                new_line = i - terminal->start;
 
         // Si no hay nada en el buffer, bloquear
         if (new_line == -1) {
@@ -195,31 +201,25 @@ int dev_terminal_read(int from, char *buf, int bufsize) {
     } while (new_line == -1);
 
     current_task()->io_wait = FALSE;
+    int chars = new_line + 1; //Cantidad de caracteres a copiar
 
-    int result = (new_line + 1 - terminal->start) % DEV_TERMINAL_BUF_LENGTH;
-    int buff_end = result + terminal->start;
-    for (int j = 0, i = terminal->start; i < buff_end; i++, j++)
+    for (int j = 0, i = terminal->start; j < chars; j++, i++)
         buf[j] = terminal->buffer[i % DEV_TERMINAL_BUF_LENGTH];
 
+    terminal->start = (terminal->start + chars) % DEV_TERMINAL_BUF_LENGTH;
+    terminal->len-= chars;
 
-    terminal->start = (buff_end % DEV_TERMINAL_BUF_LENGTH);
-
-    return result;
+    return chars;
 }
 
 void terminal_buffer_move(dev_terminal_t* terminal, int times) {
+    terminal->len += times;
     if (times > 0) {
-        times--;
-        terminal->end = ((terminal->end + times) % DEV_TERMINAL_BUF_LENGTH) + 1;
-
-        if (terminal->start == terminal->end)
-            terminal->start++;
+        if (terminal->len > DEV_TERMINAL_BUF_LENGTH)
+            terminal->len = DEV_TERMINAL_BUF_LENGTH;
          
     } else if (times < 0) {
-        if (terminal->end != terminal->start) {
-            terminal->end -= times;
-            if (terminal->end < 0) 
-                terminal->end += DEV_TERMINAL_BUF_LENGTH + 1;
-        }
+        if (terminal->len < 0)
+            terminal->len = 0;
     }
 }
