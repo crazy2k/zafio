@@ -3,6 +3,8 @@
 #define __IO_H__
 
 #define SCREEN_CHAR_SIZE 2
+#define SCREEN_ROWS 25
+#define SCREEN_COLS 80
 
 #include "../inc/memlayout.h"
 #include "../inc/sched.h"

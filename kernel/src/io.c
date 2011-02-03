@@ -3,8 +3,6 @@
 #include "../inc/io.h"
 #include "../inc/debug.h"
 
-#define SCREEN_ROWS 25
-#define SCREEN_COLS 80
 #define SCREEN_ROW_SIZE (SCREEN_COLS*SCREEN_CHAR_SIZE)
 #define SCREEN_BEGIN VIDEO_VIRT_ADDR
 #define SCREEN_END (VIDEO_VIRT_ADDR + SCREEN_ROWS*SCREEN_COLS*SCREEN_CHAR_SIZE)
