@@ -23,6 +23,8 @@ static void command_use_error();
 static void print_shell_use();
 static void print_ps(char *mode);
 static void print_ls(char *mode);
+static void do_run(char *progname);
+static void do_runbg(char *progname);
 static char *skip_spaces(char* str);
 static char *get_word(char** str);
 
@@ -67,8 +69,10 @@ int main() {
                 //Resetear
             } else if (strcmp(RUN, command_str) == 0) {
                 //Ejecutar un programa en foreground
+                do_run(param_str);
             } else if (strcmp(RUN_BG, command_str) == 0) {
                 //Ejecutar un programa en background
+                do_runbg(param_str);
             } else
                 command_use_error();
         }
@@ -118,6 +122,15 @@ static void print_ls(char *mode) {
 
         write_line(result_buf);
     }
+}
+
+static void do_run(char *progname) {
+    run(0, progname);
+    write_line("Done!");
+}
+
+static void do_runbg(char *progname) {
+    run(1, progname);
 }
 
 void command_use_error() {

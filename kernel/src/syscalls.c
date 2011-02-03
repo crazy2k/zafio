@@ -88,9 +88,9 @@ int sys_run(int mode, char *progname) {
     add_task(new_task);
 
     // Foreground
-    if (mode == 0) {
-        set_terminal_control(new_task);
-    }
+    //if (mode == 0) {
+    //    set_terminal_control(new_task);
+    //}
 
     return 0;
 }
