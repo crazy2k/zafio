@@ -7,7 +7,8 @@
 #include "../inc/syscalls.h"
 
 static void dev_terminal_callback();
-static void terminal_buffer_move(dev_terminal_t* terminal, int times);
+static void dev_terminal_buffer_move(dev_terminal_t* terminal, int times);
+static int dev_terminal_next_pos(dev_terminal_t* terminal);
 
 static void dev_terminal_proc_keys(int keyb_dev, int term_dev);
 
@@ -137,16 +138,16 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
             case 13:
                 if (terminal->len < DEV_TERMINAL_BUF_LENGTH) {
                     kputc('\n');
-                    terminal->buffer[terminal->start + terminal->len] = '\n';
-                    terminal_buffer_move(terminal,1);
+                    terminal->buffer[dev_terminal_next_pos(terminal)] = '\n';
+                    dev_terminal_buffer_move(terminal,1);
                 }
             break;
             //caracteres imprimibles
             case 32 ... 126:
                 if (terminal->len < DEV_TERMINAL_BUF_LENGTH - 1) {
                     kputc(chr);
-                    terminal->buffer[terminal->start + terminal->len] = chr;
-                    terminal_buffer_move(terminal,1);
+                    terminal->buffer[dev_terminal_next_pos(terminal)] = chr;
+                    dev_terminal_buffer_move(terminal,1);
                 }
             break;
 
@@ -158,7 +159,7 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
                     set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
                     kputc(' ');
                     set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
-                    terminal_buffer_move(terminal, -1);
+                    dev_terminal_buffer_move(terminal, -1);
                 }
             break;
 
@@ -166,7 +167,10 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
             case 9:
                 if (terminal->len < DEV_TERMINAL_BUF_LENGTH - 4) {
                     kputs("    ");
-                    terminal_buffer_move(terminal, 4);
+                    for (int i = 0; i < 4; i++) {                        
+                        terminal->buffer[dev_terminal_next_pos(terminal)] = ' ';
+                        dev_terminal_buffer_move(terminal, 1);
+                    }
                 }
             break;
 
@@ -212,7 +216,11 @@ int dev_terminal_read(int from, char *buf, int bufsize) {
     return chars;
 }
 
-void terminal_buffer_move(dev_terminal_t* terminal, int times) {
+static int dev_terminal_next_pos(dev_terminal_t* terminal) {
+    return (terminal->start + terminal->len) % DEV_TERMINAL_BUF_LENGTH;
+}
+
+void dev_terminal_buffer_move(dev_terminal_t* terminal, int times) {
     terminal->len += times;
     if (times > 0) {
         if (terminal->len > DEV_TERMINAL_BUF_LENGTH)
