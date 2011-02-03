@@ -46,20 +46,36 @@ int sys_ls(int mode, char *buf, int bufsize) {
     return end;
 }
 
+#define PS_COL_SIZE 10
 int sys_ps(int mode, char *buf, int bufsize) {
     int end = 0;
     if (mode == 0) {
         task_t *first, *curr;
         first = curr = current_task();
 
-        buf[0] = '\0';
+        char *headers[] = { "PROGNAME", "PID", "QUANTUM" };
+        strcolumns(buf, bufsize, PS_COL_SIZE, headers,
+            sizeof(headers)/sizeof(char *));
+
         do {
-            strconcat(buf, bufsize, curr->prog->name);
-            end = strconcat(buf, bufsize, SYSCALLS_SEP);
-            
+            char row[SCREEN_COLS + 1] = { 0 };
+            strconcat(row, SCREEN_COLS + 1, "\n");
+
+            char pid[PS_COL_SIZE] = { 0 };
+            char quantum[PS_COL_SIZE] = { 0 };
+            char *cols[] = {
+                    curr->prog->name,
+                    uitoa(curr->pid, pid),
+                    uitoa(curr->quantum, quantum),
+                };
+
+            strcolumns(row + 1, SCREEN_COLS, PS_COL_SIZE, cols,
+                sizeof(cols)/sizeof(char *));
+
+            end = strconcat(buf, bufsize, row);
+
             curr = curr->next;
         } while(curr != first);
-        buf[end] = '\0';
     }
     return end;
 }
