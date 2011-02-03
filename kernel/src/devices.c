@@ -136,9 +136,11 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
         switch (chr) {
             //carriage return:
             case 13:
-                kputc('\n');
-                terminal->buffer[dev_terminal_next_pos(terminal)] = '\n';
-                dev_terminal_buffer_move(terminal,1);
+                if (terminal->len < DEV_TERMINAL_BUF_LENGTH) {
+                    kputc('\n');
+                    terminal->buffer[dev_terminal_next_pos(terminal)] = '\n';
+                    dev_terminal_buffer_move(terminal,1);
+                }
             break;
             //caracteres imprimibles
             case 32 ... 126:
