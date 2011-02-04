@@ -99,6 +99,7 @@ struct task_t {
     // Informacion para el scheduling
     uint32_t quantum;
     uint32_t rem_quantum;
+    uint32_t ticks;
     bool io_wait;
     // Campo para identificacion del proceso
     uint32_t pid;

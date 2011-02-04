@@ -53,7 +53,7 @@ int sys_ps(int mode, char *buf, int bufsize) {
         task_t *first, *curr;
         first = curr = current_task();
 
-        char *headers[] = { "PROGNAME", "PID", "QUANTUM" };
+        char *headers[] = { "PROGNAME", "PID", "QUANTUM", "TICKS" };
         strcolumns(buf, bufsize, PS_COL_SIZE, headers,
             sizeof(headers)/sizeof(char *));
 
@@ -63,10 +63,12 @@ int sys_ps(int mode, char *buf, int bufsize) {
 
             char pid[PS_COL_SIZE] = { 0 };
             char quantum[PS_COL_SIZE] = { 0 };
+            char ticks[PS_COL_SIZE] = { 0 };
             char *cols[] = {
                     curr->prog->name,
                     uitoa(curr->pid, pid),
                     uitoa(curr->quantum, quantum),
+                    uitoa(curr->ticks, ticks),
                 };
 
             strcolumns(row + 1, SCREEN_COLS, PS_COL_SIZE, cols,

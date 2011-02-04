@@ -51,6 +51,7 @@ void sched_init() {
 
     init->io_wait = FALSE;
 
+    init->ticks = 0;
     init->quantum = SCHED_QUANTUM;
     restart_quantum(init);
     
@@ -197,6 +198,7 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
 
     task->io_wait = FALSE;
 
+    task->ticks = 0;
     task->quantum = SCHED_QUANTUM;
     restart_quantum(task);
     
@@ -273,10 +275,7 @@ void switch_tasks() {
 void switch_if_needed(uint32_t ticks) {
     task_t *current = current_task();
     current->rem_quantum--;
-    kputs(current->prog->name);
-    kputs("\n");
-    kputd(current->rem_quantum);
-    kputs("\n");
+    current->ticks++;
 
     if (!current->rem_quantum) {
         restart_quantum(current);
