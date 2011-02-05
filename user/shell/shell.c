@@ -14,6 +14,7 @@
 #define REBOOT "reboot"
 #define RUN "run"
 #define RUN_BG "bg"
+#define NICE "nice"
 
 
 char line_buffer[BUFF_LEN];
@@ -27,10 +28,11 @@ static void do_run(char *progname);
 static void do_runbg(char *progname);
 static char *skip_spaces(char* str);
 static char *get_word(char** str);
+static void do_nice(char *process, char *value);
 
 int main() {
     int count;
-    char *rest, *command_str, *param_str;
+    char *rest, *command_str, *param_str, *param2_str;
 
     //Inicializar terminal... 
 
@@ -54,6 +56,7 @@ int main() {
             command_str = get_word(&rest);
             rest = skip_spaces(rest);
             param_str = get_word(&rest);
+            param2_str = get_word(&rest);
 
             if (strcmp(HELP, command_str) == 0) {
                 print_shell_use();
@@ -73,7 +76,10 @@ int main() {
             } else if (strcmp(RUN_BG, command_str) == 0) {
                 //Ejecutar un programa en background
                 do_runbg(param_str);
-            } else
+            } else if (strcmp(NICE, command_str) == 0) {
+                //Ejecutar un programa en background
+                do_nice(param_str, param2_str);
+            }  else
                 command_use_error();
         }
     }
@@ -131,6 +137,10 @@ static void do_run(char *progname) {
 
 static void do_runbg(char *progname) {
     run(1, progname);
+}
+
+static void do_nice(char *process, char *value) {
+    nice(strtoi(process), strtoi(value));
 }
 
 void command_use_error() {

@@ -29,6 +29,7 @@ dev_screen_t screen = {
 
 int dev_screen_write(int to, char *buf, int bufsize) {
     kputs(buf);
+    return 0;
 }
 
 

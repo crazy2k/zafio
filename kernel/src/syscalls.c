@@ -97,6 +97,20 @@ int sys_run(int mode, char *progname) {
     return 0;
 }
 
+int sys_nice(uint32_t pid, uint32_t value) {
+    task_t *first, *curr;
+    first = curr = current_task();
+    do {
+        if (curr->pid == pid) {
+            curr->quantum = value;
+            return 0;
+        }
+        curr = curr->next;
+    } while(curr != first);
+
+    return -1;
+}
+
 int sys_termreq() {
     if (!get_terminal_control()) {
         set_terminal_control(current_task());

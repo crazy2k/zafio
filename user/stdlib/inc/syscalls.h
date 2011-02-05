@@ -12,6 +12,7 @@
 #define SYSCALLS_NUM_PS 6
 #define SYSCALLS_NUM_RUN 7
 #define SYSCALLS_NUM_TERMREQ 8
+#define SYSCALLS_NUM_NICE 9
 
 
 uint32_t syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx,

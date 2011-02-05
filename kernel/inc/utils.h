@@ -26,4 +26,6 @@ char *align(unsigned int n, char *out, char *in, int outsize);
 
 char *strcolumns(char *dest, int dest_size, int al, char **srcarr, int src_len);
 
+char *uitoa(unsigned int n, char *str);
+
 #endif

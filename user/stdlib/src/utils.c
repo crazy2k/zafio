@@ -36,3 +36,21 @@ int strcmp(char * src, char * dst) {
 
     return ret;
 }
+
+int power(int x, int y) {
+    int res = 1;
+    for (int i = 0; i < y; i++)
+        res *= x;
+    return res;
+}
+
+int strtoi(char *str) {
+    int zeroes = strlen(str) - 1;
+    int number = 0;
+    for (int i = 0; str[i] != '\0'; i++) {
+        int d = str[i] - '0';
+        number += d*power(10, zeroes);
+        zeroes--;
+    }
+    return number;
+}
