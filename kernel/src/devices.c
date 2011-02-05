@@ -139,7 +139,7 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
                 if (terminal->len < DEV_TERMINAL_BUF_LENGTH) {
                     kputc('\n');
                     terminal->buffer[dev_terminal_next_pos(terminal)] = '\n';
-                    dev_terminal_buffer_move(terminal,1);
+                    terminal->len++;
                 }
             break;
             //caracteres imprimibles
@@ -147,7 +147,7 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
                 if (terminal->len < DEV_TERMINAL_BUF_LENGTH - 1) {
                     kputc(chr);
                     terminal->buffer[dev_terminal_next_pos(terminal)] = chr;
-                    dev_terminal_buffer_move(terminal,1);
+                    terminal->len++;
                 }
             break;
 
@@ -159,7 +159,7 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
                     set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
                     kputc(' ');
                     set_current_pos(cur_pos - SCREEN_CHAR_SIZE);
-                    dev_terminal_buffer_move(terminal, -1);
+                    terminal->len--;
                 }
             break;
 
@@ -169,7 +169,7 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
                     kputs("    ");
                     for (int i = 0; i < 4; i++) {                        
                         terminal->buffer[dev_terminal_next_pos(terminal)] = ' ';
-                        dev_terminal_buffer_move(terminal, 1);
+                        terminal->len++;
                     }
                 }
             break;
@@ -218,13 +218,4 @@ int dev_terminal_read(int from, char *buf, int bufsize) {
 
 static int dev_terminal_next_pos(dev_terminal_t* terminal) {
     return (terminal->start + terminal->len) % DEV_TERMINAL_BUF_LENGTH;
-}
-
-void dev_terminal_buffer_move(dev_terminal_t* terminal, int times) {
-    terminal->len += times;
-    if (terminal->len > DEV_TERMINAL_BUF_LENGTH)
-        terminal->len = DEV_TERMINAL_BUF_LENGTH;
-         
-    else if (terminal->len < 0)
-        terminal->len = 0;
 }
