@@ -8,8 +8,8 @@
 #include "../inc/debug.h"
 
 void sys_exit(task_t *task) {
-    if (get_terminal_control() == current_task())
-        set_terminal_control(get_past_terminal_control());
+    //if (get_terminal_control() == current_task())
+    //    set_terminal_control(get_past_terminal_control());
 
     // Quitamos la tarea de la lista de tareas
     remove_task(task);
