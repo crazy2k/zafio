@@ -1,5 +1,6 @@
 #include "../inc/types.h"
 #include "../inc/io.h"
+#include "../inc/utils.h"
 
 int strcmp(char * src, char * dst) {
     int ret = 0 ;

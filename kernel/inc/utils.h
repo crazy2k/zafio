@@ -14,7 +14,7 @@ long min(long var1, long var2);
 
 void kpanic(char *msg);
 
-char sc2ascii(char sc);
+char sc2ascii(unsigned char sc);
 
 int strcmp(char * src, char * dst);
 
