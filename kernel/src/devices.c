@@ -7,7 +7,7 @@
 #include "../inc/syscalls.h"
 
 static void dev_terminal_callback();
-static void dev_terminal_buffer_move(dev_terminal_t* terminal, int times);
+//static void dev_terminal_buffer_move(dev_terminal_t* terminal, int times);
 static int dev_terminal_next_pos(dev_terminal_t* terminal);
 
 static void dev_terminal_proc_keys(int keyb_dev, int term_dev);
