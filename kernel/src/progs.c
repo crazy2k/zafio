@@ -30,8 +30,10 @@ void free_user_memory(uint32_t pd[]) {
         if (pd[i] & PDE_P) {
             for (int j = 0; j < TABLE_TOTAL_ENTRIES; j++) {
                 void *vaddr = (void*) (PAGE_4MB_SIZE * i) + (PAGE_SIZE * j);
-                if (*get_pte(pd,vaddr) & PTE_P) 
-                    free_page(pd,vaddr);
+                if (*get_pte(pd,vaddr) & PTE_P) {
+                    if (vaddr != START_TASK_VIRT_ADDR)
+                        free_page(pd,vaddr);
+                }
             }
         free_page(pd, KVIRTADDR(PDE_PT_BASE(pd[i])));
         }
