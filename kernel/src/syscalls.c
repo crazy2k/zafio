@@ -24,11 +24,17 @@ void sys_exit(task_t *task) {
 }
 
 int sys_read(int from, char *buf, int bufsize) {
-    return devs[from]->read(from, buf, bufsize);
+    if (devs[from]->access == current_task())
+        return devs[from]->read(from, buf, bufsize);
+    else
+        return -1;
 }
 
 int sys_write(int to, char *buf, int bufsize) {
-    return devs[to]->write(to, buf, bufsize);
+    if (devs[to]->access == current_task())
+        return devs[to]->write(to, buf, bufsize);
+    else
+        return -1;
 }
 
 #define SYSCALLS_SEP ("    ")
@@ -82,17 +88,12 @@ int sys_ps(int mode, char *buf, int bufsize) {
     return end;
 }
 
-int sys_run(int mode, char *progname) {
+int sys_run(char *progname) {
     program_t *prog = get_prog_by_name(progname);
 
     uint32_t *pd = clone_pd(kernel_pd);
     task_t *new_task = create_task(pd, prog);
     add_task(new_task);
-
-    // Foreground
-    //if (mode == 0) {
-    //    set_terminal_control(new_task);
-    //}
 
     return 0;
 }
@@ -111,10 +112,26 @@ int sys_nice(uint32_t pid, uint32_t value) {
     return -1;
 }
 
-int sys_termreq() {
-    if (!get_terminal_control()) {
-        set_terminal_control(current_task());
+int sys_devreq(int devnum) {
+    if ((devnum < 0) || (devnum >= DEV_MAX))
+        return -1;
+
+    if (devs[devnum]->access == NULL) {
+        devs[devnum]->access = current_task();
         return 0;
     }
-    return -1;
+    else
+        return -1;
+}
+
+int sys_devrel(int devnum) {
+    if ((devnum < 0) || (devnum >= DEV_MAX))
+        return -1;
+
+    if (devs[devnum]->access == current_task()) {
+        devs[devnum]->access = NULL;
+        return 0;
+    }
+    else
+        return -1;
 }

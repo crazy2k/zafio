@@ -17,7 +17,8 @@
 #define INCLUDE_DEVICE() \
     int (*read)(int from, char *buf, int bufsize); \
     int (*write)(int to, char *buf, int bufsize); \
-    task_t *waiting_task;
+    task_t *waiting_task; \
+    task_t *access;
 
 
 

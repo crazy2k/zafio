@@ -25,6 +25,7 @@ dev_screen_t screen = {
     .read = NULL,
     .write = dev_screen_write,
     .waiting_task = NULL,
+    .access = NULL,
 };
 
 int dev_screen_write(int to, char *buf, int bufsize) {
@@ -42,6 +43,7 @@ dev_keyboard_t keyboard = {
     .read = dev_keyboard_read,
     .write = NULL,
     .waiting_task = NULL,
+    .access = NULL,
 
     .buffer = { NULL },
     .idx = 0,
@@ -106,6 +108,7 @@ dev_terminal_t terminal = {
     .read = dev_terminal_read,
     .write = dev_screen_write,
     .waiting_task = NULL,
+    .access = NULL,
 
     .buffer = { NULL },
     .start = 0,

@@ -201,10 +201,13 @@ static void syscalls_isr(uint32_t index, uint32_t error_code, task_state_t *st) 
         st->eax = sys_ps(st->ebx, (char *)st->ecx, st->edx);
     }
     else if (st->eax == SYSCALLS_NUM_RUN) {
-        st->eax = sys_run(st->ebx, (char *)st->ecx);
+        st->eax = sys_run((char *)st->ebx);
     }
-    else if (st->eax == SYSCALLS_NUM_TERMREQ) {
-        st->eax = sys_termreq();
+    else if (st->eax == SYSCALLS_NUM_DEVREQ) {
+        st->eax = sys_devreq(st->ebx);
+    }
+    else if (st->eax == SYSCALLS_NUM_DEVREL) {
+        st->eax = sys_devrel(st->ebx);
     }
     else if (st->eax == SYSCALLS_NUM_NICE) {
         st->eax = sys_nice(st->ebx, st->ecx);

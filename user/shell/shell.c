@@ -131,12 +131,11 @@ static void print_ls(char *mode) {
 }
 
 static void do_run(char *progname) {
-    run(0, progname);
-    write_line("Done!");
+    run(progname);
 }
 
 static void do_runbg(char *progname) {
-    run(1, progname);
+    run(progname);
 }
 
 static void do_nice(char *process, char *value) {

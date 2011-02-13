@@ -8,6 +8,7 @@
 #include "../inc/io.h"
 #include "../inc/elf_helpers.h"
 #include "../inc/init.h"
+#include "../inc/devices.h"
 
 // Un EFLAGS con defaults razonables
 #define SCHED_COMMON_EFLAGS 0x3202
@@ -68,7 +69,6 @@ void sched_init() {
     sti();
 
     init_task();
-
 }
 
 /* Si no existe la TSS, crea una y la configura con los valores para el

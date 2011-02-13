@@ -4,7 +4,7 @@
 
 int ps(int mode, char *buf, int buf_size);
 int ls(int mode, char *buf, int buf_size);
-int run(int mode, char *progname);
+int run(char *progname);
 int nice(int process, int value);
 
 #endif

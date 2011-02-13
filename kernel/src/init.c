@@ -21,7 +21,7 @@ void init_task() {
 
     // Creamos los nuevos task_t para las tareas de inicio
     for (int i = 0; i < INIT_PROGNAMES_SIZE; i++) {
-        sys_run(0, init_prognames[i]);
+        sys_run(init_prognames[i]);
     }
 
     /*
