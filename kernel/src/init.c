@@ -20,11 +20,7 @@ void init_task() {
 
     // Creamos los nuevos task_t para las tareas de inicio
     for (int i = 0; i < INIT_PROGNAMES_SIZE; i++) {
-        program_t *prog;
-        if ((prog = get_prog_by_name(init_prognames[i]))) {
-            uint32_t *pd = clone_pd(kernel_pd);
-            add_task(create_task(pd, prog));
-        }
+        sys_run(0, init_prognames[i]);
     }
 
     /*
