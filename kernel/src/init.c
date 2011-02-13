@@ -4,6 +4,7 @@
 #include "../inc/debug.h"
 #include "../inc/sched.h"
 #include "../inc/utils.h"
+#include "../inc/syscalls.h"
 
 static void welcome_msg();
 
