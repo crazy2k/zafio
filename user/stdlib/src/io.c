@@ -50,18 +50,18 @@ void write_line(char* str) {
     write(TERMINAL, "\n", 2);
 }
 
-int read(int dev, char *buf, int buf_size) {
-    return syscall(SYSCALLS_NUM_READ, dev, (uint32_t)buf, buf_size, 0, 0);
+int read(uint32_t from, char *buf, uint32_t bufsize) {
+    return syscall(SYSCALLS_NUM_READ, from, (uint32_t)buf, bufsize, 0, 0);
 }
     
-int write(int dev, char *buf, int buf_size) {
-    return syscall(SYSCALLS_NUM_WRITE, dev, (uint32_t)buf, buf_size, 0, 0);
+int write(uint32_t to, char *buf, uint32_t bufsize) {
+    return syscall(SYSCALLS_NUM_WRITE, to, (uint32_t)buf, bufsize, 0, 0);
 }
 
-int devreq(int devnum) {
+int devreq(uint32_t devnum) {
     return syscall(SYSCALLS_NUM_DEVREQ, devnum, 0, 0, 0, 0);
 }
 
-int devrel(int devnum) {
+int devrel(uint32_t devnum) {
     return syscall(SYSCALLS_NUM_DEVREL, devnum, 0, 0, 0, 0);
 }

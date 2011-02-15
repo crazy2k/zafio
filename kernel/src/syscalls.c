@@ -23,14 +23,14 @@ void sys_exit(task_t *task) {
     switch_tasks();
 }
 
-int sys_read(int from, char *buf, int bufsize) {
+int sys_read(uint32_t from, char *buf, uint32_t bufsize) {
     if (devs[from]->access == current_task())
         return devs[from]->read(from, buf, bufsize);
     else
         return -1;
 }
 
-int sys_write(int to, char *buf, int bufsize) {
+int sys_write(uint32_t to, char *buf, uint32_t bufsize) {
     if (devs[to]->access == current_task())
         return devs[to]->write(to, buf, bufsize);
     else
@@ -39,7 +39,7 @@ int sys_write(int to, char *buf, int bufsize) {
 
 #define SYSCALLS_SEP ("    ")
 
-int sys_ls(int mode, char *buf, int bufsize) {
+int sys_ls(uint32_t mode, char *buf, uint32_t bufsize) {
     int end = 0;
     if (mode == 0) {
         buf[0] = '\0';
@@ -53,7 +53,7 @@ int sys_ls(int mode, char *buf, int bufsize) {
 }
 
 #define PS_COL_SIZE 10
-int sys_ps(int mode, char *buf, int bufsize) {
+int sys_ps(uint32_t mode, char *buf, uint32_t bufsize) {
     int end = 0;
     if (mode == 0) {
         task_t *first, *curr;
@@ -112,7 +112,7 @@ int sys_nice(uint32_t pid, uint32_t value) {
     return -1;
 }
 
-int sys_devreq(int devnum) {
+int sys_devreq(uint32_t devnum) {
     if ((devnum < 0) || (devnum >= DEV_MAX))
         return -1;
 
@@ -124,7 +124,7 @@ int sys_devreq(int devnum) {
         return -1;
 }
 
-int sys_devrel(int devnum) {
+int sys_devrel(uint32_t devnum) {
     if ((devnum < 0) || (devnum >= DEV_MAX))
         return -1;
 
@@ -135,3 +135,6 @@ int sys_devrel(int devnum) {
     else
         return -1;
 }
+
+
+int sys_waitpid(uint32_t pid) { }

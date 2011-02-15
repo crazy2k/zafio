@@ -2,9 +2,10 @@
 
 #define __SCHED_H__
 
-int ps(int mode, char *buf, int buf_size);
-int ls(int mode, char *buf, int buf_size);
+int ps(uint32_t mode, char *buf, uint32_t bufsize);
+int ls(uint32_t mode, char *buf, uint32_t bufsize);
 int run(char *progname);
-int nice(int process, int value);
+int nice(uint32_t pid, uint32_t value);
+int waitpid(uint32_t pid);
 
 #endif
