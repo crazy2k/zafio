@@ -51,6 +51,8 @@ void sched_init() {
     init->kernel_stack_limit = KERNEL_STACK_BOTTOM;
 
     init->waiting = FALSE;
+    init->waited = FALSE;
+    init->parent = NULL;
 
     init->ticks = 0;
     init->quantum = SCHED_QUANTUM;
@@ -197,6 +199,8 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
     task->pd = pd;
 
     task->waiting = FALSE;
+    task->waited = FALSE;
+    task->parent = NULL;
 
     task->ticks = 0;
     task->quantum = SCHED_QUANTUM;
@@ -283,3 +287,13 @@ void switch_if_needed(uint32_t ticks) {
     }
 }
 
+task_t *get_task_by_pid(uint32_t pid) {
+    task_t *first, *curr;
+    first = curr = current_task();
+    do {
+        if (curr->pid == pid)
+            return curr;
+        curr = curr->next;
+    } while(curr != first);
+    return NULL;
+}

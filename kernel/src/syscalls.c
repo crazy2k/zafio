@@ -20,6 +20,9 @@ void sys_exit(task_t *task) {
     // cuando ocurra la siguiente interrupcion del timer.
     put_zombie(task);
 
+    if (task->waited != NULL)
+        task->parent->waiting = FALSE;
+
     switch_tasks();
 }
 
@@ -95,21 +98,18 @@ int sys_run(char *progname) {
     task_t *new_task = create_task(pd, prog);
     add_task(new_task);
 
+    new_task->parent = current_task();
+
     return new_task->pid;
 }
 
 int sys_nice(uint32_t pid, uint32_t value) {
-    task_t *first, *curr;
-    first = curr = current_task();
-    do {
-        if (curr->pid == pid) {
-            curr->quantum = value;
-            return 0;
-        }
-        curr = curr->next;
-    } while(curr != first);
+    task_t *task = get_task_by_pid(pid);
+    if (task == NULL)
+        return -1;
 
-    return -1;
+    task->quantum = value;
+    return 0;
 }
 
 int sys_devreq(uint32_t devnum) {
@@ -137,4 +137,16 @@ int sys_devrel(uint32_t devnum) {
 }
 
 
-int sys_waitpid(uint32_t pid) { }
+int sys_waitpid(uint32_t pid) {
+    current_task()->waiting = TRUE;
+
+    task_t *task = get_task_by_pid(pid);
+    if (task == NULL)
+        return -1;
+
+    task->waited = TRUE;
+
+    switch_tasks();
+
+    return 0;
+}

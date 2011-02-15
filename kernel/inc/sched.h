@@ -101,6 +101,8 @@ struct task_t {
     uint32_t rem_quantum;
     uint32_t ticks;
     bool waiting;
+    task_t *parent;
+    bool waited;
     // Campo para identificacion del proceso
     uint32_t pid;
 
@@ -132,5 +134,7 @@ task_t *current_task();
 void put_zombie(task_t *task);
 
 void kill_zombies();
+
+task_t *get_task_by_pid(uint32_t pid);
 
 #endif
