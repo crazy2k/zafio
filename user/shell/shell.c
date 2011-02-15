@@ -135,7 +135,17 @@ static void print_ls(char *mode) {
 }
 
 static void do_run(char *progname) {
-    run(progname);
+    devrel(KEYBOARD);
+    devrel(SCREEN);
+    devrel(TERMINAL);
+
+    int pid = run(progname);
+    waitpid(pid);
+
+    devreq(KEYBOARD);
+    devreq(SCREEN);
+    devreq(TERMINAL);
+
 }
 
 static void do_runbg(char *progname) {

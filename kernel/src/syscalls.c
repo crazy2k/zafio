@@ -95,7 +95,7 @@ int sys_run(char *progname) {
     task_t *new_task = create_task(pd, prog);
     add_task(new_task);
 
-    return 0;
+    return new_task->pid;
 }
 
 int sys_nice(uint32_t pid, uint32_t value) {
