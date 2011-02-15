@@ -13,7 +13,7 @@ static int dev_terminal_next_pos(dev_terminal_t* terminal);
 static void dev_terminal_proc_keys(int keyb_dev, int term_dev);
 
 void dev_awake_task(dev_device_t *dev) {
-    dev->waiting_task->io_wait = FALSE;
+    dev->waiting_task->waiting = FALSE;
     dev->waiting_task = NULL;
 }
 
@@ -79,14 +79,14 @@ int dev_keyboard_read(int from, char *buf, int bufsize) {
 
     // Si no hay nada en el buffer, bloquear
     if (keyboard->idx <= 0) {
-        current_task()->io_wait = TRUE;
+        current_task()->waiting = TRUE;
 
         keyboard->waiting_task = current_task();
 
         switch_tasks();
     }
 
-    current_task()->io_wait = FALSE;
+    current_task()->waiting = FALSE;
 
     int i, j;
     for (i = 0, j = 0; i <= keyboard->idx; i++) {
@@ -202,13 +202,13 @@ int dev_terminal_read(int from, char *buf, int bufsize) {
 
         // Si no hay nada en el buffer, bloquear
         if (new_line == -1) {
-            current_task()->io_wait = TRUE;
+            current_task()->waiting = TRUE;
             terminal->waiting_task = current_task();
             switch_tasks();
         }
     } while (new_line == -1);
 
-    current_task()->io_wait = FALSE;
+    current_task()->waiting = FALSE;
     int chars = new_line + 1; //Cantidad de caracteres a copiar
 
     for (int j = 0, i = terminal->start; j < chars; j++, i++)

@@ -50,7 +50,7 @@ void sched_init() {
     init->kernel_stack = KERNEL_STACK_TOP;
     init->kernel_stack_limit = KERNEL_STACK_BOTTOM;
 
-    init->io_wait = FALSE;
+    init->waiting = FALSE;
 
     init->ticks = 0;
     init->quantum = SCHED_QUANTUM;
@@ -196,7 +196,7 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
 
     task->pd = pd;
 
-    task->io_wait = FALSE;
+    task->waiting = FALSE;
 
     task->ticks = 0;
     task->quantum = SCHED_QUANTUM;
@@ -262,7 +262,7 @@ void switch_tasks() {
     task_t *current_candidate = old_task->next;
     // Buscamos una tarea que no este esperando I/O. Siempre hay al menos una
     // (init).
-    while (current_candidate->io_wait)
+    while (current_candidate->waiting)
         current_candidate = current_candidate->next;
 
     task_list = current_candidate;
