@@ -36,6 +36,10 @@ int main() {
 
     //Inicializar terminal... 
 
+    devreq(KEYBOARD);
+    devreq(SCREEN);
+    devreq(TERMINAL);
+
     while(TRUE) {
         write(TERMINAL, PROMPT, strlen(PROMPT));
         count = read_line(line_buffer, BUFF_LEN);

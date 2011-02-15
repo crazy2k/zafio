@@ -131,7 +131,7 @@ void dev_terminal_proc_keys(int keyb_dev, int term_dev) {
     dev_terminal_t *terminal = (dev_terminal_t *)devs[term_dev];
 
     static char buff[DEV_KEYBOARD_BUF_LENGTH] = {0};
-    int keys = sys_read(keyb_dev, buff, sizeof(buff)); 
+    int keys = devs[keyb_dev]->read(keyb_dev, buff, sizeof(buff));
     void *cur_pos = NULL;
 
     for (int i = 0; i < keys; i++) {
