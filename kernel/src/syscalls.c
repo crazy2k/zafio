@@ -56,13 +56,21 @@ int sys_ls(uint32_t mode, char *buf, uint32_t bufsize) {
 }
 
 #define PS_COL_SIZE 10
+static char *task_state(task_t *task) {
+    if (task->waiting)
+        return "WAITING";
+    if (task == current_task())
+        return "RUNNING";
+
+    return "READY";
+}
 int sys_ps(uint32_t mode, char *buf, uint32_t bufsize) {
     int end = 0;
     if (mode == 0) {
         task_t *first, *curr;
         first = curr = current_task();
 
-        char *headers[] = { "PROGNAME", "PID", "QUANTUM", "TICKS" };
+        char *headers[] = { "PROGNAME", "PID", "QUANTUM", "TICKS", "STATE" };
         strcolumns(buf, bufsize, PS_COL_SIZE, headers,
             sizeof(headers)/sizeof(char *));
 
@@ -78,6 +86,7 @@ int sys_ps(uint32_t mode, char *buf, uint32_t bufsize) {
                     uitoa(curr->pid, pid),
                     uitoa(curr->quantum, quantum),
                     uitoa(curr->ticks, ticks),
+                    task_state(curr),
                 };
 
             strcolumns(row + 1, SCREEN_COLS, PS_COL_SIZE, cols,
