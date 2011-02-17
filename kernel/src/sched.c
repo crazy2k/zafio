@@ -8,12 +8,14 @@
 #include "../inc/io.h"
 #include "../inc/elf_helpers.h"
 #include "../inc/init.h"
+#include "../inc/devices.h"
 
 // Un EFLAGS con defaults razonables
 #define SCHED_COMMON_EFLAGS 0x3202
 
 extern void load_state();
 extern void initialize_task(task_t *task);
+extern void wait_for_interrupt();
 extern void start_task(int (*main)());
 
 // TSS del sistema. Su valor de esp0 se actualiza en los cambios de contexto.
@@ -25,12 +27,16 @@ task_t *task_list = NULL;
 // Tarea para ser removida. Inicialmente ninguna.
 task_t *zombie_task = NULL;
 
+//Contador de process pids
+uint32_t pid_counter = 0;
+
 static void link_tasks(task_t *fst, task_t *sec);
 
 static void initialize_task_state(task_state_t *st, void *entry_point,
     void *stack_pointer);
 static void switch_context(task_t *old_task, task_t *new_task);
 static void restart_quantum(task_t *task);
+static uint32_t get_next_pid();
 
 void sched_init() {
 
@@ -45,8 +51,15 @@ void sched_init() {
     init->kernel_stack = KERNEL_STACK_TOP;
     init->kernel_stack_limit = KERNEL_STACK_BOTTOM;
 
+    init->waiting = FALSE;
+    init->waited = FALSE;
+    init->parent = NULL;
+
+    init->ticks = 0;
     init->quantum = SCHED_QUANTUM;
     restart_quantum(init);
+    
+    init->pid = get_next_pid();
 
     // El stack de nivel 0 no interesa. Deberia sobreescribirse al cambiar de
     // tarea. Ademas, como estamos en espacio de kernel, no se deberia utilizar
@@ -59,7 +72,6 @@ void sched_init() {
     sti();
 
     init_task();
-
 }
 
 /* Si no existe la TSS, crea una y la configura con los valores para el
@@ -168,6 +180,10 @@ static void initialize_task_state(task_state_t *st, void *entry_point,
     st->esp = (uint32_t)stack_pointer;
 }
 
+static uint32_t get_next_pid() {
+    return ++pid_counter;
+}
+
 static void restart_quantum(task_t *task) {
     task->rem_quantum = task->quantum;
 }
@@ -183,8 +199,15 @@ task_t *create_task(uint32_t pd[], struct program_t *prog) {
 
     task->pd = pd;
 
+    task->waiting = FALSE;
+    task->waited = FALSE;
+    task->parent = NULL;
+
+    task->ticks = 0;
     task->quantum = SCHED_QUANTUM;
     restart_quantum(task);
+    
+    task->pid = get_next_pid();
 
     // Alojamos memoria para el stack del kernel de la tarea
     task->kernel_stack = new_kernel_page();
@@ -240,7 +263,30 @@ void switch_tasks() {
     uint32_t eflags = disable_interrupts();
 
     task_t *old_task = current_task();
-    task_list = old_task->next;
+
+    task_t *current_candidate = old_task->next;
+    task_t *first_candidate = current_candidate;
+    task_t *selected = NULL;
+    // Buscamos una tarea que este lista para ejecutarse. Si no hay ninguna,
+    // hacemos halt hasta que ocurra una interrupcion.
+    do {
+        do {
+            if (!(current_candidate->waiting)) {
+                selected = current_candidate;
+                break;
+            }
+            current_candidate = current_candidate->next;
+        } while(current_candidate != first_candidate);
+        
+        if (selected == NULL) {
+            outb(PIC1_DATA, (PIC_ALL_ENABLED & (~PIC_TIMER)) | PIC_TIMER);
+            wait_for_interrupt();
+            outb(PIC1_DATA, PIC_ALL_ENABLED);
+        }
+
+    } while (selected == NULL);
+
+    task_list = selected;
 
     switch_context(old_task, current_task());
 
@@ -250,10 +296,7 @@ void switch_tasks() {
 void switch_if_needed(uint32_t ticks) {
     task_t *current = current_task();
     current->rem_quantum--;
-    kputs(current->prog->name);
-    kputs("\n");
-    kputd(current->rem_quantum);
-    kputs("\n");
+    current->ticks++;
 
     if (!current->rem_quantum) {
         restart_quantum(current);
@@ -261,3 +304,23 @@ void switch_if_needed(uint32_t ticks) {
     }
 }
 
+task_t *get_task_by_pid(uint32_t pid) {
+    task_t *first, *curr;
+    first = curr = current_task();
+    do {
+        if (curr->pid == pid)
+            return curr;
+        curr = curr->next;
+    } while(curr != first);
+    return NULL;
+}
+
+void kill_task(task_t *task) {
+    remove_task(task);
+
+    put_zombie(task);
+
+    if (task->waited != FALSE)
+        task->parent->waiting = FALSE;
+
+}

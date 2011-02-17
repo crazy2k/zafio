@@ -7,5 +7,7 @@ kernel/src/all_progs.c
 reftest/diskette.img
 deps
 user/*/deps
-user/**/*.o
+user/*/*.o
+user/stdlib/obj/
+user/lib/*.a
 tags

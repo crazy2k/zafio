@@ -1,15 +1,23 @@
-char *val = "Hola!\n";
+#include <io.h>
+
+char line_buffer[1024];
 
 int main() {
-    for (int i = 0; i < 9; i++) {
+    devreq(KEYBOARD);
+    devreq(SCREEN);
+    devreq(TERMINAL);
 
-        // Llamada al sistema 4
-        __asm__ __volatile__("mov %0, %%eax" : : "i" (4));
-        // Primer parametro
-        __asm__ __volatile__("mov %0, %%ebx" : : "m" (val));
-        // Llamar
-        __asm__ __volatile__("int $0x80" : :);
-    }
+    write(TERMINAL, "Nombre: ", 9);
+
+    read_line(line_buffer, 1024);
+
+    write(TERMINAL, "Hola ", 6);
+    write(TERMINAL, line_buffer, 1024);
+
+    devrel(KEYBOARD);
+    devrel(SCREEN);
+    devrel(TERMINAL);
+
     return 0;
 }
 

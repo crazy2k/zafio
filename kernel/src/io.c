@@ -1,10 +1,8 @@
 #include "../inc/memlayout.h"
 #include "../inc/utils.h"
 #include "../inc/io.h"
+#include "../inc/debug.h"
 
-#define SCREEN_ROWS 25
-#define SCREEN_COLS 80
-#define SCREEN_CHAR_SIZE 2
 #define SCREEN_ROW_SIZE (SCREEN_COLS*SCREEN_CHAR_SIZE)
 #define SCREEN_BEGIN VIDEO_VIRT_ADDR
 #define SCREEN_END (VIDEO_VIRT_ADDR + SCREEN_ROWS*SCREEN_COLS*SCREEN_CHAR_SIZE)
@@ -14,6 +12,18 @@
     SCREEN_ROW_SIZE) + SCREEN_BEGIN)
 
 void *current_pos = (void *)SCREEN_BEGIN;
+
+void* get_current_pos() {
+    return current_pos;
+}
+
+void set_current_pos(void * pos) {
+    if (SCREEN_BEGIN <= pos && pos < SCREEN_END) {
+        current_pos = pos;
+        /*update_cursor(((pos - SCREEN_BEGIN)/SCREEN_CHAR_SIZE) / SCREEN_COLS,
+            ((pos - SCREEN_BEGIN)/SCREEN_CHAR_SIZE) % SCREEN_COLS);*/
+    }
+}
 
 /*
  * Levanta los datos de la pantalla y ``current_pos`` una linea.
@@ -67,7 +77,8 @@ void kputc(char chr) {
 
         copychar(current_pos, chr);
 
-        current_pos += SCREEN_CHAR_SIZE;
+        set_current_pos(get_current_pos() + SCREEN_CHAR_SIZE);
+
     }
 }
 
@@ -122,6 +133,23 @@ void kputud(unsigned long int num) {
 
     kputs(&chars[i]);
 }
+
+task_t *terminal_control = NULL;
+task_t *past_terminal_control = NULL;
+
+task_t *get_terminal_control() {
+    return terminal_control;
+}
+
+task_t *get_past_terminal_control() {
+    return past_terminal_control;
+}
+
+void set_terminal_control(task_t *task) {
+    past_terminal_control = terminal_control;
+    terminal_control = task;
+}
+
 
 /*
  * TODO: Hacerla?

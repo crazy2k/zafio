@@ -4,7 +4,15 @@
 #include "../inc/mmu.h"
 #include "../inc/vmm.h"
 #include "../inc/debug.h"
+#include "../inc/utils.h"
 
+program_t *get_prog_by_name(char *name) {
+    for (int i = 0; i < programs_size; i++) {
+        if (strcmp(programs[i].name, name) == 0)
+            return &programs[i];
+    }
+    return NULL;
+}
 
 void load_task_image(task_t * task) {
     load_elf_proc_image(task->prog->file, task->pd); 
@@ -22,8 +30,10 @@ void free_user_memory(uint32_t pd[]) {
         if (pd[i] & PDE_P) {
             for (int j = 0; j < TABLE_TOTAL_ENTRIES; j++) {
                 void *vaddr = (void*) (PAGE_4MB_SIZE * i) + (PAGE_SIZE * j);
-                if (*get_pte(pd,vaddr) & PTE_P) 
-                    free_page(pd,vaddr);
+                if (*get_pte(pd,vaddr) & PTE_P) {
+                    if (vaddr != START_TASK_VIRT_ADDR)
+                        free_page(pd,vaddr);
+                }
             }
         free_page(pd, get_kvaddr(PDE_PT_BASE(pd[i])));
         }

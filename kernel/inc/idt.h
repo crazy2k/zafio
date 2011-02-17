@@ -67,6 +67,8 @@
 #define PIC_TIMER       0x1
 #define PIC_KB          0x2
 
+#define PIC_ALL_ENABLED ((~PIC_TIMER) & (~PIC_KB))
+
 // Funciones
 
 typedef void (*isr_t)(uint32_t index, uint32_t error_code, task_state_t *st);

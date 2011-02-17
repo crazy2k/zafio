@@ -3,20 +3,34 @@
 #include "../inc/progs.h"
 #include "../inc/debug.h"
 #include "../inc/sched.h"
+#include "../inc/utils.h"
+#include "../inc/syscalls.h"
 
 static void welcome_msg();
+
+char buf[1024];
+
+#define INIT_PROGNAMES_SIZE (sizeof(init_prognames)/sizeof(char *))
+
+char *init_prognames[] = { "shell" };
+
+
 
 void init_task() {
     welcome_msg();
 
-    // Creamos los nuevos task_t para las tareas
-    for (int i = 0; i < programs_size; i++) {
-        uint32_t *pd = clone_pd(kernel_pd);
-        add_task(create_task(pd, &programs[i]));
+    int pid;
+    // Creamos los nuevos task_t para las tareas de inicio
+    for (int i = 0; i < INIT_PROGNAMES_SIZE; i++) {
+        pid = sys_run(init_prognames[i]);
     }
 
-    while(1)
-        __asm__ __volatile__ ("hlt");
+    sys_waitpid(pid);
+
+    BOCHS_BREAK;
+
+    while (1)
+        switch_tasks();
 
 }
 

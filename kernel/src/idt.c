@@ -7,10 +7,10 @@
 #include "../inc/sched.h"
 #include "../inc/utils.h"
 #include "../inc/syscalls.h"
+#include "../inc/devices.h"
 
 
 static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st);
-static void keyboard_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 static void timer_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 static void pf_isr(uint32_t index, uint32_t error_code, task_state_t *st);
 static void syscalls_isr(uint32_t index, uint32_t error_code,
@@ -20,6 +20,7 @@ static void remap_PIC(char offset1, char offset2);
 
 // Arreglo de rutinas de atencion de excepciones/interrupciones
 isr_t isrs[IDT_LENGTH] = {NULL};
+
 
 void idt_init() {
 
@@ -38,7 +39,7 @@ void idt_init() {
     remap_PIC(PIC1_OFFSET, PIC2_OFFSET);
 
     // Desenmascaramos interrupciones en el PIC
-    outb(PIC1_DATA, ~PIC_TIMER);
+    outb(PIC1_DATA, PIC_ALL_ENABLED);
 }
 
 /* Registra una rutina de atencion ``isr`` para la excepcion/interrupcion cuyo
@@ -136,15 +137,6 @@ static void default_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
     BOCHS_BREAK;
 }
 
-static void keyboard_isr(uint32_t index, uint32_t error_code,
-    task_state_t *st) {
-
-    kputs("Teclado \n");
-    char c = inb(0x60);
-    kputui32((uint32_t)c);
-    kputs("\n");
-    BOCHS_BREAK;
-}
 
 static uint32_t timer_count = 0;
 static void timer_isr(uint32_t index, uint32_t error_code,
@@ -193,11 +185,37 @@ static void pf_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
     kpanic("Fallo de pagina!");
 }
 
-#define SYSCALLS_ISR_EXIT 1
-#define SYSCALLS_ISR_PUTS 4
 static void syscalls_isr(uint32_t index, uint32_t error_code, task_state_t *st) {
-    if (st->eax == SYSCALLS_ISR_EXIT)
+    if (st->eax == SYSCALLS_NUM_EXIT)
         sys_exit(current_task());
-    if (st->eax == SYSCALLS_ISR_PUTS)
-        sys_puts((char *)st->ebx);
+    else if (st->eax == SYSCALLS_NUM_READ) {
+        st->eax = sys_read(st->ebx, (char *)st->ecx, st->edx);
+    }
+    else if (st->eax == SYSCALLS_NUM_WRITE) {
+        st->eax = sys_write(st->ebx, (char *)st->ecx, st->edx);
+    }
+    else if (st->eax == SYSCALLS_NUM_LS) {
+        st->eax = sys_ls(st->ebx, (char *)st->ecx, st->edx);
+    }
+    else if (st->eax == SYSCALLS_NUM_PS) {
+        st->eax = sys_ps(st->ebx, (char *)st->ecx, st->edx);
+    }
+    else if (st->eax == SYSCALLS_NUM_RUN) {
+        st->eax = sys_run((char *)st->ebx);
+    }
+    else if (st->eax == SYSCALLS_NUM_DEVREQ) {
+        st->eax = sys_devreq(st->ebx);
+    }
+    else if (st->eax == SYSCALLS_NUM_DEVREL) {
+        st->eax = sys_devrel(st->ebx);
+    }
+    else if (st->eax == SYSCALLS_NUM_NICE) {
+        st->eax = sys_nice(st->ebx, st->ecx);
+    }
+    else if (st->eax == SYSCALLS_NUM_WAITPID) {
+        st->eax = sys_waitpid(st->ebx);
+    }
+    else if (st->eax == SYSCALLS_NUM_KILL) {
+        st->eax = sys_kill(st->ebx);
+    }
 }
