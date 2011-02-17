@@ -11,7 +11,6 @@
 #define ECHO "echo"
 #define PS "ps"
 #define LS "ls"
-#define REBOOT "reboot"
 #define RUN "run"
 #define RUN_BG "bg"
 #define NICE "nice"
@@ -74,8 +73,6 @@ int main() {
             } else if (strcmp(LS, command_str) == 0) {
                 //Imprimir lista de programas disponibles
                 print_ls(param_str);
-            } else if (strcmp(REBOOT, command_str) == 0) {
-                //Resetear
             } else if (strcmp(RUN, command_str) == 0) {
                 //Ejecutar un programa en foreground
                 do_run(param_str);
