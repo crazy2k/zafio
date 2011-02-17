@@ -169,5 +169,13 @@ void command_use_error() {
 }
 
 void print_shell_use() {
-    write_line("Ayudaaa!!!");
+    write_line("Comandos disponibles:");
+    write_line("help                muestra esta ayuda");
+    write_line("ls                  muestra la lista de programas disponibles");
+    write_line("ps                  muestra datos sobre los procesos del sistema");
+    write_line("run <programa>      ejecuta un programa en foreground");
+    write_line("bg <programa>       ejecuta un programa en background");
+    write_line("nice <pid> <valor>  cambia la prioridad de un proceso");
+    write_line("kill <pid>          mata un proceso");
+    write_line("echo <palabra>      imprime una palabra");
 }
