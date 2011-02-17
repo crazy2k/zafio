@@ -99,6 +99,7 @@ $(PROG_OBJS): install_user_progs
 clean:
 	rm -f $(ALL_PROGS_SOURCE)	
 	rm -f $(OBJSDIR)/*.o
+	rm -f $(PROGS_DIR)/*
 	rm -f $(KERNEL)
 	rm -f deps
 	rm -f $(REFTESTDIR)/diskette.img
