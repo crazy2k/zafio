@@ -137,4 +137,6 @@ void kill_zombies();
 
 task_t *get_task_by_pid(uint32_t pid);
 
+void kill_task(task_t *task);
+
 #endif

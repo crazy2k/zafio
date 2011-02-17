@@ -314,3 +314,13 @@ task_t *get_task_by_pid(uint32_t pid) {
     } while(curr != first);
     return NULL;
 }
+
+void kill_task(task_t *task) {
+    remove_task(task);
+
+    put_zombie(task);
+
+    if (task->waited != FALSE)
+        task->parent->waiting = FALSE;
+
+}
