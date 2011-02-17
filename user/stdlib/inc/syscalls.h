@@ -14,6 +14,7 @@
 #define SYSCALLS_NUM_DEVREL 9
 #define SYSCALLS_NUM_NICE 10
 #define SYSCALLS_NUM_WAITPID 11
+#define SYSCALLS_NUM_KILL 12
 
 uint32_t syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx,
     uint32_t esi, uint32_t edi);

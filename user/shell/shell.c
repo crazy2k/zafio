@@ -15,6 +15,7 @@
 #define RUN "run"
 #define RUN_BG "bg"
 #define NICE "nice"
+#define KILL "kill"
 
 
 char line_buffer[BUFF_LEN];
@@ -29,6 +30,7 @@ static void do_runbg(char *progname);
 static char *skip_spaces(char* str);
 static char *get_word(char** str);
 static void do_nice(char *process, char *value);
+static void do_kill(char *pid);
 
 int main() {
     int count;
@@ -81,8 +83,11 @@ int main() {
                 //Ejecutar un programa en background
                 do_runbg(param_str);
             } else if (strcmp(NICE, command_str) == 0) {
-                //Ejecutar un programa en background
+                //Cambiar prioridad de un proceso
                 do_nice(param_str, param2_str);
+            } else if (strcmp(KILL, command_str) == 0) {
+                //Ejecutar un programa en background
+                do_kill(param_str);
             }  else
                 command_use_error();
         }
@@ -154,6 +159,10 @@ static void do_runbg(char *progname) {
 
 static void do_nice(char *process, char *value) {
     nice(strtoi(process), strtoi(value));
+}
+
+static void do_kill(char *pid) {
+    kill(strtoi(pid));
 }
 
 void command_use_error() {

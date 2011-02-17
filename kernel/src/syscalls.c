@@ -146,3 +146,13 @@ int sys_waitpid(uint32_t pid) {
 
     return 0;
 }
+
+int sys_kill(uint32_t pid) {
+    task_t *task = get_task_by_pid(pid);
+    if (task == NULL)
+        return -1;
+
+    kill_task(task);
+    return 0;
+}
+

@@ -215,5 +215,7 @@ static void syscalls_isr(uint32_t index, uint32_t error_code, task_state_t *st) 
     else if (st->eax == SYSCALLS_NUM_WAITPID) {
         st->eax = sys_waitpid(st->ebx);
     }
-
+    else if (st->eax == SYSCALLS_NUM_KILL) {
+        st->eax = sys_kill(st->ebx);
+    }
 }
