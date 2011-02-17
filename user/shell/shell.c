@@ -61,7 +61,7 @@ int main() {
             command_str = get_word(&rest);
             rest = skip_spaces(rest);
             param_str = get_word(&rest);
-            param2_str = get_word(&rest);
+            rest = skip_spaces(rest);
 
             if (strcmp(HELP, command_str) == 0) {
                 print_shell_use();
@@ -80,6 +80,7 @@ int main() {
                 //Ejecutar un programa en background
                 do_runbg(param_str);
             } else if (strcmp(NICE, command_str) == 0) {
+                param2_str = get_word(&rest);
                 //Cambiar prioridad de un proceso
                 do_nice(param_str, param2_str);
             } else if (strcmp(KILL, command_str) == 0) {
