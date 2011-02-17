@@ -19,9 +19,10 @@ char *init_prognames[] = { "shell" };
 void init_task() {
     welcome_msg();
 
+    int pid;
     // Creamos los nuevos task_t para las tareas de inicio
     for (int i = 0; i < INIT_PROGNAMES_SIZE; i++) {
-        sys_run(init_prognames[i]);
+        pid = sys_run(init_prognames[i]);
     }
 
     /*
@@ -41,7 +42,9 @@ void init_task() {
 
     */
 
-    while(1)
+    sys_waitpid(pid);
+
+    while (1)
         switch_tasks();
 
 }

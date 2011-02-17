@@ -39,7 +39,7 @@ void idt_init() {
     remap_PIC(PIC1_OFFSET, PIC2_OFFSET);
 
     // Desenmascaramos interrupciones en el PIC
-    outb(PIC1_DATA, (~PIC_TIMER) & (~PIC_KB));
+    outb(PIC1_DATA, PIC_ALL_ENABLED);
 }
 
 /* Registra una rutina de atencion ``isr`` para la excepcion/interrupcion cuyo

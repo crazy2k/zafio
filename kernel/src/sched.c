@@ -15,6 +15,7 @@
 
 extern void load_state();
 extern void initialize_task(task_t *task);
+extern void wait_for_interrupt();
 extern void start_task(int (*main)());
 
 // TSS del sistema. Su valor de esp0 se actualiza en los cambios de contexto.
@@ -264,12 +265,28 @@ void switch_tasks() {
     task_t *old_task = current_task();
 
     task_t *current_candidate = old_task->next;
-    // Buscamos una tarea que no este esperando I/O. Siempre hay al menos una
-    // (init).
-    while (current_candidate->waiting)
-        current_candidate = current_candidate->next;
+    task_t *first_candidate = current_candidate;
+    task_t *selected = NULL;
+    // Buscamos una tarea que este lista para ejecutarse. Si no hay ninguna,
+    // hacemos halt hasta que ocurra una interrupcion.
+    do {
+        do {
+            if (!(current_candidate->waiting)) {
+                selected = current_candidate;
+                break;
+            }
+            current_candidate = current_candidate->next;
+        } while(current_candidate != first_candidate);
+        
+        if (selected == NULL) {
+            outb(PIC1_DATA, (PIC_ALL_ENABLED & (~PIC_TIMER)) | PIC_TIMER);
+            wait_for_interrupt();
+            outb(PIC1_DATA, PIC_ALL_ENABLED);
+        }
 
-    task_list = current_candidate;
+    } while (selected == NULL);
+
+    task_list = selected;
 
     switch_context(old_task, current_task());
 

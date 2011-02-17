@@ -2,6 +2,7 @@
 
 global switch_stack_pointers
 global initialize_task
+global wait_for_interrupt
 
 extern load_task_image
 extern load_task_stack
@@ -42,3 +43,14 @@ initialize_task:
     ; Ahora que tenemos listo nuestro espacio de memoria virtual, cargamos el
     ; estado inicial de la tarea
     jmp load_state
+
+wait_for_interrupt:
+    push ebp
+    mov ebp, esp
+
+    sti
+    hlt
+    cli
+
+    pop ebp
+    ret

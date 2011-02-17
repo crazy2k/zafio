@@ -67,6 +67,7 @@
 #define PIC_TIMER       0x1
 #define PIC_KB          0x2
 
+#define PIC_ALL_ENABLED ((~PIC_TIMER) & (~PIC_KB))
 
 // Funciones
 
