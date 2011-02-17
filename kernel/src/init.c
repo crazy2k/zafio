@@ -25,24 +25,9 @@ void init_task() {
         pid = sys_run(init_prognames[i]);
     }
 
-    /*
-    // Codigo para probar el manejo del teclado
-    while (1) {
-        int n = sys_read(0, buf, 1024);
-        buf[n] = '\0';
-        if (n > 0) {
-            kputs(buf);
-        }
-    }
-
-    for (int i = 0; i < programs_size; i++) {
-        uint32_t *pd = clone_pd(kernel_pd);
-        add_task(create_task(pd, &programs[i]));
-    }
-
-    */
-
     sys_waitpid(pid);
+
+    BOCHS_BREAK;
 
     while (1)
         switch_tasks();
