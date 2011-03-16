@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,7 +7,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>Documentación de Zafio &mdash; Zafio v0.1 documentation</title>
-    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/flasky.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -24,7 +23,11 @@
     <script type="text/javascript" src="static/doctools.js"></script>
     <script type="text/javascript" src="static/translations.js"></script>
     <link rel="top" title="Zafio v0.1 documentation" href="#" />
-    <link rel="next" title="Un poco de background" href="background.html" /> 
+    <link rel="next" title="Un poco de background" href="background.html" />
+   
+  
+  <link media="only screen and (max-device-width: 480px)" href="static/small_flask.css" type= "text/css" rel="stylesheet" />
+
   </head>
   <body>
     <div class="related">
@@ -47,7 +50,6 @@
             
   <div class="section" id="documentacion-de-zafio">
 <h1>Documentación de Zafio<a class="headerlink" href="#documentacion-de-zafio" title="Enlazar permanentemente con este título">¶</a></h1>
-<img align="right" alt="images/zeta.png" class="align-right" src="images/zeta.png" style="width: 70pt;" />
 <p>Zafio es un sistema operativo extremadamente básico y poco sofisticado.
 Sólo el tiempo podrá decir si será capaz de superar su tosquedad y
 falta de tacto.</p>
@@ -104,7 +106,12 @@ falta de tacto.</p>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="install.html">Instalación y uso</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Instalación y uso</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#compilacion">Compilación</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#ejecucion">Ejecución</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#uso">Uso</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <hr class="docutils" />
@@ -118,6 +125,9 @@ falta de tacto.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="static/zeta.png" alt="Logo"/>
+            </a></p>
   <h3><a href="#">Contenidos</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Documentación de Zafio</a><ul>
@@ -127,10 +137,12 @@ falta de tacto.</p>
 </ul>
 </li>
 </ul>
-
-  <h4>Próximo tema</h4>
-  <p class="topless"><a href="background.html"
-                        title="Próximo capítulo">Un poco de <em>background</em></a></p>
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="background.html" title="Próximo capítulo">Un poco de <em>background</em></a></li>
+  </ul></li>
+</ul>
   <h3>Esta página</h3>
   <ul class="this-page-menu">
     <li><a href="sources/index.txt"
@@ -153,21 +165,9 @@ falta de tacto.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
-      <h3>Navegación</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="Índice General"
-             >índice</a></li>
-        <li class="right" >
-          <a href="background.html" title="Un poco de background"
-             >siguiente</a> |</li>
-        <li><a href="#">Zafio v0.1 documentation</a> &raquo;</li> 
-      </ul>
-    </div>
     <div class="footer">
-        &copy; Copyright 2010, Pablo Antonio.
-      Creado con <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
+      &copy; Copyright 2010, Pablo Antonio.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
     </div>
   </body>
 </html>

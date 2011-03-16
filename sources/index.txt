@@ -6,10 +6,6 @@
 Documentación de Zafio
 ======================
 
-.. image:: _static/zeta.png
-    :width: 70pt
-    :align: right
-
 Zafio es un sistema operativo extremadamente básico y poco sofisticado.
 Sólo el tiempo podrá decir si será capaz de superar su tosquedad y
 falta de tacto.
@@ -34,7 +30,6 @@ A continuación, la tabla de contenidos de la documentación:
    background
    zafio
    install
-   extension
 
 ----
 

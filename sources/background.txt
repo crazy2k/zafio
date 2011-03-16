@@ -164,9 +164,12 @@ muestra la siguiente figura:
 
     digraph direcciones {
         rankdir=LR
-        "dirección virtual" [shape=box]
-        "dirección lineal" [shape=box]
-        "dirección física" [shape=box]
+        "dirección virtual" [shape=box,
+            label=<<font point-size="14">dirección<br />virtual</font>>]
+        "dirección lineal" [shape=box,
+            label=<<font point-size="14">dirección<br />lineal</font>>]
+        "dirección física" [shape=box,
+            label=<<font point-size="14">dirección<br />física</font>>]
         "dirección virtual" -> "dirección lineal"
             [label=<<font point-size="12">unidad<br />de segmentación</font>>];
         "dirección lineal" -> "dirección física"

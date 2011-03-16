@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,7 +7,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>Zafio por dentro &mdash; Zafio v0.1 documentation</title>
-    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/flasky.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -25,7 +24,11 @@
     <script type="text/javascript" src="static/translations.js"></script>
     <link rel="top" title="Zafio v0.1 documentation" href="index.html" />
     <link rel="next" title="Instalación y uso" href="install.html" />
-    <link rel="prev" title="Un poco de background" href="background.html" /> 
+    <link rel="prev" title="Un poco de background" href="background.html" />
+   
+  
+  <link media="only screen and (max-device-width: 480px)" href="static/small_flask.css" type= "text/css" rel="stylesheet" />
+
   </head>
   <body>
     <div class="related">
@@ -59,9 +62,10 @@ características salientes son:</p>
 diferentes para las tareas</li>
 <li>manejador de interrupciones que permite el <strong>registro de
 handlers en tiempo de ejecución</strong></li>
-<li><strong>scheduling de procesos utilizando round-robin</strong> con un quantum fijo</li>
+<li><strong>scheduling de procesos utilizando round-robin</strong> con un quantums
+modificables por el usuario</li>
 <li><strong>task-switching por software</strong></li>
-<li>atención de <strong>llamadas al sistema</strong></li>
+<li>atención de <strong>llamadas al sistema</strong> (bloqueantes y no bloqueantes)</li>
 </ul>
 <p>En este documento se describen estas y otras características de Zafio.</p>
 <div class="section" id="la-estructura-de-directorios">
@@ -151,7 +155,7 @@ sistema, inicializar estructuras necesarias para el manejo de la
 memoria y activar el mecanismo de paginación de memoria que provee el
 procesador (hablaremos más en detalle de esto en la sección
 <a class="reference internal" href="#la-memoria">La memoria</a>).</p>
-<p>La objetivo final de esta pieza de código es dejar todo listo para que
+<p>El objetivo final de esta pieza de código es dejar todo listo para que
 pueda darse la ejecución de código del kernel, escrito principalmente
 en C, que se encuentra mapeado en direcciones virtuales altas (<em>higher
 half</em>), por encima de los 3GB. Cuando esto es posible, se produce el
@@ -177,16 +181,26 @@ cuya definición puede hallarse en <tt class="docutils literal"><span class="pre
 <div class="highlight-c"><div class="highlight"><pre><span class="k">struct</span> <span class="n">task_t</span> <span class="p">{</span>
     <span class="c">// Informacion sobre el programa asociado a la tarea</span>
     <span class="k">struct</span> <span class="n">program_t</span> <span class="o">*</span><span class="n">prog</span><span class="p">;</span>
-    <span class="c">// Direccion virtual del directorio de paginas en el espacio de direcciones</span>
-    <span class="c">// del kernel</span>
+
+    <span class="c">// Direccion virtual del directorio de paginas en el</span>
+    <span class="c">// espacio de direcciones del kernel</span>
     <span class="kt">void</span> <span class="o">*</span><span class="n">pd</span><span class="p">;</span>
+
     <span class="c">// Datos sobre el stack en espacio de kernel</span>
     <span class="kt">void</span> <span class="o">*</span><span class="n">kernel_stack</span><span class="p">;</span>
     <span class="kt">void</span> <span class="o">*</span><span class="n">kernel_stack_pointer</span><span class="p">;</span>
     <span class="kt">void</span> <span class="o">*</span><span class="n">kernel_stack_limit</span><span class="p">;</span>
+
+    <span class="c">// Campo para identificacion del proceso</span>
+    <span class="kt">uint32_t</span> <span class="n">pid</span><span class="p">;</span>
+
     <span class="c">// Informacion para el scheduling</span>
     <span class="kt">uint32_t</span> <span class="n">quantum</span><span class="p">;</span>
     <span class="kt">uint32_t</span> <span class="n">rem_quantum</span><span class="p">;</span>
+    <span class="kt">uint32_t</span> <span class="n">ticks</span><span class="p">;</span>
+    <span class="n">bool</span> <span class="n">waiting</span><span class="p">;</span>
+    <span class="n">task_t</span> <span class="o">*</span><span class="n">parent</span><span class="p">;</span>
+    <span class="n">bool</span> <span class="n">waited</span><span class="p">;</span>
 
     <span class="n">task_t</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
     <span class="n">task_t</span> <span class="o">*</span><span class="n">prev</span><span class="p">;</span>
@@ -196,48 +210,50 @@ cuya definición puede hallarse en <tt class="docutils literal"><span class="pre
 <p>Esta estructura contiene todo lo que el kernel precisa saber sobre la
 tarea. Entre estas cosas, se encuentra la información sobre el programa
 asociado a la tarea y sobre el espacio de direcciones virtual de la
-misma e información utilizada para la planificación realizada por
+misma e información utilizada para la planificación realizada por el
 <em>scheduler</em> de procesos.</p>
 </div>
 <div class="section" id="el-scheduler">
 <h3>El <em>scheduler</em><a class="headerlink" href="#el-scheduler" title="Enlazar permanentemente con este título">¶</a></h3>
 <p>El algoritmo de <em>scheduling</em> utilizado es extremadamente sencillo:
-<em>round-robin</em> con un <em>quantum</em> fijo. A cada tarea se le asigna un
-número fijo de unidades de tiempo para su ejecución. Cada unidad de
-tiempo equivale a una interrupción del <em>timer</em>.</p>
-<p>Como no hay llamadas al sistema bloqueantes, los procesos, o bien están
-ejecutándose en el procesador o bien están listos esperando su turno
-para ser ejecutados. Además, como el kernel sólo maneja un único
-procesador, en todo momento hay a lo sumo un único proceso en
-ejecución.</p>
+<em>round-robin</em> con <em>quantums</em> modificables. A cada tarea se le asigna,
+inicialmente, un número fijo de unidades de tiempo para su ejecución.
+Cada unidad de tiempo equivale a una interrupción del <em>timer</em>. El
+<em>quantum</em> de cada tarea puede luego ser alterado mediante la llamada al
+sistema <tt class="docutils literal"><span class="pre">nice()</span></tt>.</p>
+<p>Las tareas pueden estar bloqueadas (<tt class="docutils literal"><span class="pre">waiting</span> <span class="pre">=</span> <span class="pre">TRUE</span></tt>) o disponibles
+para ser ejecutadas (<tt class="docutils literal"><span class="pre">waiting</span> <span class="pre">=</span> <span class="pre">FALSE</span></tt>). Cuando están disponibles,
+pueden encontrarse en ejecución o a la espera de su turno. Como el
+kernel sólo maneja un único procesador, en todo momento hay a lo sumo
+una única tarea en ejecución.</p>
 <p>La administración se realiza mediante una lista doblemente enlazada
 circular de procesos. La cabeza de esta lista es siempre el proceso
 actualmente en ejecución. Cuando se acaba el <em>quantum</em> de una tarea, la
-cabeza pasa a ser la siguiente tarea en la lista. Cuando una tarea
-finaliza su ejecución (invocando a la llamada al sistema <tt class="docutils literal"><span class="pre">exit()</span></tt>)
-esta es quitada de la lista y los recursos que utilizaba son
-eventualmente liberados.</p>
+cabeza pasa a ser la siguiente tarea en la lista que se encuentre
+en condiciones de ser ejecutada. Cuando una tarea finaliza su ejecución
+(invocando ella misma a la llamada al sistema <tt class="docutils literal"><span class="pre">exit()</span></tt> o a causa de
+una llamada a <tt class="docutils literal"><span class="pre">kill()</span></tt> por parte de otra tarea) esta es quitada de la
+lista y los recursos que utilizaba son eventualmente liberados.</p>
 </div>
 <div class="section" id="creacion-de-tareas">
 <h3>Creación de tareas<a class="headerlink" href="#creacion-de-tareas" title="Enlazar permanentemente con este título">¶</a></h3>
-<p>De momento, las tareas sólo pueden ser creadas desde espacio de kernel.
-La primer tarea que ingresa al sistema es una tarea especial, llamada
-&#8220;init&#8221;, que se ejecuta en espacio de kernel y tiene a su cargo la
-creación de las tareas correspondientes a los programas de usuario
-alojados en <tt class="docutils literal"><span class="pre">progs/</span></tt>. Puede observarse el código de esta tarea en el
-archivo <tt class="docutils literal"><span class="pre">kernel/src/init.c</span></tt>:</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">programs_size</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-    <span class="kt">uint32_t</span> <span class="o">*</span><span class="n">pd</span> <span class="o">=</span> <span class="n">clone_pd</span><span class="p">(</span><span class="n">kernel_pd</span><span class="p">);</span>
-    <span class="n">add_task</span><span class="p">(</span><span class="n">create_task</span><span class="p">(</span><span class="n">pd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">programs</span><span class="p">[</span><span class="n">i</span><span class="p">]));</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>&#8220;init&#8221; simplemente recorre la secuencia de programas (cada uno
-representado por una estructura <tt class="docutils literal"><span class="pre">program_t</span></tt>) y, para cada uno, crea
-una tarea nueva, usando <tt class="docutils literal"><span class="pre">create_task()</span></tt>, cuyo espacio de direcciones
-coincide inicialmente con el del kernel. Luego, se agrega la tarea a la
-lista de tareas mediante la función <tt class="docutils literal"><span class="pre">add_task()</span></tt>. Ambas funciones se
-hallan en <tt class="docutils literal"><span class="pre">kernel/src/sched.c</span></tt>.</p>
+<p>La primer tarea que ingresa al sistema (llamada <tt class="docutils literal"><span class="pre">init</span></tt>) tiene a su
+cargo la creación de las tareas correspondientes a los programas de
+inicio. Puede observarse el código de esta tarea en el archivo
+<tt class="docutils literal"><span class="pre">kernel/src/init.c</span></tt>.</p>
+<p>Para la creación de tareas, tanto <tt class="docutils literal"><span class="pre">init</span></tt> como el resto de las tareas
+hacen uso de la llamada al sistema <tt class="docutils literal"><span class="pre">run()</span></tt>, cuyo código puede
+hallarse en <tt class="docutils literal"><span class="pre">kernel/src/syscalls.c</span></tt>. <tt class="docutils literal"><span class="pre">run()</span></tt> recibe el nombre de un
+programa por parámetro y se encarga de:</p>
+<ul class="simple">
+<li>conseguir la información correspondiente al programa (entre lo que se
+halla su ejecutable ELF),</li>
+<li>crear la tarea asignándole un espacio de direcciones propio, mediante
+<tt class="docutils literal"><span class="pre">create_task()</span></tt>,</li>
+<li>agregar la tarea a la lista de tareas usando <tt class="docutils literal"><span class="pre">add_task()</span></tt>.</li>
+</ul>
+<p>Las funciones <tt class="docutils literal"><span class="pre">create_task()</span></tt> y <tt class="docutils literal"><span class="pre">add_task()</span></tt> se encuentran en el
+archivo <tt class="docutils literal"><span class="pre">kernel/src/sched.c</span></tt>.</p>
 <p>Hasta este punto, se reserva espacio para el descriptor del proceso y
 para el stack del kernel de la tarea, pero la reserva y mapeo del
 stack de usuario y del código y los datos de la tarea en su espacio de
@@ -269,8 +285,10 @@ usuario. Sin embargo, si la interrupción sí derivará en un cambio de
 contexto, se procede del siguiente modo:</p>
 <ul class="simple">
 <li>se guarda el registro <tt class="docutils literal"><span class="pre">EFLAGS</span></tt> (<em>flags</em> del procesador)</li>
-<li>se marca la siguiente tarea en la lista de tareas como la tarea
-actual</li>
+<li>se marca la siguiente tarea en la lista de tareas que se encuentre
+lista para ser ejecutada como la tarea actual (de no existir tal
+tarea, el sistema detiene su ejecución hasta que una interrupción
+ocasione la aparición <a class="footnote-reference" href="#id5" id="id4">[2]</a> de una tarea en condiciones de ser ejecutada)</li>
 <li>se carga el espacio de direcciones de la nueva tarea</li>
 <li>se actualizan los valores de <tt class="docutils literal"><span class="pre">SS0</span></tt> y <tt class="docutils literal"><span class="pre">ESP0</span></tt> en la TSS del sistema</li>
 <li>se almacena el <em>stack pointer</em> de modo kernel actual en el descriptor
@@ -291,6 +309,19 @@ ejecute el código del label <tt class="docutils literal"><span class="pre">init
 <tt class="docutils literal"><span class="pre">kernel/src/sched_helpers.S</span></tt>. Esta porción de código es la encargada
 de reservar memoria y realizar los mapeos que ya se nombraron antes en
 <a class="reference internal" href="#creacion-de-tareas">Creación de tareas</a>.</p>
+<table class="docutils footnote" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[2]</a></td><td>El caso común es que todas las tareas se encuentren a la espera
+de algún evento. Por ejemplo, una tarea puede haber invocado a
+la llamada <tt class="docutils literal"><span class="pre">waitpid()</span></tt> y encontrarse a la espera de que otra
+tarea termine. Otra tarea puede estar esperando que se ingrese
+algo en una terminal. En ese caso, al ocurrir la interrupción
+del teclado y producirse el ingreso de datos, la tarea en espera
+sería despertada y se encontraría lista para proseguir su
+ejecución.</td></tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="section" id="manejo-de-interrupciones">
@@ -332,12 +363,76 @@ Al ocurrir la interrupción, la rutina de servicio de la interrupción
 <tt class="docutils literal"><span class="pre">0x80</span></tt> llama a la función correspondiente a la llamada al sistema
 invocada con los parámetros pasados.</p>
 <p>Las llamadas al sistema implementadas hasta ahora son:</p>
-<ul class="simple">
-<li><tt class="docutils literal"><span class="pre">exit()</span></tt>, que finaliza el proceso en ejecución y libera todos los
-recursos utilizados por este</li>
-<li><tt class="docutils literal"><span class="pre">puts()</span></tt>, que recibe una cadena de caracteres y la imprime en la
-pantalla</li>
-</ul>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="22%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Número</th>
+<th class="head">Nombre</th>
+<th class="head">Función</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>1</td>
+<td><tt class="docutils literal"><span class="pre">exit()</span></tt></td>
+<td>finaliza el proceso en ejecución y libera todos
+los recursos utilizados por este</td>
+</tr>
+<tr><td>3</td>
+<td><tt class="docutils literal"><span class="pre">read()</span></tt></td>
+<td>lee de un dispositivo y almacena lo leído en un
+buffer provisto por el usuario</td>
+</tr>
+<tr><td>4</td>
+<td><tt class="docutils literal"><span class="pre">write()</span></tt></td>
+<td>escribe en un dispositivo a partir de un buffer
+provisto por el usuario</td>
+</tr>
+<tr><td>5</td>
+<td><tt class="docutils literal"><span class="pre">ls()</span></tt></td>
+<td>escribe información sobre los programas
+disponibles en un buffer provisto por el
+usuario</td>
+</tr>
+<tr><td>6</td>
+<td><tt class="docutils literal"><span class="pre">ps()</span></tt></td>
+<td>escribe información sobre los procesos del
+sistema en un buffer provisto por el usuario</td>
+</tr>
+<tr><td>7</td>
+<td><tt class="docutils literal"><span class="pre">run()</span></tt></td>
+<td>crea una tarea para el programa que recibe por
+parámetro</td>
+</tr>
+<tr><td>8</td>
+<td><tt class="docutils literal"><span class="pre">devreq()</span></tt></td>
+<td>pide al kernel que se asigne un dispositivo
+específico a la tarea en ejecución</td>
+</tr>
+<tr><td>9</td>
+<td><tt class="docutils literal"><span class="pre">devrel()</span></tt></td>
+<td>avisa al kernel que un dispositivo usado por la
+tarea en ejecución ya puede ser liberado</td>
+</tr>
+<tr><td>10</td>
+<td><tt class="docutils literal"><span class="pre">nice()</span></tt></td>
+<td>permite cambiar el quantum de una tarea</td>
+</tr>
+<tr><td>11</td>
+<td><tt class="docutils literal"><span class="pre">waitpid()</span></tt></td>
+<td>permite a una tarea bloquearse hasta la
+terminación de una tarea hija</td>
+</tr>
+<tr><td>12</td>
+<td><tt class="docutils literal"><span class="pre">kill</span></tt></td>
+<td>elimina a una tarea de la lista de tareas y
+libera los recursos que esta ocupaba</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="la-memoria">
 <h2>La memoria<a class="headerlink" href="#la-memoria" title="Enlazar permanentemente con este título">¶</a></h2>
@@ -365,7 +460,7 @@ en la que está mapeada (si lo está).</p>
 de gestionar las páginas físicas libres y de mapearlas a los espacios
 de direcciones virtuales.</p>
 <p>En <tt class="docutils literal"><span class="pre">kernel/src/heap.c</span></tt> se encuentran las funciones <tt class="docutils literal"><span class="pre">kmalloc()</span></tt> y
-<tt class="docutils literal"><span class="pre">kfree()</span></tt> una implementación de un <em>heap</em> para pedidos de memoria
+<tt class="docutils literal"><span class="pre">kfree()</span></tt>, una implementación de un <em>heap</em> para pedidos de memoria
 arbitrarios.</p>
 </div>
 <div class="section" id="direccionamiento">
@@ -465,6 +560,9 @@ código del kernel.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="static/zeta.png" alt="Logo"/>
+            </a></p>
   <h3><a href="index.html">Contenidos</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Zafio por dentro</a><ul>
@@ -487,13 +585,13 @@ código del kernel.</p>
 </ul>
 </li>
 </ul>
-
-  <h4>Tema anterior</h4>
-  <p class="topless"><a href="background.html"
-                        title="Capítulo anterior">Un poco de <em>background</em></a></p>
-  <h4>Próximo tema</h4>
-  <p class="topless"><a href="install.html"
-                        title="Próximo capítulo">Instalación y uso</a></p>
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="background.html" title="Capítulo anterior">Un poco de <em>background</em></a></li>
+      <li>Next: <a href="install.html" title="Próximo capítulo">Instalación y uso</a></li>
+  </ul></li>
+</ul>
   <h3>Esta página</h3>
   <ul class="this-page-menu">
     <li><a href="sources/zafio.txt"
@@ -516,24 +614,9 @@ código del kernel.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
-      <h3>Navegación</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="Índice General"
-             >índice</a></li>
-        <li class="right" >
-          <a href="install.html" title="Instalación y uso"
-             >siguiente</a> |</li>
-        <li class="right" >
-          <a href="background.html" title="Un poco de background"
-             >anterior</a> |</li>
-        <li><a href="index.html">Zafio v0.1 documentation</a> &raquo;</li> 
-      </ul>
-    </div>
     <div class="footer">
-        &copy; Copyright 2010, Pablo Antonio.
-      Creado con <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.5.
+      &copy; Copyright 2010, Pablo Antonio.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
     </div>
   </body>
 </html>
