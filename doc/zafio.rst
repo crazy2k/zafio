@@ -11,9 +11,10 @@ características salientes son:
   diferentes para las tareas
 * manejador de interrupciones que permite el **registro de
   handlers en tiempo de ejecución**
-* **scheduling de procesos utilizando round-robin** con un quantum fijo
+* **scheduling de procesos utilizando round-robin** con un quantums
+  modificables por el usuario
 * **task-switching por software**
-* atención de **llamadas al sistema**
+* atención de **llamadas al sistema** (bloqueantes y no bloqueantes)
 
 En este documento se describen estas y otras características de Zafio.
 
@@ -91,7 +92,7 @@ memoria y activar el mecanismo de paginación de memoria que provee el
 procesador (hablaremos más en detalle de esto en la sección
 `La memoria`_).
 
-La objetivo final de esta pieza de código es dejar todo listo para que
+El objetivo final de esta pieza de código es dejar todo listo para que
 pueda darse la ejecución de código del kernel, escrito principalmente
 en C, que se encuentra mapeado en direcciones virtuales altas (*higher
 half*), por encima de los 3GB. Cuando esto es posible, se produce el
@@ -117,70 +118,84 @@ cuya definición puede hallarse en ``kernel/inc/sched.h``::
     struct task_t {
         // Informacion sobre el programa asociado a la tarea
         struct program_t *prog;
-        // Direccion virtual del directorio de paginas en el espacio de direcciones
-        // del kernel
+
+        // Direccion virtual del directorio de paginas en el
+        // espacio de direcciones del kernel
         void *pd;
+
         // Datos sobre el stack en espacio de kernel
         void *kernel_stack;
         void *kernel_stack_pointer;
         void *kernel_stack_limit;
+
+        // Campo para identificacion del proceso
+        uint32_t pid;
+
         // Informacion para el scheduling
         uint32_t quantum;
         uint32_t rem_quantum;
+        uint32_t ticks;
+        bool waiting;
+        task_t *parent;
+        bool waited;
 
         task_t *next;
         task_t *prev;
     };
 
+
 Esta estructura contiene todo lo que el kernel precisa saber sobre la
 tarea. Entre estas cosas, se encuentra la información sobre el programa
 asociado a la tarea y sobre el espacio de direcciones virtual de la
-misma e información utilizada para la planificación realizada por
+misma e información utilizada para la planificación realizada por el
 *scheduler* de procesos.
 
 El *scheduler*
 ~~~~~~~~~~~~~~
 
 El algoritmo de *scheduling* utilizado es extremadamente sencillo:
-*round-robin* con un *quantum* fijo. A cada tarea se le asigna un
-número fijo de unidades de tiempo para su ejecución. Cada unidad de
-tiempo equivale a una interrupción del *timer*.
+*round-robin* con *quantums* modificables. A cada tarea se le asigna,
+inicialmente, un número fijo de unidades de tiempo para su ejecución.
+Cada unidad de tiempo equivale a una interrupción del *timer*. El
+*quantum* de cada tarea puede luego ser alterado mediante la llamada al
+sistema ``nice()``.
 
-Como no hay llamadas al sistema bloqueantes, los procesos, o bien están
-ejecutándose en el procesador o bien están listos esperando su turno
-para ser ejecutados. Además, como el kernel sólo maneja un único
-procesador, en todo momento hay a lo sumo un único proceso en
-ejecución.
+Las tareas pueden estar bloqueadas (``waiting = TRUE``) o disponibles
+para ser ejecutadas (``waiting = FALSE``). Cuando están disponibles,
+pueden encontrarse en ejecución o a la espera de su turno. Como el
+kernel sólo maneja un único procesador, en todo momento hay a lo sumo
+una única tarea en ejecución.
 
 La administración se realiza mediante una lista doblemente enlazada
 circular de procesos. La cabeza de esta lista es siempre el proceso
 actualmente en ejecución. Cuando se acaba el *quantum* de una tarea, la
-cabeza pasa a ser la siguiente tarea en la lista. Cuando una tarea
-finaliza su ejecución (invocando a la llamada al sistema ``exit()``)
-esta es quitada de la lista y los recursos que utilizaba son
-eventualmente liberados.
+cabeza pasa a ser la siguiente tarea en la lista que se encuentre
+en condiciones de ser ejecutada. Cuando una tarea finaliza su ejecución
+(invocando ella misma a la llamada al sistema ``exit()`` o a causa de
+una llamada a ``kill()`` por parte de otra tarea) esta es quitada de la
+lista y los recursos que utilizaba son eventualmente liberados.
 
 Creación de tareas
 ~~~~~~~~~~~~~~~~~~
 
-De momento, las tareas sólo pueden ser creadas desde espacio de kernel.
-La primer tarea que ingresa al sistema es una tarea especial, llamada
-"init", que se ejecuta en espacio de kernel y tiene a su cargo la
-creación de las tareas correspondientes a los programas de usuario
-alojados en ``progs/``. Puede observarse el código de esta tarea en el
-archivo ``kernel/src/init.c``::
+La primer tarea que ingresa al sistema (llamada ``init``) tiene a su
+cargo la creación de las tareas correspondientes a los programas de
+inicio. Puede observarse el código de esta tarea en el archivo
+``kernel/src/init.c``.
 
-    for (int i = 0; i < programs_size; i++) {
-        uint32_t *pd = clone_pd(kernel_pd);
-        add_task(create_task(pd, &programs[i]));
-    }
+Para la creación de tareas, tanto ``init`` como el resto de las tareas
+hacen uso de la llamada al sistema ``run()``, cuyo código puede
+hallarse en ``kernel/src/syscalls.c``. ``run()`` recibe el nombre de un
+programa por parámetro y se encarga de:
 
-"init" simplemente recorre la secuencia de programas (cada uno
-representado por una estructura ``program_t``) y, para cada uno, crea
-una tarea nueva, usando ``create_task()``, cuyo espacio de direcciones
-coincide inicialmente con el del kernel. Luego, se agrega la tarea a la
-lista de tareas mediante la función ``add_task()``. Ambas funciones se
-hallan en ``kernel/src/sched.c``.
+* conseguir la información correspondiente al programa (entre lo que se
+  halla su ejecutable ELF),
+* crear la tarea asignándole un espacio de direcciones propio, mediante
+  ``create_task()``,
+* agregar la tarea a la lista de tareas usando ``add_task()``.
+
+Las funciones ``create_task()`` y ``add_task()`` se encuentran en el
+archivo ``kernel/src/sched.c``.
 
 Hasta este punto, se reserva espacio para el descriptor del proceso y
 para el stack del kernel de la tarea, pero la reserva y mapeo del
@@ -216,8 +231,10 @@ usuario. Sin embargo, si la interrupción sí derivará en un cambio de
 contexto, se procede del siguiente modo:
 
 * se guarda el registro ``EFLAGS`` (*flags* del procesador)
-* se marca la siguiente tarea en la lista de tareas como la tarea
-  actual
+* se marca la siguiente tarea en la lista de tareas que se encuentre
+  lista para ser ejecutada como la tarea actual (de no existir tal
+  tarea, el sistema detiene su ejecución hasta que una interrupción
+  ocasione la aparición [2]_ de una tarea en condiciones de ser ejecutada)
 * se carga el espacio de direcciones de la nueva tarea
 * se actualizan los valores de ``SS0`` y ``ESP0`` en la TSS del sistema
 * se almacena el *stack pointer* de modo kernel actual en el descriptor
@@ -239,6 +256,15 @@ ejecute el código del label ``initialize_task`` en
 ``kernel/src/sched_helpers.S``. Esta porción de código es la encargada
 de reservar memoria y realizar los mapeos que ya se nombraron antes en
 `Creación de tareas`_.
+
+.. [2] El caso común es que todas las tareas se encuentren a la espera
+       de algún evento. Por ejemplo, una tarea puede haber invocado a
+       la llamada ``waitpid()`` y encontrarse a la espera de que otra
+       tarea termine. Otra tarea puede estar esperando que se ingrese
+       algo en una terminal. En ese caso, al ocurrir la interrupción
+       del teclado y producirse el ingreso de datos, la tarea en espera
+       sería despertada y se encontraría lista para proseguir su
+       ejecución.
 
 Manejo de interrupciones
 ------------------------
@@ -285,10 +311,32 @@ invocada con los parámetros pasados.
 
 Las llamadas al sistema implementadas hasta ahora son:
 
-* ``exit()``, que finaliza el proceso en ejecución y libera todos los
-  recursos utilizados por este
-* ``puts()``, que recibe una cadena de caracteres y la imprime en la
-  pantalla
+======= =============== ===============================================
+Número  Nombre          Función
+======= =============== ===============================================
+1       ``exit()``      finaliza el proceso en ejecución y libera todos
+                        los recursos utilizados por este
+3       ``read()``      lee de un dispositivo y almacena lo leído en un
+                        buffer provisto por el usuario
+4       ``write()``     escribe en un dispositivo a partir de un buffer
+                        provisto por el usuario
+5       ``ls()``        escribe información sobre los programas
+                        disponibles en un buffer provisto por el
+                        usuario
+6       ``ps()``        escribe información sobre los procesos del
+                        sistema en un buffer provisto por el usuario
+7       ``run()``       crea una tarea para el programa que recibe por
+                        parámetro
+8       ``devreq()``    pide al kernel que se asigne un dispositivo
+                        específico a la tarea en ejecución
+9       ``devrel()``    avisa al kernel que un dispositivo usado por la
+                        tarea en ejecución ya puede ser liberado
+10      ``nice()``      permite cambiar el quantum de una tarea
+11      ``waitpid()``   permite a una tarea bloquearse hasta la
+                        terminación de una tarea hija
+12      ``kill``        elimina a una tarea de la lista de tareas y
+                        libera los recursos que esta ocupaba
+======= =============== ===============================================
 
 La memoria
 ----------
@@ -320,7 +368,7 @@ de gestionar las páginas físicas libres y de mapearlas a los espacios
 de direcciones virtuales.
 
 En ``kernel/src/heap.c`` se encuentran las funciones ``kmalloc()`` y
-``kfree()`` una implementación de un *heap* para pedidos de memoria
+``kfree()``, una implementación de un *heap* para pedidos de memoria
 arbitrarios.
 
 Direccionamiento
