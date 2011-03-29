@@ -19,6 +19,12 @@ Los objetivos iniciales de este proyecto son:
     * con capacidad de extensión
 * aprender en el camino y documentar lo que se considere necesario
 
+Zafio fue y es desarrollado por `Pablo Antonio
+<https://github.com/crazy2k>`_ y `Pablo Herrero
+<https://github.com/pabloh>`_. El `repositorio git del proyecto
+<https://github.com/crazy2k/zafio>`_ se
+encuentra alojado en `GitHub <https://github.com/>`_.
+
 Contenidos
 ----------
 

@@ -35,7 +35,7 @@
       <h3>Navegación</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="Índice General"
+          <a href="genindex.html" title="Índice general"
              accesskey="I">índice</a></li>
         <li class="right" >
           <a href="install.html" title="Instalación y uso"
@@ -154,7 +154,7 @@ código se ocupa, entre otras cosas, de construir la GDT definitiva del
 sistema, inicializar estructuras necesarias para el manejo de la
 memoria y activar el mecanismo de paginación de memoria que provee el
 procesador (hablaremos más en detalle de esto en la sección
-<a class="reference internal" href="#la-memoria">La memoria</a>).</p>
+<a class="reference external" href="#la-memoria">La memoria</a>).</p>
 <p>El objetivo final de esta pieza de código es dejar todo listo para que
 pueda darse la ejecución de código del kernel, escrito principalmente
 en C, que se encuentra mapeado en direcciones virtuales altas (<em>higher
@@ -179,22 +179,22 @@ intercambiable.</td></tr>
 <p>Cada tarea es representada en el kernel por una estructura <tt class="docutils literal"><span class="pre">task_t</span></tt>,
 cuya definición puede hallarse en <tt class="docutils literal"><span class="pre">kernel/inc/sched.h</span></tt>:</p>
 <div class="highlight-c"><div class="highlight"><pre><span class="k">struct</span> <span class="n">task_t</span> <span class="p">{</span>
-    <span class="c">// Informacion sobre el programa asociado a la tarea</span>
+    <span class="c1">// Informacion sobre el programa asociado a la tarea</span>
     <span class="k">struct</span> <span class="n">program_t</span> <span class="o">*</span><span class="n">prog</span><span class="p">;</span>
 
-    <span class="c">// Direccion virtual del directorio de paginas en el</span>
-    <span class="c">// espacio de direcciones del kernel</span>
+    <span class="c1">// Direccion virtual del directorio de paginas en el</span>
+    <span class="c1">// espacio de direcciones del kernel</span>
     <span class="kt">void</span> <span class="o">*</span><span class="n">pd</span><span class="p">;</span>
 
-    <span class="c">// Datos sobre el stack en espacio de kernel</span>
+    <span class="c1">// Datos sobre el stack en espacio de kernel</span>
     <span class="kt">void</span> <span class="o">*</span><span class="n">kernel_stack</span><span class="p">;</span>
     <span class="kt">void</span> <span class="o">*</span><span class="n">kernel_stack_pointer</span><span class="p">;</span>
     <span class="kt">void</span> <span class="o">*</span><span class="n">kernel_stack_limit</span><span class="p">;</span>
 
-    <span class="c">// Campo para identificacion del proceso</span>
+    <span class="c1">// Campo para identificacion del proceso</span>
     <span class="kt">uint32_t</span> <span class="n">pid</span><span class="p">;</span>
 
-    <span class="c">// Informacion para el scheduling</span>
+    <span class="c1">// Informacion para el scheduling</span>
     <span class="kt">uint32_t</span> <span class="n">quantum</span><span class="p">;</span>
     <span class="kt">uint32_t</span> <span class="n">rem_quantum</span><span class="p">;</span>
     <span class="kt">uint32_t</span> <span class="n">ticks</span><span class="p">;</span>
@@ -276,7 +276,7 @@ ocurrir un cambio de nivel al nivel 0.</p>
 stacks de kernel. Al ocurrir una interrupción mientras se está
 ejecutando una tarea, el <em>handler</em> de la interrupción inmediatamente
 almacena el contexto de la tarea en el stack de modo kernel y luego
-llama a la rutina de atención correspondiente (ver la sección <a class="reference internal" href="#manejo-de-interrupciones">Manejo
+llama a la rutina de atención correspondiente (ver la sección <a class="reference external" href="#manejo-de-interrupciones">Manejo
 de interrupciones</a>).</p>
 <p>Si la interrupción no deriva en un cambio de contexto, al terminar de
 manejarla, simplemente se procede de manera inversa, cargando el estado
@@ -308,7 +308,7 @@ armado cuidadosamente de manera que al retornar de la función se
 ejecute el código del label <tt class="docutils literal"><span class="pre">initialize_task</span></tt> en
 <tt class="docutils literal"><span class="pre">kernel/src/sched_helpers.S</span></tt>. Esta porción de código es la encargada
 de reservar memoria y realizar los mapeos que ya se nombraron antes en
-<a class="reference internal" href="#creacion-de-tareas">Creación de tareas</a>.</p>
+<a class="reference external" href="#creacion-de-tareas">Creación de tareas</a>.</p>
 <table class="docutils footnote" frame="void" id="id5" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
